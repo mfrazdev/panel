@@ -1,0 +1,30 @@
+{
+    "name": "murillofrazocunha/example_client",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/",
+            "models\\": "src/models/"
+        }
+    },
+    "authors": [
+        {
+            "name": "murillo",
+            "email": "murillofrazaocunha@gmail.com"
+        }
+    ],
+    "repositories": [
+        {
+            "type": "path",
+            "url": "../",
+            "options": {
+                "symlink": true
+            }
+        }
+    ],
+    "require": {
+        "mfrazlab/vattsphp": "dev-master",
+        "rakit/validation": "^1.4",
+      "ext-pdo": "*",
+        "vlucas/phpdotenv": "^5.6"
+    }
+}
