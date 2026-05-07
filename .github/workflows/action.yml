@@ -5,6 +5,10 @@ on:
     branches:
       - master
 
+# Adicionado para permitir que o bot do GitHub Actions crie a release
+permissions:
+  contents: write
+
 jobs:
   build:
     runs-on: ubuntu-latest
@@ -55,3 +59,18 @@ jobs:
         with:
           name: production-build
           path: project.zip
+
+      # RELEASE
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: release-${{ github.run_number }}
+          name: Release ${{ github.run_number }}
+          files: project.zip
+          generate_release_notes: true
+
+      # LIMPEZA DE ARTIFACTS
+      - name: Delete Artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: production-build
