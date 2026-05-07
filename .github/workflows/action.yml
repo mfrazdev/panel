@@ -54,7 +54,7 @@ jobs:
           SHORT_SHA=$(git rev-parse --short HEAD)
           
           if [[ "$BRANCH_NAME" == "canary" ]]; then
-            FINAL_TAG="canary-${NEXT_VERSION}-${SHORT_SHA}"
+            FINAL_TAG="${NEXT_VERSION}-canary-${SHORT_SHA}"
             IS_LATEST="false"
           else
             FINAL_TAG="${NEXT_VERSION}"
