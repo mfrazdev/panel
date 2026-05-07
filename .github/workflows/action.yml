@@ -112,7 +112,7 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ env.TAG_NAME }}
-          name: Release ${{ env.TAG_NAME }}
+          name: v${{ env.TAG_NAME }}
           files: panel.zip
           generate_release_notes: true
           make_latest: ${{ env.IS_LATEST }}
