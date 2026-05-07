@@ -17,7 +17,7 @@ class ApiRoutes
             $router->post('/permission', [NodesHelper::class, 'permission']);
             $router->post("/verify-sftp", [NodesHelper::class, 'verifysftp']);
         });
-        $router->group(["prefix" => '/v1/admin', 'middleware' => 'api'], function (\Vatts\Router\Router $router) {
+        $router->group(["prefix" => '/v1/admin', 'middleware' => 'token'], function (\Vatts\Router\Router $router) {
             $router->get('/', function (Request $request, Response $response) {
                return $response->json([
                    'success' => true,
@@ -40,9 +40,9 @@ class ApiRoutes
 
             // Rotas de Nodes
             $router->group(['prefix' => '/nodes'], function (\Vatts\Router\Router $router) {
-                $router->get('/', [\App\controllers\Api\admin\NodesController::class, 'list']);
-                $router->post('/create', [\App\controllers\Api\admin\NodesController::class, 'create']);
-                $router->post('/delete', [\App\controllers\Api\admin\NodesController::class, 'delete']);
+                $router->get('/online', [\App\controllers\Api\admin\NodesController::class, 'getOnlineNodesByLocation']);
+                $router->post('/[nodeId]/allocations', [\App\controllers\Api\admin\NodesController::class, 'getFreeAllocationsByNode']);
+                $router->post('/status', [\App\controllers\Api\admin\NodesController::class, 'getNodeStatus']);
             });
 
         });

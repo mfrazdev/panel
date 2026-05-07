@@ -16,6 +16,7 @@ import { FileManagerProvider, useFileManager } from "./FileManagerContext";
 import FileDropdown from "./Dropdown";
 import { useLoading } from "@/web/components/wrappers/Wrapper";
 import LoadingPage from "@/web/components/commons/LoadingPage";
+import {AnimatePresence, motion} from "framer-motion";
 
 // === TIPAGENS ===
 type FileItem = {
@@ -44,6 +45,9 @@ const formatDate = (timestamp: number) => {
         hour: '2-digit', minute: '2-digit'
     }).format(new Date(timestamp));
 };
+
+// Checkbox maior (w-5 h-5), sem bordas iniciais, e com o "V" interno ajustado pro novo tamanho
+const customCheckboxClass = "appearance-none w-5 h-5 rounded-[4px] border-none bg-[var(--color-terciary)] hover:bg-white/10 checked:bg-[var(--color-primary)] checked:hover:bg-[var(--color-primary)] cursor-pointer flex-shrink-0 relative transition-all shadow-sm before:content-[''] checked:before:block before:hidden before:absolute before:left-[6px] before:top-[2px] before:w-[6px] before:h-[11px] before:border-solid before:border-white before:border-r-[2px] before:border-b-[2px] before:rotate-45";
 
 interface FileManagerProps {
     action?: string;
@@ -87,27 +91,33 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
     const breadcrumbs = getBreadcrumbs(currentPath);
     const rootPath = breadcrumbs.length > 0 ? breadcrumbs[0].path : "";
 
+    const loadingProgress = useLoading()
+
     // Lógica para auto-fechar Modal e limpar Upload quando terminar
     useEffect(() => {
         const hasTasks = uploadTasks.length > 0;
         const allTasksFinished = hasTasks && uploadTasks.every(t => t.status === 'completed' || t.status === 'error');
-        
+
         if (allTasksFinished) {
             const timer = setTimeout(() => {
                 setIsUploadModalOpen(false);
                 clearUploads();
-            }, 1000); // 1 segundo de delay apenas para ver o "100%"
+            }, 1000);
             return () => clearTimeout(timer);
         }
     }, [uploadTasks, clearUploads]);
 
-
     // Carregar arquivos da pasta atual
     const fetchFiles = useCallback(async () => {
+        const start = Date.now();
+
+        loadingProgress.setLoadingBar(true);
         setIsLoading(true);
         setLoadingBar(true);
+
         try {
             const data = await listFiles(currentPath);
+
             const formattedFiles = (data.items || []).map((item: any) => ({
                 name: item.name,
                 type: item.type,
@@ -128,10 +138,44 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
             console.error("Erro ao carregar arquivos:", error);
             setFiles([]);
         } finally {
+            const elapsed = Date.now() - start;
+            const minTime = 100;
+
+            if (elapsed < minTime) {
+                await new Promise(res => setTimeout(res, minTime - elapsed));
+            }
+
+            loadingProgress.setLoadingBar(false);
             setIsLoading(false);
             setLoadingBar(false);
         }
     }, [currentPath, listFiles, setLoadingBar, rootPath]);
+
+    // -------------------------------------------------------------
+    // ATUALIZAÇÃO AUTOMÁTICA AO VOLTAR PRA ABA / FOCAR NA JANELA
+    // -------------------------------------------------------------
+    useEffect(() => {
+        const handleVisibilityChange = () => {
+            if (document.visibilityState === 'visible' && server?.nodeUrl && !isEditOpen) {
+                fetchFiles();
+            }
+        };
+
+        const handleWindowFocus = () => {
+            if (server?.nodeUrl && !isEditOpen) {
+                fetchFiles();
+            }
+        };
+
+        document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("focus", handleWindowFocus);
+
+        return () => {
+            document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("focus", handleWindowFocus);
+        };
+    }, [server?.nodeUrl, isEditOpen, fetchFiles]);
+
 
     useEffect(() => {
         if (server?.nodeUrl) {
@@ -220,11 +264,24 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
     const actions = safeAction.split("/");
     const isEditing = actions[1] === 'edit' || isEditOpen;
 
-    if (isLoading && files.length === 0 && !isEditing) {
-        return <LoadingPage />;
+    if (isLoading && !isEditing) {
+        return <AnimatePresence mode={"wait"}>
+            <motion.div
+                key="loading-terminal"
+                initial={{ opacity: 0 }}
+                animate={{ opacity: 1 }}
+                exit={{ opacity: 0 }}
+                transition={{
+                    duration: 0.35,
+                    ease: [0.4, 0, 0.2, 1], // ease suave tipo material
+                }}
+                className="absolute inset-0 flex flex-col items-center justify-center z-10"
+            >
+                <LoadingPage />
+            </motion.div>
+        </AnimatePresence> ;
     }
 
-    // --- Componente interno para o botão de progresso ---
     const UploadProgressButton = () => {
         const radius = 14;
         const circumference = 2 * Math.PI * radius;
@@ -242,13 +299,13 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
                 <svg className="absolute inset-0 w-full h-full text-[var(--color-info)] transition-all duration-300 ease-out" viewBox="0 0 36 36" style={{ transform: 'rotate(-90deg)', transformOrigin: '50% 50%' }}>
                     <circle cx="18" cy="18" r={radius} fill="none" stroke="currentColor" strokeWidth="3" strokeDasharray={circumference} strokeDashoffset={offset} strokeLinecap="round" />
                 </svg>
-                <CloudUpload className="w-4 h-4 text-[var(--color-text-label)] relative z-10" />
+                <CloudUpload className="w-4 h-4 text-(--color-text-label) relative z-10" />
             </button>
         );
     };
 
     return (
-        <div className="flex-1 flex w-full h-full text-[var(--color-text-value)] relative z-0 overflow-hidden">
+        <div className="flex-1 flex w-full h-full text-(--color-text-value) relative z-0 overflow-hidden">
             <input
                 type="file"
                 ref={fileInputRef}
@@ -257,156 +314,170 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
                 onChange={handleFileSelected}
             />
 
-            {isEditing ? (
-                // ==========================================
-                // ÁREA DO EDITOR (Ocupa tudo)
-                // ==========================================
-                <section className="flex-1 flex flex-col h-full bg-[var(--color-secondary)] animate-in fade-in duration-300 relative z-0">
-                    <FileEditContainer />
-                </section>
-            ) : (
-                // ==========================================
-                // GERENCIADOR PADRÃO (LISTA DE ARQUIVOS)
-                // ==========================================
-                <main 
-                    className={`flex-1 flex flex-col p-6 md:p-8 h-full overflow-hidden relative z-10 transition-colors ${dragOverPath === currentPath ? 'bg-white/5 ring-inset ring-2 ring-[var(--color-info)]' : ''}`}
-                    onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverPath(currentPath); }}
-                    onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverPath(null); }}
-                    onDrop={(e) => {
-                        e.preventDefault(); e.stopPropagation();
-                        setDragOverPath(null);
-                        if(e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                            handleFilesDrop(currentPath, e.dataTransfer.files);
-                        }
-                    }}
-                >
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 shrink-0">
-                        <div className="flex items-center gap-3 text-sm font-mono text-[var(--color-text-label)]">
-                            <input
-                                type="checkbox"
-                                className="w-4 h-4 rounded border-none bg-[var(--color-terciary)] checked:bg-[var(--color-primary)] cursor-pointer"
-                                onChange={handleSelectAll}
-                                checked={selectedFiles.length === files.length && files.length > 0}
-                            />
-                            <div className="flex items-center gap-1 flex-wrap">
-                                {breadcrumbs.map((crumb, index) => (
-                                    <React.Fragment key={crumb.path}>
-                                        <span
-                                            className={`cursor-pointer transition ${crumb.isBase ? 'text-[var(--color-text-sub)] hover:text-white' : 'hover:text-white'}`}
-                                            onClick={() => navigateToPath(crumb.path)}
-                                        >
-                                            {crumb.name}
-                                        </span>
-                                        {index < breadcrumbs.length - 1 && <span>/</span>}
-                                    </React.Fragment>
-                                ))}
+            <AnimatePresence mode="wait">
+                {isEditing ? (
+                    <motion.section
+                        key="editor"
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className="flex-1 flex flex-col h-full bg-[var(--color-secondary)] relative z-0"
+                    >
+                        <FileEditContainer />
+                    </motion.section>
+                ) : (
+                    <motion.main
+                        key={currentPath || "list"}
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -10 }}
+                        transition={{ duration: 0.2 }}
+                        className={`flex-1 flex flex-col p-6 md:p-8 h-full overflow-hidden relative z-10 transition-colors ${dragOverPath === currentPath ? 'bg-white/5 ring-inset ring-2 ring-[var(--color-info)]' : ''}`}
+                        onDragOver={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverPath(currentPath); }}
+                        onDragLeave={(e) => { e.preventDefault(); e.stopPropagation(); setDragOverPath(null); }}
+                        onDrop={(e) => {
+                            e.preventDefault(); e.stopPropagation();
+                            setDragOverPath(null);
+                            if(e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                                handleFilesDrop(currentPath, e.dataTransfer.files);
+                            }
+                        }}
+                    >
+                        <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 shrink-0">
+                            {/* pl-[12px] para igualar o recuo da lista que agora tem mais margin (p-2 + pl-1) */}
+                            <div className="flex items-center gap-4 text-sm font-mono text-[var(--color-text-label)] pl-[12px]">
+                                <input
+                                    type="checkbox"
+                                    className={customCheckboxClass}
+                                    onChange={handleSelectAll}
+                                    checked={selectedFiles.length === files.length && files.length > 0}
+                                />
+                                <div className="flex items-center gap-1.5 flex-wrap">
+                                    <span className="text-[var(--color-text-sub)]/50 font-bold select-none">/</span>
+                                    {breadcrumbs.map((crumb, index) => (
+                                        <React.Fragment key={crumb.path}>
+                                            <span
+                                                className={`cursor-pointer transition ${crumb.isBase ? 'text-[var(--color-text-sub)] hover:text-white' : 'hover:text-white'}`}
+                                                onClick={() => navigateToPath(crumb.path)}
+                                            >
+                                                {crumb.name}
+                                            </span>
+                                            {index < breadcrumbs.length - 1 && <span className="text-[var(--color-text-sub)]/50">/</span>}
+                                        </React.Fragment>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* BOTÕES DE AÇÃO */}
+                            <div className="flex gap-2 items-center">
+                                {uploadTasks.length > 0 && <UploadProgressButton />}
+                                <Button variant="secondary" onClick={() => setIsCreateDirOpen(true)}>Criar Diretório</Button>
+                                <Button variant="info" onClick={() => { setUploadTarget(null); fileInputRef.current?.click(); }}>Upload</Button>
+                                <Button variant="info" onClick={() => setIsCreateFileOpen(true)}>Novo Arquivo</Button>
                             </div>
                         </div>
 
-                        {/* BOTÕES DE AÇÃO */}
-                        <div className="flex gap-2 items-center">
-                            {uploadTasks.length > 0 && <UploadProgressButton />}
-                            <Button variant="secondary" onClick={() => setIsCreateDirOpen(true)}>Criar Diretório</Button>
-                            <Button variant="info" onClick={() => { setUploadTarget(null); fileInputRef.current?.click(); }}>Upload</Button>
-                            <Button variant="info" onClick={() => setIsCreateFileOpen(true)}>Novo Arquivo</Button>
-                        </div>
-                    </div>
+                        <div className="rounded-xl flex flex-col flex-1 min-h-0 overflow-hidden relative">
 
-                    <div className="rounded-xl shadow-[var(--card-shadow)] flex flex-col bg-[var(--color-terciary)] flex-1 min-h-0 overflow-hidden border border-white/5 relative">
-                        
-                        {/* Dropzone Overlay Visual */}
-                        {dragOverPath === currentPath && files.length === 0 && (
-                            <div className="absolute inset-0 z-10 border-2 border-dashed border-[var(--color-info)] bg-[var(--color-info)]/5 rounded-xl flex items-center justify-center pointer-events-none">
-                                <span className="text-[var(--color-info)] font-medium text-lg bg-[var(--color-terciary)] px-4 py-2 rounded-lg shadow-lg">Solte os arquivos para fazer Upload em {breadcrumbs[breadcrumbs.length - 1]?.name || './'}</span>
-                            </div>
-                        )}
-
-                        <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-[2px] p-[2px]">
-                            {files.length === 0 && !isLoading && (
-                                <div className="p-8 text-center text-[var(--color-text-sub)] m-auto">
-                                    Este diretório está vazio. <br/><span className="text-xs opacity-60">Arraste arquivos aqui para fazer upload.</span>
+                            {dragOverPath === currentPath && files.length === 0 && (
+                                <div className="absolute inset-0 z-10 border-2 border-dashed border-[var(--color-info)] bg-[var(--color-info)]/5 rounded-xl flex items-center justify-center pointer-events-none">
+                                    <span className="text-[var(--color-info)] font-medium text-lg bg-[var(--color-terciary)] px-4 py-2 rounded-lg shadow-lg">Solte os arquivos para fazer Upload em {breadcrumbs[breadcrumbs.length - 1]?.name || './'}</span>
                                 </div>
                             )}
 
-                            {files.map((file) => (
-                                <div
-                                    key={file.name}
-                                    className={`group flex items-center justify-between p-3 transition duration-150 rounded-md
-                                        ${selectedFiles.includes(file.name) ? 'bg-[var(--color-secondary)] brightness-125' : 'bg-[var(--color-secondary)] hover:brightness-110'}
-                                        ${dragOverPath === file.rawPath ? 'ring-2 ring-inset ring-[var(--color-info)] bg-[var(--color-info)]/20' : ''}
-                                    `}
-                                    onDragOver={(e) => {
-                                        if (file.type === 'folder') {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            setDragOverPath(file.rawPath);
-                                        }
-                                    }}
-                                    onDragLeave={(e) => {
-                                        if (file.type === 'folder') {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            setDragOverPath(null);
-                                        }
-                                    }}
-                                    onDrop={(e) => {
-                                        if (file.type === 'folder') {
-                                            e.preventDefault();
-                                            e.stopPropagation();
-                                            setDragOverPath(null);
-                                            if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-                                                handleFilesDrop(file.rawPath, e.dataTransfer.files);
+                            <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-[8px] p-[2px]">
+                                {files.length === 0 && !isLoading && (
+                                    <div className="p-8 text-center text-[var(--color-text-sub)] m-auto">
+                                        Este diretório está vazio. <br/><span className="text-xs opacity-60">Arraste arquivos aqui para fazer upload.</span>
+                                    </div>
+                                )}
+
+                                {files.map((file) => (
+                                    <div
+                                        key={file.name}
+                                        // Adicionado p-2 (antes era p-1) para dar mais espaço (margin/padding) no card do item
+                                        className={`group flex items-center justify-between p-2 transition duration-150 rounded-md bg-(--color-secondary) hover:brightness-110
+                                            ${dragOverPath === file.rawPath ? 'ring-2 ring-inset ring-(--color-info) bg-(--color-info)/20' : ''}
+                                        `}
+                                        onDragOver={(e) => {
+                                            if (file.type === 'folder') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setDragOverPath(file.rawPath);
                                             }
-                                        }
-                                    }}
-                                >
-                                    <div className="flex items-center gap-3 flex-1 min-w-0">
-                                        <input
-                                            type="checkbox"
-                                            className="w-4 h-4 rounded border-none bg-[var(--color-terciary)] checked:bg-[var(--color-primary)] cursor-pointer flex-shrink-0"
-                                            checked={selectedFiles.includes(file.name)}
-                                            onChange={() => handleSelect(file.name)}
-                                        />
-                                        {file.type === "folder" ? (
-                                            <Folder className="w-5 h-5 text-[var(--color-text-sub)] fill-current flex-shrink-0" />
-                                        ) : (
-                                            <FileText className="w-5 h-5 text-[var(--color-text-sub)] flex-shrink-0" />
-                                        )}
-                                        <span
-                                            className={`font-medium cursor-pointer transition truncate ${isEditable(file.name) ? 'text-[var(--color-text-label)] hover:text-[var(--color-info)]' : 'text-[var(--color-text-label)]'}`}
-                                            onClick={() => {
-                                                if (file.type === "folder") {
-                                                    navigateToPath(file.rawPath);
-                                                } else if (isEditable(file.name)) {
-                                                    navigateToEdit(file.rawPath);
+                                        }}
+                                        onDragLeave={(e) => {
+                                            if (file.type === 'folder') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setDragOverPath(null);
+                                            }
+                                        }}
+                                        onDrop={(e) => {
+                                            if (file.type === 'folder') {
+                                                e.preventDefault();
+                                                e.stopPropagation();
+                                                setDragOverPath(null);
+                                                if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                                                    handleFilesDrop(file.rawPath, e.dataTransfer.files);
                                                 }
-                                            }}
-                                            title={file.name}
-                                        >
-                                            {file.name}
-                                        </span>
-                                    </div>
+                                            }
+                                        }}
+                                    >
+                                        {/* Aumentado o gap para 4 e pl-1 para alinhar certinho com o header e afastar o texto */}
+                                        <div className="flex items-center gap-4 flex-1 min-w-0 pl-1">
+                                            <input
+                                                type="checkbox"
+                                                className={customCheckboxClass}
+                                                checked={selectedFiles.includes(file.name)}
+                                                onChange={() => handleSelect(file.name)}
+                                            />
+                                            {file.type === "folder" ? (
+                                                <Folder className="w-5 h-5 text-[var(--color-text-sub)] fill-current flex-shrink-0" />
+                                            ) : (
+                                                <FileText className="w-5 h-5 text-[var(--color-text-sub)] flex-shrink-0" />
+                                            )}
+                                            <span
+                                                className={`font-medium cursor-pointer transition truncate ${isEditable(file.name) ? 'text-[var(--color-text-label)] hover:text-[var(--color-info)]' : 'text-[var(--color-text-label)]'}`}
+                                                onClick={() => {
+                                                    if (file.type === "folder") {
+                                                        navigateToPath(file.rawPath);
+                                                    } else if (isEditable(file.name)) {
+                                                        navigateToEdit(file.rawPath);
+                                                    }
+                                                }}
+                                                title={file.name}
+                                            >
+                                                {file.name}
+                                            </span>
+                                        </div>
 
-                                    <div className="hidden md:flex items-center gap-10 text-sm text-[var(--color-text-sub)] w-1/3 justify-end flex-shrink-0">
-                                        <span className="w-24 text-right">{file.size}</span>
-                                        <span className="w-40 text-right">{file.lastModified}</span>
-                                    </div>
+                                        <div className="hidden md:flex items-center gap-10 text-sm text-[var(--color-text-sub)] w-1/3 justify-end flex-shrink-0 pr-2">
+                                            {file.type === 'file' && (
+                                                <>
+                                                    <span className="w-24 text-right">{file.size}</span>
+                                                    <span className="w-40 text-right">{file.lastModified}</span>
+                                                </>
+                                            )}
+                                        </div>
 
-                                    <div className="pl-4 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
-                                        <FileDropdown
-                                            file={file}
-                                            selectedFiles={selectedFiles}
-                                            onRename={(name) => setRenameTarget(name)}
-                                            onMove={(name) => setMoveTargets([name])}
-                                            onSuccess={fetchFiles}
-                                        />
+                                        <div className="pl-4 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                            <FileDropdown
+                                                file={file}
+                                                selectedFiles={selectedFiles}
+                                                onRename={(name) => setRenameTarget(name)}
+                                                onMove={(name) => setMoveTargets([name])}
+                                                onSuccess={fetchFiles}
+                                            />
+                                        </div>
                                     </div>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
                         </div>
-                    </div>
-                </main>
-            )}
+                    </motion.main>
+                )}
+            </AnimatePresence>
 
             {/* AÇÕES EM MASSA */}
             {selectedFiles.length > 0 && !isEditing && (

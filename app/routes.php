@@ -92,6 +92,10 @@ $app->group(["prefix" => "/admin", "middleware" => "admin"], function (\Vatts\Ro
     $router->post('/servers/[server]/edit', [\App\controllers\Admin\ServerController::class, 'edit']);
     $router->get('/servers/[server]/delete', [\App\controllers\Admin\ServerController::class, 'delete']);
 
+
+    $router->get("/settings", [\App\controllers\Admin\SettingsController::class, 'viewEdit']);
+    $router->post("/settings", [\App\controllers\Admin\SettingsController::class, 'edit']);
+
     // ==========================================
     // Internal Admin API
     // ==========================================

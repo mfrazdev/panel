@@ -101,7 +101,7 @@ export default function FileDropdown({
         <div className="ml-6 relative">
             <button
                 onClick={toggleMenu}
-                className="p-2 rounded-lg hover:bg-[var(--color-terciary)] transition text-[var(--color-text-sub)] hover:text-white"
+                className="p-2 rounded-md text-(--color-text-label) "
             >
                 <MoreHorizontalIcon />
             </button>

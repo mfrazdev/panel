@@ -28,7 +28,7 @@ class Core extends Model
             ['label' => 'Variáveis (JSON)', 'key' => 'variables', 'type' => 'monaco:json', 'desc' => 'Definição de variáveis de ambiente personalizáveis.'],
         ],
         'Instalação' => [
-            ['label' => 'Script de Instalação', 'key' => 'installScript', 'type' => 'monaco:bash', 'desc' => 'Script para instalação/configuração inicial do servidor.'],
+            ['label' => 'Script de Instalação', 'key' => 'installScript', 'type' => 'monaco:shell', 'desc' => 'Script para instalação/configuração inicial do servidor.'],
             ['label' => 'Imagem de instalação', 'key' => 'installImage', 'type' => 'text', 'desc' => 'Imagem que será usada para a instalação.', 'default' => 'alpine'],
             ["label" => "Entrypoint de instalação", 'key' => "installEntrypoint", 'type' => "text", 'desc' => "O comando de ponto de entrada a ser usado para este script.", 'default' => 'ash']
         ],

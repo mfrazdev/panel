@@ -4,6 +4,7 @@ namespace App\controllers\Admin;
 
 use models\Node;
 use models\Allocation;
+use models\Server;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
 
@@ -23,8 +24,10 @@ class NodesController
     private function canDelete(?Node $node, $currentUser): bool
     {
         if (!$node) return false;
-        // placeholder para regras de negócio
-        return true;
+
+        $contagem = Server::witch('nodeUuid', $node->id)->count();
+
+        return $contagem === 0;
     }
 
     /**

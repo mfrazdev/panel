@@ -48,9 +48,9 @@
                         <!-- ATRIBUÍDO A -->
                         <td class="px-4 py-4">
                             @if($alloc->assignedTo)
-                                <span class="text-[11px] font-bold text-info hover:brightness-110 cursor-pointer underline decoration-info/30 underline-offset-4">
-                                        Servidor
-                                    </span>
+                                <a href="/admin/servers/{{ $alloc->assignedTo }}" class="text-[11px] font-bold text-info hover:brightness-110 cursor-pointer underline decoration-info/30 underline-offset-4">
+                                    {{ $alloc->assignedTo }}
+                                    </a>
                             @else
                                 <span class="text-[12px] font-medium text-textSub italic">
                                         Disponível

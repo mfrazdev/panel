@@ -54,6 +54,14 @@ export default function ServerContainer({ action }: ServerProps) {
         };
     }, [isLoadingServer, server, connectUsageWs, connectConsoleWs, disconnectUsageWs, disconnectConsoleWs]);
 
+    // LÓGICA PARA ATUALIZAR O TÍTULO DA PÁGINA
+    useEffect(() => {
+        if (server) {
+            const formattedAction = currentAction.charAt(0).toUpperCase() + currentAction.slice(1);
+            document.title = `${server.name} | ${formattedAction}`;
+        }
+    }, [server, currentAction]);
+
     const changeAction = (newAction: string) => {
         if (newAction === currentAction) return;
 
@@ -89,30 +97,30 @@ export default function ServerContainer({ action }: ServerProps) {
     };
 
     return (
-    <div className="flex-1 flex flex-row items-start relative">
-        <ServerSidebar
-            serverId={serverId}
-            activeTab={currentAction}
-            changeAction={changeAction}
-        />
+        <div className="flex-1 flex flex-row items-start relative">
+            <ServerSidebar
+                serverId={serverId}
+                activeTab={currentAction}
+                changeAction={changeAction}
+            />
 
-        <div className="flex-1 flex flex-col min-h-screen">
-            <main className="flex-1 overflow-hidden">
-                <AnimatePresence mode="wait">
-                    <motion.div
-                        key={currentAction}
-                        initial={{ opacity: 0, x: 5 }}
-                        animate={{ opacity: 1, x: 0 }}
-                        exit={{ opacity: 0, x: -5 }}
-                        transition={{ duration: 0.15, ease: "easeOut" }}
-                        className="h-full"
-                    >
-                        {renderContent()}
-                    </motion.div>
-                </AnimatePresence>
-            </main>
+            <div className="flex-1 flex flex-col min-h-screen">
+                <main className="flex-1 overflow-hidden">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentAction}
+                            initial={{ opacity: 0, x: 5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -5 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                            className="h-full"
+                        >
+                            {renderContent()}
+                        </motion.div>
+                    </AnimatePresence>
+                </main>
 
+            </div>
         </div>
-    </div>
     );
 };

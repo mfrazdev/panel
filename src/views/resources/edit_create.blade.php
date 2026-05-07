@@ -161,26 +161,21 @@
                                                     </label>
 
                                                     @if($type === 'select' || str_starts_with($type, 'enum'))
-                                                        <div class="relative">
-                                                            <select
-                                                                    id="{{ $key }}"
-                                                                    name="{{ $key }}"
-                                                                    class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium focus:ring-2 focus:ring-primary outline-none transition-all duration-300 appearance-none shadow-inner border-none {{ $readonlyClass }}"
-                                                                    {{ (isset($field['required']) && $field['required']) ? 'required data-tab-original-required="1"' : '' }}
-                                                                    {!! $readonlyAttr !!}
-                                                            >
-                                                                @if(isset($field['options']) && is_array($field['options']))
-                                                                    @foreach($field['options'] as $optValue => $optLabel)
-                                                                        <option value="{{ $optValue }}" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
-                                                                            {{ $optLabel }}
-                                                                        </option>
-                                                                    @endforeach
-                                                                @endif
-                                                            </select>
-                                                            <div class="absolute right-5 top-1/2 -translate-y-1/2 text-textSub pointer-events-none">
-                                                                <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
-                                                            </div>
-                                                        </div>
+                                                        <select
+                                                                id="{{ $key }}"
+                                                                name="{{ $key }}"
+                                                                class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none {{ $readonlyClass }}"
+                                                                {{ (isset($field['required']) && $field['required']) ? 'required data-tab-original-required="1"' : '' }}
+                                                                {!! $readonlyAttr !!}
+                                                        >
+                                                            @if(isset($field['options']) && is_array($field['options']))
+                                                                @foreach($field['options'] as $optValue => $optLabel)
+                                                                    <option value="{{ $optValue }}" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
+                                                                        {{ $optLabel }}
+                                                                    </option>
+                                                                @endforeach
+                                                            @endif
+                                                        </select>
 
                                                     @elseif(str_starts_with($type, 'monaco:'))
                                                         @php
@@ -287,26 +282,21 @@
                                         </label>
 
                                         @if($type === 'select' || str_starts_with($type, 'enum'))
-                                            <div class="relative">
-                                                <select
-                                                        id="{{ $key }}"
-                                                        name="{{ $key }}"
-                                                        class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium focus:ring-2 focus:ring-primary outline-none transition-all duration-300 appearance-none shadow-inner border-none {{ $readonlyClass }}"
-                                                        {{ (isset($field['required']) && $field['required']) ? 'required' : '' }}
-                                                        {!! $readonlyAttr !!}
-                                                >
-                                                    @if(isset($field['options']) && is_array($field['options']))
-                                                        @foreach($field['options'] as $optValue => $optLabel)
-                                                            <option value="{{ $optValue }}" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
-                                                                {{ $optLabel }}
-                                                            </option>
-                                                        @endforeach
-                                                    @endif
-                                                </select>
-                                                <div class="absolute right-5 top-1/2 -translate-y-1/2 text-textSub pointer-events-none">
-                                                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M6 9l6 6 6-6"></path></svg>
-                                                </div>
-                                            </div>
+                                            <select
+                                                    id="{{ $key }}"
+                                                    name="{{ $key }}"
+                                                    class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none {{ $readonlyClass }}"
+                                                    {{ (isset($field['required']) && $field['required']) ? 'required' : '' }}
+                                                    {!! $readonlyAttr !!}
+                                            >
+                                                @if(isset($field['options']) && is_array($field['options']))
+                                                    @foreach($field['options'] as $optValue => $optLabel)
+                                                        <option value="{{ $optValue }}" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
+                                                            {{ $optLabel }}
+                                                        </option>
+                                                    @endforeach
+                                                @endif
+                                            </select>
 
                                         @elseif(str_starts_with($type, 'monaco:'))
                                             @php
@@ -529,7 +519,7 @@
                                 scrollBeyondLastLine: false,
                                 padding: { top: 16, bottom: 16 },
                                 fontSize: 14,
-                                fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace"
+                                fixedOverflowWidgets: true // <--- ADICIONADO PARA FORÇAR WIDGETS A SOBREPOR TUDO
                             });
 
                             editor.onDidChangeModelContent(() => {
@@ -555,7 +545,15 @@
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+        /* Força os widgets flutuantes do Monaco a ficarem por cima de qualquer layout do Tailwind (z-index gigante) */
+        .monaco-editor-hover,
+        .monaco-hover,
+        .suggest-widget,
+        .monaco-list,
+        .context-view,
+        .editor-widget {
+            z-index: 99999 !important;
+        }
     </style>
 @endsection
-
-

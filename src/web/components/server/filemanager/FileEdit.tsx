@@ -286,6 +286,20 @@ export default function FileEditContainer() {
             setIsSaving(false);
         }
     };
+    useEffect(() => {
+        const handleKeyDown = (e:any ) => {
+            if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
+                e.preventDefault(); // evita abrir "salvar página" do navegador
+                handleSave()
+            }
+        };
+
+        window.addEventListener("keydown", handleKeyDown);
+
+        return () => {
+            window.removeEventListener("keydown", handleKeyDown);
+        };
+    }, []);
 
     return (
         <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden relative text-[var(--color-text-value)] h-full w-full">
@@ -298,25 +312,24 @@ export default function FileEditContainer() {
                     >
                         <ArrowLeft className="w-5 h-5" />
                     </button>
-                    <div className="flex items-center gap-1 flex-wrap">
+                    <div className="flex items-center gap-1.5 flex-wrap">
+                        <span className="text-[var(--color-text-sub)]/50 font-bold select-none">/</span>
                         {breadcrumbs.map((crumb, index) => (
                             <React.Fragment key={crumb.path}>
-                                <span
-                                    className={`cursor-pointer transition ${crumb.isBase ? 'text-[var(--color-text-sub)] hover:text-white' : 'hover:text-white'}`}
-                                    onClick={() => {
-                                        navigateToPath(crumb.path);
-                                    }}
-                                >
-                                    {crumb.name}
-                                </span>
-                                {index < breadcrumbs.length - 1 && <span>/</span>}
+                                            <span
+                                                className={`cursor-pointer transition ${crumb.isBase ? 'text-[var(--color-text-sub)] hover:text-white' : 'hover:text-white'}`}
+                                                onClick={() => navigateToPath(crumb.path)}
+                                            >
+                                                {crumb.name}
+                                            </span>
+                                {index < breadcrumbs.length - 1 && <span className="text-[var(--color-text-sub)]/50">/</span>}
                             </React.Fragment>
                         ))}
                     </div>
                 </div>
             </div>
 
-            <div className="flex-1 relative min-h-[400px] w-full rounded-t-xl overflow-visible shadow-[var(--card-shadow)] border border-[var(--color-terciary)] bg-[var(--color-console)]">
+            <div className="flex-1 relative min-h-120 w-full rounded-t-xl overflow-visible shadow-[var(--card-shadow)] border border-[var(--color-terciary)] bg-[var(--color-console)]">
                 <div className="absolute inset-0">
                     <Editor
                         path={safeFilePath ? `file://${safeFilePath}` : undefined}
@@ -346,7 +359,7 @@ export default function FileEditContainer() {
                     <select
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
-                        className="appearance-none bg-[var(--color-secondary)] text-[var(--color-text-label)] font-medium text-sm rounded-xl px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer transition border border-transparent hover:brightness-110 shadow-sm"
+                        className="appearance-none bg-(--color-terciary) text-(--color-text-label) font-medium text-sm rounded-md px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer transition hover:brightness-110"
                         disabled={isLoading}
                     >
                         {SUPPORTED_LANGUAGES.map((lang) => (
@@ -368,7 +381,7 @@ export default function FileEditContainer() {
                     disabled={isSaving || isLoading}
                     className="min-w-[160px]"
                 >
-                    {isSaving ? "IDULDULIN..." : "IDULIN"}
+                    {isSaving ? "Salvando..." : "Salvar"}
                 </Button>
             </div>
         </div>

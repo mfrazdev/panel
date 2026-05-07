@@ -162,30 +162,38 @@ class UsersApiController
 
     public static function getServers(Request $request, Response $response): Response
     {
-        $user = $request->getParsed('user');
-        if ($user instanceof User) {
-            $servers = array_map(function ($server) {
-                unset($server->view_map);
-                $allocation = $server->getFirstAllocation()->toArray();
-                unset($allocation["view_map"]);
-                $server->allocation = $allocation;
-                return $server;
-            }, $user->getServers());
-            $type = $request->getQuery()['type'] ?? 'not_set';
+        try {
+            $user = $request->getParsed('user');
+            if ($user instanceof User) {
+                $servers = array_map(function ($server) {
+                    unset($server->view_map);
+                    $allocation = $server->getFirstAllocation()->toArray();
+                    unset($allocation["view_map"]);
+                    $server->allocation = $allocation;
+                    return $server;
+                }, $user->getServers());
+                $type = $request->getQuery()['type'] ?? 'not_set';
 
 
 
-            if($user->isAdmin() && $type === 'others') {
-                $servers = $user->getOthersServers();
+                if($user->isAdmin() && $type === 'others') {
+                    $servers = $user->getOthersServers();
+                }
+
+                return $response->json([
+                    'servers' => $servers
+                ]);
             }
-
             return $response->json([
-                'servers' => $servers
-            ]);
+                'error' => 'Invalid user.'
+            ]) ->status(400);
+        } catch (\Exception $e) {
+            error_log($e);
+            return $response->json([
+                'error' => 'An error occurred while fetching servers.',
+                'details' => $e->getMessage()
+            ])->status(500);
         }
-        return $response->json([
-            'error' => 'Invalid user.'
-        ], 501);
     }
 
     public static function getAdditionalAllocations(Request $request, Response $response): Response

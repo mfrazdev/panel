@@ -22,20 +22,18 @@ class TokenMiddleware extends Middleware
 
             $tokenmodel = Tokens::get('token', $token);
             if(!$tokenmodel) {
-                $response->json([
+                return $response->json([
                     'error' => true,
                     'message' => 'Unauthorized. Invalid token.'
                 ])->status(401);
-                exit;
             }
 
             return $request;
         } else {
-            $response->json([
+            return $response->json([
                 'error' => true,
                 'message' => 'Unauthorized. Bearer token is required.'
             ])->status(401);
-            exit;
         }
     }
 }

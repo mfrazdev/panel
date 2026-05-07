@@ -5,6 +5,10 @@ import { Link } from "vatts/react";
 const Navbar: React.FC = () => {
     const session = useSession();
 
+
+    // @ts-ignore
+    const panelName = typeof window !== 'undefined' && window.PanelSettings && window.PanelSettings.name ? window.PanelSettings.name : "Lunar Panel";
+
     return (
         /* Adicionado 'sticky' aqui */
         <nav className="w-full h-16 bg-(--color-navbar) backdrop-blur-xl sticky top-0 z-[100]">
@@ -14,7 +18,8 @@ const Navbar: React.FC = () => {
                 {/* Logo - Travada na esquerda */}
                 <Link href={"/"} className="flex items-center gap-2 cursor-pointer text-[25px]">
                     <span className="text-(--color-text-value) font-bold tracking-tighter">
-                        Hight Cloud
+                        {/* @ts-ignore */}
+                        {panelName}
                     </span>
                 </Link>
 

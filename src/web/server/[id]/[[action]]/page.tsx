@@ -2,6 +2,7 @@ import React from 'react';
 import ServerContainer from "../../../components/server/ServerContainer";
 import {AuthGuard, useSession} from "@vatts/auth/react";
 import {ServerProvider} from "@/web/contexts/ServerContext";
+import {Metadata} from "vatts/react";
 
 type WelcomeProps = {
     params: {
@@ -20,4 +21,10 @@ export default function ServerPage({params}: WelcomeProps) {
             </ServerProvider>
         </AuthGuard>
     );
+}
+
+export function generateMetadata(): Metadata {
+    return {
+        title: "Dashboard",
+    }
 }

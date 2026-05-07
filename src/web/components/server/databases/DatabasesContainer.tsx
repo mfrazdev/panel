@@ -130,7 +130,7 @@ export default function DatabasesContainer() {
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
                     <h1 className="text-2xl font-bold text-white flex items-center gap-2">
-                        <Database className="w-6 h-6 text-blue-500" />
+                        <Database className="w-6 h-6 text-(--color-info)" />
                         Bancos de Dados
                     </h1>
                     <p className="text-gray-400 mt-1">
@@ -139,18 +139,14 @@ export default function DatabasesContainer() {
                 </div>
 
                 <div className="flex items-center gap-4">
-                    <div className="text-sm text-gray-300 bg-gray-800/50 px-4 py-2 rounded-lg border border-gray-700">
+                    <div className="text-sm text-gray-300 bg-(--color-secondary) px-4 py-2 rounded-lg">
                         Uso: <span className="text-white font-semibold">{databases.length}</span> / {maxDatabases === null ? 'Ilimitado' : maxDatabases}
                     </div>
 
                     <Button
-                        variant="primary"
+                        variant="info"
                         onClick={handleCreateDatabase}
                         disabled={isCreating || isLimitReached}
-                        className={`px-4 py-2 rounded-lg font-medium transition-all flex items-center gap-2
-                            ${isCreating || isLimitReached 
-                                ? 'bg-gray-600 text-gray-400 cursor-not-allowed' 
-                                : 'bg-blue-600 hover:bg-blue-500 text-white shadow-lg shadow-blue-500/20'}`}
                     >
                         {isCreating ? 'Criando...' : 'Novo'}
                     </Button>
@@ -160,7 +156,7 @@ export default function DatabasesContainer() {
             {/* Lista de Bancos de Dados */}
             {databases.length === 0 ? (
                 <div className="flex flex-col items-center justify-center p-12 bg-(--color-secondary) rounded-md border-dashed shadown-(--card-shadow)">
-                    <Database className="w-12 h-12 text-gray-600 mb-4" />
+                    <Database className="w-12 h-12 text-(--color-primary) mb-4" />
                     <h3 className="text-lg font-medium text-white mb-2">Nenhum banco de dados</h3>
                     <p className="text-gray-400 text-center max-w-sm">
                         Este servidor ainda não possui nenhum banco de dados MySQL criado. Clique no botão acima para provisionar um.

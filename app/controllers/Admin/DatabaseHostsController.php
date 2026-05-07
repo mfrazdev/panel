@@ -4,6 +4,7 @@ namespace App\controllers\Admin;
 
 use App\Services\DatabaseHostsApi;
 use models\DatabaseHosts;
+use models\Server;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
 
@@ -26,8 +27,24 @@ class DatabaseHostsController
             return false;
         }
 
-        // TODO: verificar se existem bancos de dados ou servidores vinculados a este host antes de deletar
-        // Se houver servidores usando este host, retornar false.
+        $servers = Server::all();
+
+        // fazer um for
+        foreach ($servers as $server) {
+            try {
+                $array = json_decode($server->databases, true);
+                if (is_array($array)) {
+                    foreach ($array as $dbHost) {
+                        if (isset($dbHost['hostId']) && $dbHost['hostId'] == $host->id) {
+                            return false; // Encontrou um servidor usando esse host, não pode deletar
+                        }
+                    }
+                }
+            } catch (\Exception $e) {
+                error_log("Erro ao decodificar JSON do servidor ID {$server->id}: " . $e->getMessage());
+                continue; // Se der erro no JSON, ignora esse servidor
+            }
+        }
 
         return true;
     }

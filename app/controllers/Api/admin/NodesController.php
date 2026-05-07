@@ -4,6 +4,7 @@ namespace App\controllers\Api\admin;
 
 use models\Allocation;
 use models\Node;
+use models\Server;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
 
@@ -29,14 +30,19 @@ class NodesController
             $onlineNodes = [];
             foreach ($nodes as $node) {
                 try {
-                    // Utiliza o método nativo de checagem do node
-                    $isOnline = (bool) $node->status();
 
+                    $isOnline = $node->getStatus();
+                    error_log(json_encode($isOnline));
                     if ($isOnline) {
                         unset($node->view_map);
-                        $onlineNodes[] = $node;
+                        $array = $node->toArray();
+                        // adiciona a quantidade de svs com essa node
+                        $serversCount = Server::witch('nodeUuid', $node->id)->count();
+                        $array['serversCount'] = $serversCount;
+                        $onlineNodes[] = $array;
                     }
                 } catch (\Throwable $e) {
+                    error_log($e);
                     // Se estourar exceção, o node não está comunicando (offline), pulamos ele.
                     continue;
                 }
@@ -45,13 +51,13 @@ class NodesController
             return $response->json([
                 'success' => true,
                 'data'    => $onlineNodes
-            ], 200);
+            ])->status(200);
 
         } catch (\Exception $e) {
             return $response->json([
                 'success' => false,
                 'error'   => 'Erro ao buscar nodes online: ' . $e->getMessage()
-            ], 500);
+            ])->status(500);
         }
     }
 
@@ -61,12 +67,11 @@ class NodesController
     public function getFreeAllocationsByNode(Request $request, Response $response): Response
     {
         $nodeId = $request->getParam('nodeId');
-
         if (!$nodeId) {
             return $response->json([
                 'success' => false,
                 'error'   => 'ID do node não fornecido na rota.'
-            ], 400);
+            ])->status(400);
         }
 
         try {

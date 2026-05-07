@@ -20,6 +20,27 @@ $auth = new VattsAuth([
                 return null;
             }
         ]),
+        new \App\WHMCSProvider([
+            'id' => 'whmcs',
+            'clientId' => 'HIGHT-CLOUD.47c67f876b759297b16c3e6544d6ba26',
+            'clientSecret' => '+Cy7MRf56wPXu3W3f0LDCsC522RqV0vomQ0fhu9FEjlqGPHosuOqa3Oap+fn8sZNAEw355snysOjvqXv8vYtJw==',
+            'whmcsUrl' => 'https://hightcloud.app', // Obrigatório agora!
+            'callbackUrl' => 'https://localhost:8000/api/auth/callback/whmcs',
+            'whenCallback' => function($user1, $whmcsUser) {
+                $email = $whmcsUser['email'] ?? null;
+                if (!$email) {
+                    return false;
+                }
+                $user = User::get('email', $email);
+                if (!$user) {
+                    return false;
+                }
+
+
+                // Retorna os dados modificados para salvar na sessão
+                return $user->toArray();
+            }
+        ])
     ],
     'callbacks' => [
         // Altera o que vai ser SALVO na sessão ($_SESSION)

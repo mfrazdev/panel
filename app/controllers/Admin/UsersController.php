@@ -2,6 +2,7 @@
 
 namespace App\controllers\Admin;
 
+use models\Server;
 use models\User;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
@@ -33,14 +34,16 @@ class UsersController
 
         // Verificar se o usuário a ser deletado é o único admin restante
         if ($user->role === 'admin') {
-            $adminCount = count(User::where('role', 'admin'));
+            $adminCount = User::witch('role', 'admin')->count();
             if ($adminCount <= 1) {
                 return false;
             }
         }
 
-        // TODO: verificar servidores dps
-
+        $contagem2 = Server::witch('ownerId', $user->id)->count();
+        if ($contagem2 > 0) {
+            return false;
+        }
         return true;
     }
 

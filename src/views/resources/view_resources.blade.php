@@ -28,7 +28,7 @@
 
         <!-- Tabela Estilizada (Card usando o color-secondary) -->
         <div class="w-full bg-cards rounded-md shadow-main overflow-hidden">
-            <div class="overflow-x-auto">
+            <div class="overflow-x-auto custom-scrollbar">
                 <table class="w-full text-left border-collapse">
                     <thead>
                     <!-- Cabeçalho mais escuro usando color-sidebar -->
@@ -38,15 +38,12 @@
                                 {{ $column['label'] }}
                             </th>
                         @endforeach
-                        <th class="px-10 py-7 text-right text-textSub text-[11px] font-black uppercase tracking-[0.2em]">
-                            Ações
-                        </th>
                     </tr>
                     </thead>
                     <tbody class="divide-none">
                     @forelse($resources as $item)
-                        <!-- Hover sutil usando a cor color-terciary que é a mais clara -->
-                        <tr class="transition-colors duration-200 hover:bg-terciary/30 group data-row">
+                        <!-- Linha inteira clicável com hover indo para bg-terciary -->
+                        <tr class="transition-colors duration-200 hover:bg-terciary group data-row cursor-pointer" onclick="handleRowClick('/admin/{{ str_replace('[id]', $item->id, $see) }}')">
                             @foreach($map as $column)
                                 <td class="px-10 py-6">
                                     @php
@@ -93,28 +90,10 @@
                                     @endif
                                 </td>
                             @endforeach
-
-                            <!-- Ações -->
-                            <td class="px-10 py-6 text-right align-middle">
-                                <div class="flex justify-end gap-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                                    <a href="/admin/{{ str_replace("[id]", $item->id, $see) }}" title="Editar" class="p-3 bg-bgBase rounded-xl text-textSub hover:text-primary hover:bg-primary/10 transition-all shadow-md transform hover:-translate-y-0.5">
-                                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 113 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                                    </a>
-                                    <button type="button" title="Excluir" onclick="window.AdminModal.confirmDelete({
-                                        title: 'Excluir Registro',
-                                        message: 'Tem certeza que deseja excluir este registro? Esta ação não pode ser desfeita.',
-                                        onConfirm: function() {
-                                            window.location.href = '/admin/{{ str_replace("[id]", $item->id, $delete) }}';
-                                        }
-                                    })" class="p-3 bg-bgBase rounded-xl text-textSub hover:text-danger hover:bg-danger/10 transition-all shadow-md transform hover:-translate-y-0.5">
-                                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 114 0v2"/></svg>
-                                    </button>
-                                </div>
-                            </td>
                         </tr>
                     @empty
                         <tr id="server-empty-state">
-                            <td colspan="{{ count($map) + 1 }}" class="py-32 text-center">
+                            <td colspan="{{ count($map) }}" class="py-32 text-center">
                                 <div class="flex flex-col items-center gap-4">
                                     <div class="w-16 h-16 rounded-3xl bg-bgBase flex items-center justify-center text-textSub mb-2 shadow-inner">
                                         <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -127,7 +106,7 @@
                     @endforelse
 
                     <tr id="js-empty-state" style="display: none;">
-                        <td colspan="{{ count($map) + 1 }}" class="py-32 text-center">
+                        <td colspan="{{ count($map) }}" class="py-32 text-center">
                             <div class="flex flex-col items-center gap-4">
                                 <div class="w-16 h-16 rounded-3xl bg-bgBase flex items-center justify-center text-textSub mb-2 shadow-inner">
                                     <svg width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
@@ -148,11 +127,44 @@
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
         }
+
+
+        /* Estilização Customizada do Scroll Horizontal */
+        .custom-scrollbar {
+            scrollbar-width: thin;
+            scrollbar-color: rgba(156, 163, 175, 0.5) transparent; /* Suporte p/ Firefox */
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            height: 8px; /* Altura do scroll horizontal */
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background-color: rgba(156, 163, 175, 0.4); /* Cinza translúcido */
+            border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+            background-color: rgba(156, 163, 175, 0.7); /* Fica mais escuro no hover */
+        }
+
+        /* Garantia para o hover da linha funcionar caso a classe do tailwind falhe com opacidade */
+        tr.data-row:hover {
+            background-color: var(--color-terciary, rgba(156, 163, 175, 0.1)) !important;
+        }
     </style>
 
-    <script src="/admin/modal.js"></script>
-
     <script>
+        // Função para lidar com o clique na linha, ignorando se houver texto selecionado
+        window.handleRowClick = function(url) {
+            const selection = window.getSelection().toString();
+            if (selection.length > 0) {
+                return; // Se o usuário selecionou texto (arrastou o mouse), não redireciona
+            }
+            window.location.href = url;
+        };
+
         document.addEventListener('DOMContentLoaded', function() {
             const searchInput = document.querySelector('input[name="search"]');
             if (!searchInput) return;

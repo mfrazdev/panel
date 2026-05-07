@@ -2,8 +2,6 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-$dotenv = Dotenv\Dotenv::createImmutable(__DIR__);
-$dotenv->load();
 // Ativa o log de erros
 ini_set('log_errors', 1);
 
@@ -16,15 +14,33 @@ error_reporting(E_ALL);
 
 use Vatts\Vatts;
 
+
 $project = dirname(__DIR__);
-// Exemplo mínimo de inicialização: passa project_path e (opcional) config de DB
+Vatts::loadEnv($project);
+Vatts::bootDatabase([
+    'driver'   => "sqlite",
+    'database' => "panel.db", // Caminho completo do banco
+    'charset'  => 'utf8mb4'
+]);
+
+
+$companyName = \models\Settings::get('key', 'company_name')->value ?? 'Lunar Panel';
+
+// Exemplo mínimo de inicialização: passa project_path, config de DB e security
 $app = Vatts::init([
     'project_path' => $project,
-    'db' => [
-        'driver'   => "sqlite",
-        'host'     => "localhost",
-        'database' => "panel.db", // Nome do banco
-        'charset'  => 'utf8mb4'
+    'security' => [
+        // Atualizando o connect-src para permitir WebSockets e requisições HTTP/HTTPS externas (necessário para as nodes)
+        'csp' => "default-src 'self'; base-uri 'self'; form-action 'self'; frame-ancestors 'none'; object-src 'none'; img-src 'self' data: https://ui-avatars.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; font-src 'self' https://fonts.gstatic.com https://cdnjs.cloudflare.com data:; script-src 'self' 'unsafe-inline' https://cdn.tailwindcss.com https://cdnjs.cloudflare.com https://cdn.jsdelivr.net; connect-src 'self' https://cdnjs.cloudflare.com ws: wss: http: https:; worker-src 'self' blob:;"
+    ],
+    'frontend_tags' => [
+        "
+<script>
+window.PanelSettings = {
+    name: '$companyName'
+}
+</script>
+"
     ]
 ]);
 

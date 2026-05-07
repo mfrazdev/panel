@@ -151,7 +151,8 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
                 if (data.type === 'usage') setUsage(data.usage);
             } catch (e) { }
         };
-        ws.onclose = () => {
+        ws.onclose = (ev: CloseEvent) => {
+            console.log('Usage WebSocket closed', ev);
             if (!isUsageIntentionalDisconnect.current) {
                 if (usageRetryCount.current < MAX_RETRIES) {
                     usageRetryCount.current += 1;

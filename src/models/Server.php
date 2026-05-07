@@ -18,19 +18,14 @@ class Server extends Model
             ['label' => 'Dono (Owner ID)', 'key' => 'ownerId', 'type' => 'text', 'desc' => 'UUID do usuário proprietário.', 'form' => false],
             ['label' => 'Grupo', 'key' => 'group', 'type' => 'text', 'desc' => 'Grupo organizacional do servidor.'],
         ],
-        'Instância e Core' => [
-            ['label' => 'ID do Core', 'key' => 'coreId', 'type' => 'text', 'desc' => 'Referência ao Core utilizado.', 'form' => false],
-            ['label' => 'UUID do Node', 'key' => 'nodeUuid', 'type' => 'text', 'desc' => 'Identificador do nó de hospedagem.', 'form' => false],
-            ['label' => 'Imagem Docker', 'key' => 'dockerImage', 'type' => 'text', 'desc' => 'Imagem docker utilizada na instância.', 'form' => false],
-            ['label' => 'Comando de Startup', 'key' => 'startupCommand', 'type' => 'text', 'desc' => 'Comando final aplicado ao servidor.', 'form' => false],
-        ],
+
         'Recursos de Hardware' => [
             ['label' => 'Memória RAM (MB)', 'key' => 'ram', 'type' => 'number', 'desc' => 'Limite de memória RAM.'],
             ['label' => 'CPU (%)', 'key' => 'cpu', 'type' => 'number', 'desc' => 'Limite de processamento.'],
             ['label' => 'Disco (MB)', 'key' => 'disk', 'type' => 'number', 'desc' => 'Limite de armazenamento.'],
-            ['label' => 'Máx. Alocações Adicionais do Usuário', 'key' => 'maxAdditionalAllocations', 'type' => 'number', 'desc' => 'Quantidade máxima de alocações adicionais que o usuário pode adicionar sozinho. Deixe vazio para ilimitado.'],
         ],
-        'Bancos de Dados' => [
+        'Cotas' => [
+            ['label' => 'Máx. Alocações Adicionais do Usuário', 'key' => 'maxAdditionalAllocations', 'type' => 'number', 'desc' => 'Quantidade máxima de alocações adicionais que o usuário pode adicionar sozinho. Deixe vazio para ilimitado.'],
             ['label' => 'Máx. Bancos de Dados', 'key' => 'maxDatabases', 'type' => 'number', 'desc' => 'Quantidade máxima de bancos de dados que este servidor pode ter. Deixe vazio para ilimitado.'],
         ],
     ];
@@ -68,7 +63,7 @@ class Server extends Model
     public int $disk;
     public string $coreId;
     public string $nodeUuid;
-    public int $suspended = 0;
+    public ?int $suspended = 0;
 
     // Propriedades Opcionais
     public ?string $description = null;

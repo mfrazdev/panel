@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - canary
 
 # Adicionado para permitir que o bot do GitHub Actions crie a release
 permissions:
@@ -16,6 +17,52 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # Necessário para baixar o histórico e ler as tags anteriores
+
+      - name: Calculate Version
+        id: versioning
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          # Puxa todas as tags
+          git fetch --tags --quiet
+          
+          # Busca a última tag no formato X.X.X, ignorando as de canary
+          LATEST_TAG=$(git tag --list --sort=-v:refname "[0-9]*.[0-9]*.[0-9]*" | head -n 1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="0.0.0"
+          fi
+          
+          # Separa em Major, Minor e Patch
+          IFS='.' read -r -a VERSION_PARTS <<< "$LATEST_TAG"
+          MAJOR="${VERSION_PARTS[0]}"
+          MINOR="${VERSION_PARTS[1]}"
+          PATCH="${VERSION_PARTS[2]}"
+          
+          # Verifica se há "release vX.X.X" na mensagem de commit
+          if [[ "$COMMIT_MSG" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            NEXT_VERSION="${BASH_REMATCH[1]}"
+          else
+            # Se não houver, incrementa o patch automaticamente
+            PATCH=$((PATCH + 1))
+            NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+          fi
+          
+          # Lógica para o branch
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          
+          if [[ "$BRANCH_NAME" == "canary" ]]; then
+            FINAL_TAG="canary-${NEXT_VERSION}-${SHORT_SHA}"
+            IS_LATEST="false"
+          else
+            FINAL_TAG="${NEXT_VERSION}"
+            IS_LATEST="true"
+          fi
+          
+          echo "TAG_NAME=$FINAL_TAG" >> $GITHUB_ENV
+          echo "IS_LATEST=$IS_LATEST" >> $GITHUB_ENV
 
       # NODE
       - name: Setup Node
@@ -49,7 +96,7 @@ jobs:
       # ZIP
       - name: Create ZIP
         run: |
-          zip -r project.zip . \
+          zip -r panel.zip . \
             -x "*.git*" \
             -x "node_modules/*" \
             -x ".github/*"
@@ -64,10 +111,11 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: release-${{ github.run_number }}
-          name: Release ${{ github.run_number }}
-          files: project.zip
+          tag_name: ${{ env.TAG_NAME }}
+          name: Release ${{ env.TAG_NAME }}
+          files: panel.zip
           generate_release_notes: true
+          make_latest: ${{ env.IS_LATEST }}
 
       # LIMPEZA DE ARTIFACTS
       - name: Delete Artifact

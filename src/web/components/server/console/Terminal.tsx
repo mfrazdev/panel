@@ -38,7 +38,7 @@ export default function Terminal() {
     const showSpinner = consoleWsStatus === 'connecting' || consoleWsStatus === 'reconnecting' || (logs.length === 0 && consoleWsStatus === 'connected');
 
     return (
-        <div className="flex flex-col h-full w-full rounded-xl overflow-hidden backdrop-blur-md bg-(--color-console) transition-all duration-300">
+        <div className="flex flex-col h-full w-full rounded-xl overflow-hidden backdrop-blur-md bg-(--color-console) shadow-(--card-shadow) transition-all duration-300">
             {/* Área de Logs */}
             <div
                 ref={scrollRef}
@@ -52,7 +52,7 @@ export default function Terminal() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 flex flex-col items-center justify-center bg-[#050508]/95 z-10"
+                            className="absolute inset-0 flex flex-col items-center justify-center  z-10"
                         >
                             <LoadingPage />
                         </motion.div>

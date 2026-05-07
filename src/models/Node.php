@@ -99,7 +99,6 @@ class Node extends Model
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1 // Força HTTP/1.1 para evitar problemas de negociação TLS
         ];
 
-        error_log($this->ssl . '');
         // Se SSL estiver ativado, desativamos verificação (comum em Nodes com IPs diretos ou auto-assinados)
         // Se estiver desativado, garantimos que o cURL não tente usar configurações de SSL de uma requisição anterior no mesmo handle
         if ($this->ssl) {

@@ -4,6 +4,7 @@ namespace App\controllers\Admin;
 
 require_once __DIR__ . '/../../utils/CoreUtils.php';
 use models\Core;
+use models\Server;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
 
@@ -22,7 +23,9 @@ class CoreController
      */
     private function canDelete(?Core $core, $currentUser): bool
     {
-        return (bool) $core;
+        $contagem = Server::witch('coreId', $core->id)->count();
+
+        return $core && $contagem === 0;
     }
 
     /**

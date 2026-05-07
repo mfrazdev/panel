@@ -43,7 +43,7 @@ export default function App() {
                     <form onSubmit={handleSubmit} className="space-y-6">
                         <div>
                             <label className="block text-[11px] font-bold text-(--color-text-label) mb-2 tracking-wider uppercase">
-                                Username or Email
+                                Nome de Usuário ou Email
                             </label>
                             <Input
                                 type="text"
@@ -53,8 +53,8 @@ export default function App() {
                         </div>
 
                         <div>
-                            <label className="block text-[11px] font-bold text-gray-400 mb-2 tracking-wider uppercase">
-                                Password
+                            <label className="block text-[11px] font-bold text-(--color-text-label) mb-2 tracking-wider uppercase">
+                                Senha
                             </label>
                             <Input
                                 type="password"

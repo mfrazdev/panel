@@ -1,23 +1,50 @@
 import React from 'react';
-import {Metadata} from "vatts/react"
+import { Metadata } from "vatts/react"
 import './globals.css';
-import {SessionProvider, useSession} from "@vatts/auth/react";
-import {ToastProvider} from "@/web/contexts/ToastContext";
+import { SessionProvider, useSession } from "@vatts/auth/react";
+import { ToastProvider } from "@/web/contexts/ToastContext";
 import DashboardWrapper from "@/web/components/wrappers/Wrapper";
 
 interface LayoutProps {
     children: React.ReactNode;
 }
 
+// @ts-ignore
+const panelName = typeof window !== 'undefined' && window.PanelSettings && window.PanelSettings.name ? window.PanelSettings.name : "Lunar Panel";
+
 export const metadata: Metadata = {
-    title: "Vatts JS | The Fast and Simple Web Framework for React",
-    description: "The fastest and simplest web framework for React! Start building high-performance web applications today with Vatts JS.",
-    keywords: ["Vatts JS", "web framework", "React", "JavaScript", "TypeScript", "web development", "fast", "simple", "SSR", "frontend"],
-    author: "Vatts JS Team",
+    title: `${panelName}`,
+    description: "Painel de gerenciamento de servidores e aplicações.",
+    keywords: ["Lunar Panel", "dashboard", "painel", "hosting", "gerenciamento"],
+    author: "mfraz",
+    favicon: "/favicon.ico",
+
+    // Configurações importantes para painéis/PWA
+    viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
+    themeColor: "#000000", // Modo escuro (preto puro)
+    charset: "utf-8",
+    language: "pt-BR",
+
+    // Bloqueia indexação de motores de busca (Google, Bing) nas páginas do painel
+    robots: "noindex, nofollow",
+
+    // O básico de OpenGraph/Twitter.
+    // Como é uma área privada, não vale a pena colocar imagens gigantes (summary_large_image).
+    openGraph: {
+        title: `${panelName}`,
+        description: "Acesso ao painel de gerenciamento.",
+        type: "website",
+        locale: "pt_BR",
+        siteName: `${panelName}`
+    },
+    twitter: {
+        card: "summary",
+        title: `${panelName}`,
+        description: "Acesso ao painel de gerenciamento."
+    }
 };
 
 export default function Layout({ children }: LayoutProps) {
-
     return (
         <ToastProvider>
             <SessionProvider>

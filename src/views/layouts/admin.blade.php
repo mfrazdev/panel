@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title', 'Admin') - Hight Cloud</title>
+    <title>Hight Cloud - @yield('title', 'Admin') </title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="/assets/admin/modal.js"></script>
@@ -13,37 +14,37 @@
             --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
             --font-mono: "JetBrains Mono", monospace;
 
-            /* accent principal (verde moderno) */
-            --color-primary: #22c55e;
+            /* accent principal */
+            --color-primary: rgb(223 95 255);
 
-            /* BASE (mais clara, levemente azulada) */
-            --color-background: #384350;
+            /* base */
+            --color-background: rgb(56 42 76);
 
-            /* CARDS (tem que saltar do fundo) */
-            --color-secondary: #4f5e72;
-            --color-terciary: #3a495a;
+            /* cards */
+            --color-secondary: rgb(74 56 99);
+            --color-terciary: rgb(65 48 88);
 
-            /* HIERARQUIA DE LAYOUT (aqui tá o segredo) */
-            --color-navbar: #1c2530;   /* MAIS ESCURO (topo pesado) */
-            --color-sidebar: #26323d;  /* menos escuro que navbar */
+            /* layout */
+            --color-navbar: rgb(27 19 39);
+            --color-sidebar: rgb(40 30 57);
 
-            /* console separado */
-            --color-console: #0f1419;
-            --color-console-command: #151b21;
+            /* console */
+            --color-console: rgb(35 26 51);
+            --color-console-command: rgb(48 36 68);
 
             /* feedback */
-            --color-success: #22c55e;
-            --color-info: #38bdf8;
-            --color-warning: #facc15;
-            --color-danger: #ef4444;
+            --color-success: rgb(34 197 94);
+            --color-info: rgb(161 55 184);
+            --color-warning: rgb(250 204 21);
+            --color-danger: rgb(239 68 68);
 
             /* texto */
-            --color-text-label: #e6edf3;
-            --color-text-value: #ffffff;
-            --color-text-sub: #9fb0c0;
+            --color-text-label: rgb(230 237 243);
+            --color-text-value: rgb(255 255 255);
+            --color-text-sub: rgb(145 152 170);
 
-            /* sombra mais visível */
-            --card-shadow: 0 12px 30px rgba(0, 0, 0, 0.35);
+            /* sombra */
+            --card-shadow: 0 12px 30px rgb(0 0 0 / 0.45);
         }
 
         body {
@@ -142,6 +143,25 @@
 
         /* Cor do ícone ativo */
         .nav-link.active .sidebar-link-icon { color: var(--color-primary); }
+        /* Fix para a seleção de texto - forçando o fundo e a cor para destacar */
+        ::selection {
+            background-color: rgb(from var(--color-primary) r g b / 50%); !important; /* Cor com opacidade pra não esconder o texto */
+            color: inherit !important;
+        }
+        ::-moz-selection {
+            background-color: rgb(from var(--color-primary) r g b / 50%); !important;
+            color: inherit !important;
+        }
+
+        .monaco-editor .suggest-widget,
+        .monaco-editor .parameter-hints-widget,
+        .monaco-editor .monaco-hover,
+        .monaco-editor .monaco-editor-hover,
+        .monaco-editor .overflowingContentWidgets,
+        .monaco-editor .contentWidgets {
+            z-index: 12000 !important;
+        }
+
     </style>
     <script>
         tailwind.config = {
@@ -159,7 +179,8 @@
                         textValue: 'var(--color-text-value)',
                         textSub: 'var(--color-text-sub)',
                         success: 'var(--color-success)',
-                        danger: 'var(--color-danger)'
+                        danger: 'var(--color-danger)',
+                        info: 'var(--color-info)',
                     },
                     boxShadow: {
                         main: 'var(--card-shadow)'
@@ -183,10 +204,17 @@
     <!-- Logo -->
     <div class="h-16 px-6 flex items-center bg-sidebar shrink-0">
         <a href="/" class="flex items-center gap-3 w-full overflow-hidden">
+            @php
+                $companyName = \models\Settings::get('key', 'company_name')?->value ?? 'Lunar Panel';
+                $initials = implode('', array_map(
+                fn($word) => strtoupper($word[0]),
+                preg_split('/\s+/', trim($companyName))
+            ));
+            @endphp
             <!-- Ícone visível apenas quando recolhido -->
-            <span class="sidebar-logo-icon hidden text-[22px] font-black text-primary w-full text-center tracking-tighter">HC</span>
+            <span class="sidebar-logo-icon hidden text-[22px] font-black text-primary w-full text-center tracking-tighter">{{ $initials }}</span>
             <!-- Texto visível quando expandido -->
-            <span class="sidebar-logo-text text-[18px] font-black tracking-tight text-textValue whitespace-nowrap">Hight Cloud</span>
+            <span class="sidebar-logo-text text-[18px] font-black tracking-tight text-textValue whitespace-nowrap">{{ $companyName }}</span>
         </a>
     </div>
 
@@ -208,7 +236,7 @@
                     <span class="sidebar-text whitespace-nowrap">Configurações</span>
                 </a>
                 <a href="/admin/tokens" class="nav-link {{ (isset($request) && str_starts_with($request->getPath(), '/admin/tokens')) ? 'active' : '' }}" title="Tokens">
-                    <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="sidebar-link-icon shrink-0"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+                    <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-key-round-icon lucide-key-round"><path d="M2.586 17.414A2 2 0 0 0 2 18.828V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.172a2 2 0 0 0 1.414-.586l.814-.814a6.5 6.5 0 1 0-4-4z"/><circle cx="16.5" cy="7.5" r=".5" fill="currentColor"/></svg>
                     <span class="sidebar-text whitespace-nowrap">Tokens de API</span>
                 </a>
             </div>

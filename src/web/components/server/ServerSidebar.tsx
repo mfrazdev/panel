@@ -30,7 +30,6 @@ const menuCategories = [
     {
         title: "Gerenciamento",
         items: [
-            { id: 'users', name: 'Usuários', icon: <UsersRound /> },
             { id: 'allocations', name: 'Rede', icon: <ChartNoAxesColumnIncreasing /> },
         ]
     },

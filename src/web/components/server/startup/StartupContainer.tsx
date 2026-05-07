@@ -13,6 +13,8 @@ export default function StartupContainer() {
     const [isLoadingStartup, setIsLoadingStartup] = useState(true);
     const [envVars, setEnvVars] = useState<Record<string, string>>({});
 
+    const [startupCommandReplaced, setCommand] = useState("")
+
     const [selectedDockerImage, setSelectedDockerImage] = useState<string>("");
     const toast = useToast();
     const debounceTimer = useRef<NodeJS.Timeout | null>(null);
@@ -112,7 +114,25 @@ export default function StartupContainer() {
             }
         }, 500);
     };
+    useEffect(() => {
+        if(server) {
+            let command = server.startupCommand
+            if(server.envVars) {
+                try {
+                    console.log(server.envVars)
+                    for (const [key, value] of Object.entries(JSON.parse(server.envVars))) {
+                        command = command?.replace(`{{${key}}}`, `${value}`)
+                    }
 
+
+                } catch (e) {
+                    console.error(e)
+                }
+            }
+            command?.replace("{{SERVER_PORT}}", `${server.allocation?.port ?? 0}`)
+            setCommand(command ?? '')
+        }
+    }, [server?.envVars, server?.allocation])
     if (isLoadingServer || isLoadingStartup) return <div className="min-h-screen flex justify-center items-center"><LoadingPage /></div>;
     if (!server || !startupData) return null;
 
@@ -125,12 +145,15 @@ export default function StartupContainer() {
         value: img.image
     }));
 
+
+
+
     return (
         <main className="flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden gap-8">
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
                 <Card title="COMANDO DE INICIALIZAÇÃO">
                     <Input
-                        value={core.startupCommand}
+                        value={startupCommandReplaced}
                         readOnly={true}
                         desc="O comando base utilizado para iniciar o servidor."
                     />
