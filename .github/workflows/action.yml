@@ -91,35 +91,34 @@ jobs:
         run: |
           rm -rf node_modules
           rm -rf .vatts
-
       # PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
 
-      # ENCODE IONCUBE - AGORA COM OS PARÂMETROS EXATOS DA ACTION
+      # 1. INSTALA O COMPOSER ANTES DE CODIFICAR (Mais seguro)
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --classmap-authoritative
+
+      # 2. ENCODE IONCUBE
       - name: Encode with IonCube
         uses: MuriloChianfa/ioncube-encoder-action@v3.0.1
         with:
-          php-target-version: '8.2' # A action aceita max 8.2 no arquivo YML (Roda perfeitamente em 8.3 depois)
-          template: 'laravel'       # Template pronto para não quebrar o Laravel
+          trial: true               # <--- ADICIONADO AQUI PARA A VERSÃO GRÁTIS
+          php-target-version: '8.2'
+          template: 'laravel'
           source: '.'
           output: '/tmp/encoded_build'
-          ignore: '.git .github web dist resources storage public' # Espaço como separador conforme documentação
+          ignore: '.git .github web dist resources storage public vendor' # Ignorei a vendor para não demorar horas compilando as libs
 
       - name: Replace Original Files with Encoded Files
         run: |
           echo "Sincronizando arquivos codificados de volta para a pasta de build..."
-          # Passa os arquivos codificados por cima dos originais
           rsync -av /tmp/encoded_build/ ./
           rm -rf /tmp/encoded_build
 
-      # INSTALAÇÃO DO COMPOSER
-      - name: Install Composer Dependencies
-        run: composer install --no-dev --optimize-autoloader --classmap-authoritative
-
-      # ZIP
+      # ZIP (mantém igual)
       - name: Create ZIP
         run: |
           zip -r panel.zip . \
