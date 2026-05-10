@@ -109,30 +109,24 @@ jobs:
         with:
           php-version: 8.3
 
-      # OBFUSCAÇÃO YAK PRO
-      - name: Setup YAK Pro Obfuscator
-        run: |
-          git clone https://github.com/pk-fr/yakpro-po.git /tmp/yakpro-po
-          cd /tmp/yakpro-po
-          git clone https://github.com/nikic/PHP-Parser.git --branch 4.x
-          chmod a+x yakpro-po.php
-          sudo ln -s /tmp/yakpro-po/yakpro-po.php /usr/local/bin/yakpro-po
-
       - name: Obfuscate Project
         run: |
           echo "Criando arquivo de configuração do YAK Pro..."
           cat << 'EOF' > yakpro-po.cnf
           <?php
-          // Ignora essas pastas na ofuscação
           $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public');
           
-          // OFUSCAÇÃO TOTAL ATIVADA! 
-          $conf->obfuscate_namespace_name = true;
-          $conf->obfuscate_class_name = true;          
-          $conf->obfuscate_interface_name = true;
-          $conf->obfuscate_trait_name = true;
+          // --- O QUE NÃO PODE OFUSCAR ---
+          // Isso garante que o Composer (PSR-4) e as Rotas do painel se encontrem.
+          $conf->obfuscate_namespace_name = false;
+          $conf->obfuscate_class_name = false;          
+          $conf->obfuscate_interface_name = false;
+          $conf->obfuscate_trait_name = false;
+          $conf->obfuscate_method_name = false; // Métodos precisam ficar originais por causa das rotas (ex: UserController@index)
+          
+          // --- O QUE PODE (E DEVE) OFUSCAR ---
+          // Isso esconde suas chaves, lógicas, propriedades e variáveis.
           $conf->obfuscate_property_name = true;
-          $conf->obfuscate_method_name = true;
           $conf->obfuscate_function_name = true;
           $conf->obfuscate_constant_name = true;
           $conf->obfuscate_class_constant_name = true;
@@ -142,13 +136,13 @@ jobs:
           echo "Iniciando ofuscação do backend..."
           mkdir -p /tmp/obfuscated_build
           
-          # Forcei o uso do config file com --config-file
+          # Força a leitura do config
           yakpro-po --config-file yakpro-po.cnf . -o /tmp/obfuscated_build
           
           REAL_PATH_TO_CODE=$(dirname "$(find /tmp/obfuscated_build/yakpro-po -name 'composer.json' | head -n 1)")
           
           if [ -n "$REAL_PATH_TO_CODE" ]; then
-            echo "Pasta ofuscada encontrada, movendo arquivos..."
+            echo "Movendo arquivos ofuscados..."
             rsync -av "$REAL_PATH_TO_CODE/" ./
           else
             echo "ERRO CRÍTICO: YAK Pro falhou."
@@ -158,29 +152,10 @@ jobs:
           rm yakpro-po.cnf
           rm -rf /tmp/obfuscated_build
 
-      # PASSO MÁGICO: Transforma PSR-4 em Classmap
-      - name: Convert Composer PSR-4 to Classmap
-        run: |
-          php -r '
-            $file = "composer.json";
-            $data = json_decode(file_get_contents($file), true);
-            if(isset($data["autoload"]["psr-4"])) {
-                if(!isset($data["autoload"]["classmap"])) $data["autoload"]["classmap"] = [];
-                foreach($data["autoload"]["psr-4"] as $namespace => $paths) {
-                    $paths = (array)$paths;
-                    foreach($paths as $p) {
-                        $data["autoload"]["classmap"][] = $p;
-                    }
-                }
-                unset($data["autoload"]["psr-4"]);
-                file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
-                echo "Composer PSR-4 convertido para Classmap com sucesso!\n";
-            }
-          '
-
-      # AGORA RODA O COMPOSER (Ele vai escanear tudo e mapear as classes ofuscadas)
+      # Instala o Composer normalmente sem gambiarras
       - name: Install Composer Dependencies
-        run: composer install --no-dev --optimize-autoloader --classmap-authoritative
+        run: composer install --no-dev --optimize-autoloader
+
       # ZIP
       - name: Create ZIP
         run: |
