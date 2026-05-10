@@ -25,6 +25,7 @@
         "mfrazlab/vattsphp": "dev-master",
         "rakit/validation": "^1.4",
       "ext-pdo": "*",
-        "vlucas/phpdotenv": "^5.6"
+        "vlucas/phpdotenv": "^5.6",
+        "phpmailer/phpmailer": "^7.0"
     }
 }

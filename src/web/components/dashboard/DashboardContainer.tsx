@@ -143,7 +143,7 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
                         onClick={() => setActiveFilter('all')}
                         className={`px-5 py-2.5 rounded-md text-sm font-bold transition-all duration-300 cursor-pointer ${
                             activeFilter === 'all'
-                                ? 'bg-(--color-primary)/20 text-white'
+                                ? 'bg-(--color-primary)/20 text-(--color-text-label)'
                                 : 'bg-(--color-secondary) text-(--color-text-label) hover:bg-(--color-terciary) hover:text-(--color-text-sub)'
                         }`}
                     >

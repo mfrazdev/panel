@@ -64,6 +64,11 @@ jobs:
           echo "TAG_NAME=$FINAL_TAG" >> $GITHUB_ENV
           echo "IS_LATEST=$IS_LATEST" >> $GITHUB_ENV
 
+      # NOVO PASSO: Salva a versão calculada em um arquivo JSON na raiz do projeto
+      - name: Save Version to File
+        run: |
+          echo "{\"version\": \"${{ env.TAG_NAME }}\"}" > version.json
+
       # NODE
       - name: Setup Node
         uses: actions/setup-node@v4
@@ -93,6 +98,28 @@ jobs:
       - name: Install Composer Dependencies
         run: composer install --no-dev --optimize-autoloader
 
+      # OBFUSCAÇÃO YAK PRO
+      - name: Setup YAK Pro Obfuscator
+        run: |
+          git clone https://github.com/pk-fr/yakpro-po.git /tmp/yakpro-po
+          cd /tmp/yakpro-po
+          git clone https://github.com/nikic/PHP-Parser.git --branch 4.x
+          chmod a+x yakpro-po.php
+          sudo ln -s /tmp/yakpro-po/yakpro-po.php /usr/local/bin/yakpro-po
+
+      - name: Obfuscate Project (Including Vendor)
+        run: |
+          echo "Iniciando ofuscação de todo o diretório..."
+          mkdir -p /tmp/obfuscated_build
+          
+          # Ofusca a pasta atual (.) e manda o resultado para /tmp/obfuscated_build.
+          # Desativamos APENAS a alteração de nomes estruturais para o Composer e pacotes do vendor não quebrarem,
+          # mas variáveis, strings, comentários e o fluxo de controle (if/else/etc) vão ser todos ofuscados!
+          yakpro-po . -o /tmp/obfuscated_build --no-obfuscate-class-name --no-obfuscate-interface-name --no-obfuscate-trait-name --no-obfuscate-property-name --no-obfuscate-method-name --no-obfuscate-function-name
+          
+          # Sobrescreve os arquivos originais pelos arquivos ofuscados recém-gerados
+          rsync -a --delete /tmp/obfuscated_build/yakpro-po/ ./
+
       # ZIP
       - name: Create ZIP
         run: |
@@ -105,7 +132,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: production-build
-          path: project.zip
+          path: panel.zip
 
       # RELEASE
       - name: Create Release

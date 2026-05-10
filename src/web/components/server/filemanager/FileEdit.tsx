@@ -4,6 +4,7 @@ import Button from "@/web/components/commons/components/Button";
 import { ArrowLeft } from "lucide-react";
 import { useFileManager } from "./FileManagerContext";
 import { useServerContext } from "@/web/contexts/ServerContext";
+import {useToast} from "@/web/contexts/ToastContext";
 
 const SUPPORTED_LANGUAGES = [
     { value: "json", label: "JSON" },
@@ -31,6 +32,8 @@ export default function FileEditContainer() {
     const [language, setLanguage] = useState("plaintext");
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
+
+    const toast = useToast()
 
     const monaco = useMonaco();
 
@@ -280,7 +283,9 @@ export default function FileEditContainer() {
         setIsSaving(true);
         try {
             await writeFile(safeFilePath, content);
+            toast.addToast("Arquivo salvo com sucesso!", "success");
         } catch (error) {
+            toast.addToast("Erro ao salvar o arquivo.", "error");
             console.error("Erro ao salvar o arquivo:", error);
         } finally {
             setIsSaving(false);

@@ -19,6 +19,7 @@ export interface ServerData {
     maxAdditionalAllocations?: number;
     allocationId?: number;
     group?: any;
+    suspended?: number;
     allocation?: {
         id: number;
         nodeId: string;

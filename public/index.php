@@ -17,12 +17,8 @@ use Vatts\Vatts;
 
 $project = dirname(__DIR__);
 Vatts::loadEnv($project);
-Vatts::bootDatabase([
-    'driver'   => "sqlite",
-    'database' => "panel.db", // Caminho completo do banco
-    'charset'  => 'utf8mb4'
-]);
 
+require_once __DIR__ . '/../app/Utils/DatabaseBooter.php';
 
 $companyName = \models\Settings::get('key', 'company_name')->value ?? 'Lunar Panel';
 

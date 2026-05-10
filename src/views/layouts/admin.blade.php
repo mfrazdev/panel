@@ -18,11 +18,11 @@
             --color-primary: rgb(223 95 255);
 
             /* base */
-            --color-background: rgb(56 42 76);
+            --color-background: #3d334d;
 
             /* cards */
             --color-secondary: rgb(74 56 99);
-            --color-terciary: rgb(65 48 88);
+            --color-terciary: rgb(54 40 73);
 
             /* layout */
             --color-navbar: rgb(27 19 39);

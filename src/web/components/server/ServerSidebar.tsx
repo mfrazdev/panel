@@ -10,7 +10,7 @@ import {
     UsersRound
 } from "lucide-react";
 import {useSession} from "@vatts/auth/react";
-import {useServerContext} from "@/web/contexts/ServerContext"; // Adicionei ícones pro botão de recolher
+import {useServerContext} from "@/web/contexts/ServerContext";
 
 type Sidebar = {
     serverId: string;
@@ -46,7 +46,8 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
     const [isCollapsed, setIsCollapsed] = useState(false);
     const [isMounted, setIsMounted] = useState(false);
     const user = useSession()
-    const server = useServerContext()
+    const serverContext = useServerContext()
+
     useEffect(() => {
         setIsMounted(true);
         const storedValue = localStorage.getItem('@hightcloud:sidebar-collapsed');
@@ -61,19 +62,15 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
         localStorage.setItem('@hightcloud:sidebar-collapsed', String(newValue));
     };
 
-    // Placeholder para evitar jump de layout no SSR
     if (!isMounted) return <aside className="w-72 h-[calc(100vh-4rem)] shrink-0 bg-(--color-sidebar)" />;
+
+    const isSuspended = serverContext.server?.suspended === 1;
 
     return (
         <motion.aside
             initial={false}
             animate={{ width: isCollapsed ? 90 : 288 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            /*
-               MUDANÇAS CRÍTICAS AQUI:
-               1. top-16: Para começar exatamente onde a Navbar (h-16) termina.
-               2. h-[calc(100vh-4rem)]: Altura total da tela menos os 4rem (64px) da Navbar.
-            */
             className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 bg-(--color-sidebar) shadow-(--card-shadow) flex flex-col pt-4 pb-4 z-40"
         >
             <div className="flex-1 overflow-y-auto custom-scrollbar px-4 overflow-x-hidden">
@@ -109,18 +106,23 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
                         <div className="flex flex-col gap-1 p-2 rounded-2xl bg-black/10 shadow-inner">
                             {category.items.map((tab) => {
                                 const isActive = activeTab === tab.id;
+                                const isDisabled = isSuspended && tab.id !== 'console';
+
                                 return (
                                     <a
                                         href={isActive ? `/server/${serverId}` : `/server/${serverId}/${tab.id}`}
                                         key={tab.id}
                                         onClick={(event) => {
                                             event.preventDefault();
+                                            if (isDisabled) return;
                                             changeAction(tab.id);
                                         }}
                                         className={`group relative flex items-center ${isCollapsed ? 'justify-center px-0' : 'gap-4 px-4'} py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
                                             isActive
                                                 ? 'bg-white/[0.04]'
-                                                : 'hover:bg-white/[0.02]'
+                                                : isDisabled
+                                                    ? 'opacity-30 cursor-not-allowed'
+                                                    : 'hover:bg-white/[0.02]'
                                         }`}
                                         style={{ color: isActive ? 'var(--color-text-value)' : 'var(--color-text-label)' }}
                                     >
@@ -159,7 +161,7 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
             {user.data?.user.role == 'admin' && (
                 <div className="mt-auto pt-4 px-4">
                     <a
-                        href={`/admin/servers/${server.server?.id}/edit`}
+                        href={`/admin/servers/${serverContext.server?.id}/edit`}
                         className={`flex items-center w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:bg-white/[0.04] ${
                             isCollapsed ? 'justify-center' : 'justify-between px-4'
                         }`}

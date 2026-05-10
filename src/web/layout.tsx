@@ -17,8 +17,8 @@ export const metadata: Metadata = {
     description: "Painel de gerenciamento de servidores e aplicações.",
     keywords: ["Lunar Panel", "dashboard", "painel", "hosting", "gerenciamento"],
     author: "mfraz",
-    favicon: "/favicon.ico",
-
+    faviconDark: "/assets/img/logo-white.png",
+    favicon: "/assets/img/logo-dark.png",
     // Configurações importantes para painéis/PWA
     viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0",
     themeColor: "#000000", // Modo escuro (preto puro)

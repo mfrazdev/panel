@@ -149,7 +149,7 @@ export default function StartupContainer() {
 
 
     return (
-        <main className="flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden gap-8">
+        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden gap-8">
             <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6 items-start">
                 <Card title="COMANDO DE INICIALIZAÇÃO">
                     <Input

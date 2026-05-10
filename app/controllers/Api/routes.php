@@ -47,6 +47,12 @@ class ApiRoutes
 
         });
 
+        $router->group(['prefix' => '/v1/users/recovery'], function (\Vatts\Router\Router $router) {
+            $router->post('/send', [\App\controllers\Api\Users\UsersApiController::class, 'sendRecoveryEmail']);
+            $router->post('/change', [\App\controllers\Api\Users\UsersApiController::class, 'changePassword']);
+            $router->get('/validate', [\App\controllers\Api\Users\UsersApiController::class, 'verifyCode']);
+        });
+
         $router->group(["prefix" => '/v1/users', 'middleware' => 'api'], function (\Vatts\Router\Router $router) {
             $router->get('/servers', [\App\controllers\Api\Users\UsersApiController::class, 'getServers']);
 

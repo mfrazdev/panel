@@ -1,0 +1,83 @@
+@extends('layouts.admin')
+
+@section('title', 'Dashboard')
+@section('page_category', 'Sistema')
+@section('page_name', 'Dashboard')
+
+@section('content')
+    <div class="flex flex-col max-w-[1400px] mx-auto animate-[fadeIn_0.4s_ease-out]">
+        <!-- Cabeçalho da Página -->
+        <div class="flex justify-between items-end mb-10">
+            <div>
+                <div class="flex items-center gap-4 mb-2">
+                    <div class="w-10 h-10 rounded-2xl bg-cards flex items-center justify-center text-primary shadow-main">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path><polyline points="9 22 9 12 15 12 15 22"></polyline></svg>
+                    </div>
+                    <h1 class="text-4xl font-black tracking-tight text-textValue">Dashboard</h1>
+                </div>
+                <p class="text-textSub text-sm font-medium ml-14">
+                    Uma rápida olhada no seu sistema.
+                </p>
+            </div>
+        </div>
+
+        <!-- Seção de Atualização -->
+        <div class="bg-cards shadow-main rounded-md overflow-hidden flex flex-col w-full mb-8">
+            <div class="px-8 py-6 bg-sidebar">
+                <h3 class="text-[12px] font-black text-textValue uppercase tracking-[0.2em]">Status do Sistema</h3>
+            </div>
+
+            <div class="p-8 flex flex-col gap-7">
+                @if(isset($has_update) && $has_update)
+                    <!-- Alerta: Atualização Disponível -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-sidebar rounded-md p-6 shadow-inner relative overflow-hidden">
+                        <!-- Efeito de brilho sutil no fundo -->
+                        <div class="absolute inset-0 bg-primary/5 pointer-events-none"></div>
+
+                        <div class="flex items-center gap-5 z-10">
+                            <div class="w-14 h-14 rounded-full bg-primary/20 flex items-center justify-center text-primary shadow-main shrink-0 animate-pulse">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"></line><polyline points="19 12 12 19 5 12"></polyline></svg>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <h4 class="text-lg font-black text-textValue">Nova Atualização Disponível!</h4>
+                                <p class="text-sm font-medium text-textSub">
+                                    A versão <span class="text-primary font-bold">{{ $latest_version ?? 'v2.1.0' }}</span> está disponível no GitHub. Você está utilizando a <span class="text-textValue">{{ $current_version ?? 'v2.0.0' }}</span>.
+                                </p>
+                            </div>
+                        </div>
+
+                        <div class="z-10 w-full sm:w-auto">
+                            <!-- Link direto para o GitHub -->
+                            <a href="{{ $github_url ?? 'https://github.com/mfrazlab/panel/releases/latest' }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-primary hover:brightness-110 text-textValue px-9 py-3.5 rounded-2xl text-sm font-bold shadow-main transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1">
+                                <!-- Ícone do GitHub -->
+                                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
+                                Ver no GitHub
+                            </a>
+                        </div>
+                    </div>
+                @else
+                    <!-- Alerta: Sistema Atualizado -->
+                    <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6 bg-sidebar rounded-md p-6 shadow-inner">
+                        <div class="flex items-center gap-5">
+                            <div class="w-14 h-14 rounded-full bg-cards flex items-center justify-center text-textSub shadow-main shrink-0">
+                                <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
+                            </div>
+                            <div class="flex flex-col gap-1">
+                                <h4 class="text-lg font-black text-textValue">Sistema Atualizado</h4>
+                                <p class="text-sm font-medium text-textSub">
+                                    Você está rodando a versão mais recente (<span class="text-textValue">{{ $current_version ?? 'v2.0.0' }}</span>). Tudo pronto por aqui.
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- Tag indicativa (já que a verificação é no load) -->
+                        <div class="hidden sm:flex items-center gap-2 px-4 py-2 rounded-xl bg-cards shadow-main text-textSub text-[11px] font-black uppercase tracking-widest">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                            Verificado ao acessar
+                        </div>
+                    </div>
+                @endif
+            </div>
+        </div>
+    </div>
+@endsection

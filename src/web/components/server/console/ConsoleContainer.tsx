@@ -22,10 +22,9 @@ const formatUptime = (ms: number = 0) => {
 };
 
 export default function ConsoleContainer() {
-    // Adicionado usageWsStatus e consoleWsStatus aqui no hook
     const {
         server, usage, isLoadingServer,
-        allocation, usageWsStatus, consoleWsStatus
+        allocation, usageWsStatus, consoleWsStatus, refreshServer
     } = useServerContext();
 
     const { setLoadingBar } = useLoading();
@@ -35,7 +34,7 @@ export default function ConsoleContainer() {
             setLoadingBar(true);
         } else {
             setLoadingBar(false);
-            const interval = setInterval(() => {
+            const interval = setInterval(async () => {
                 setLoadingBar(true);
                 setTimeout(() => setLoadingBar(false), 1500);
             }, 20000);
@@ -47,7 +46,9 @@ export default function ConsoleContainer() {
     if (isLoadingServer) return <div className="min-h-screen flex justify-center items-center"><LoadingPage /></div>;
     if (!server) return null;
 
-    const serverStatus = usage?.state || 'connecting';
+
+    const isSuspended = server.suspended === 1;
+    const serverStatus = isSuspended ? 'suspended' : (usage?.state || 'connecting');
     const address = allocation ? `${allocation.externalIp}:${allocation.port}` : '---';
 
     const statusConfig = {
@@ -57,20 +58,31 @@ export default function ConsoleContainer() {
         stopping: { color: 'var(--color-warning)', label: 'Desligando', uptime: '' },
         stopped: { color: 'var(--color-danger)', label: 'Offline', uptime: '' },
         connecting: { color: 'var(--color-warning)', label: 'Conectando', uptime: '' },
+        suspended: { color: '#f97316', label: 'Suspenso', uptime: '' }, // Laranja personalizado para o suspenso
     };
 
     const currentStatus = statusConfig[serverStatus as keyof typeof statusConfig] || statusConfig.connecting;
 
-    // Lógica para saber qual mensagem mostrar
-    const isReconnecting = usageWsStatus === 'reconnecting' || consoleWsStatus === 'reconnecting';
-    const isFailed = usageWsStatus === 'failed' || consoleWsStatus === 'failed';
+    const isReconnecting = !isSuspended && (usageWsStatus === 'reconnecting' || consoleWsStatus === 'reconnecting');
+    const isFailed = !isSuspended && (usageWsStatus === 'failed' || consoleWsStatus === 'failed');
 
     return (
         <>
+            {/* BARRA DE SERVIDOR SUSPENSO */}
+            {isSuspended && (
+                <div className="w-full bg-[#f97316] flex items-center justify-center gap-3 px-4 py-2 shadow-md">
+                    <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
+                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                    <span className="text-white text-sm font-semibold tracking-wide">
+                        Este servidor está suspenso. Todos os recursos foram bloqueados.
+                    </span>
+                </div>
+            )}
+
             {/* BARRA DE RECONEXÃO */}
             {isReconnecting && !isFailed && (
                 <div className="w-full bg-(--color-danger) flex items-center justify-center gap-3 px-4 py-2 shadow-md">
-                    {/* Spinner do Tailwind */}
                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
@@ -84,7 +96,6 @@ export default function ConsoleContainer() {
             {/* BARRA DE FALHA TOTAL */}
             {isFailed && (
                 <div className="w-full bg-(--color-danger) flex items-center justify-center gap-3 px-4 py-2 shadow-md">
-                    {/* Ícone de Erro / Alerta */}
                     <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
@@ -94,71 +105,76 @@ export default function ConsoleContainer() {
                 </div>
             )}
 
-            <main className="flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden">
+            <main className={`flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden ${isSuspended ? 'opacity-80' : ''}`}>
 
                 {/* Header Section */}
-                <div className="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4 mb-6">
-                    <div className="flex flex-col gap-1">
-                        {/* Título e Status lado a lado */}
-                        <div className="flex flex-wrap items-center gap-6">
-                            <h1 className="text-3xl md:text-4xl font-black tracking-tighter text-(--color-text-label) uppercase leading-none">{server.name}</h1>
+                <div className="flex flex-col gap-1 mb-6">
+                    <div className="flex flex-wrap items-center gap-6">
+                        <h1 className="text-3xl md:text-4xl font-black tracking-widest text-(--color-text-label) leading-none">{server.name}</h1>
 
-                            {/* Status */}
-                            <div className="flex items-center gap-3">
-                                <div className="relative flex h-5 w-5 items-center justify-center">
-                                    {serverStatus === 'running' && (
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-50" style={{ backgroundColor: currentStatus.color }}></span>
-                                    )}
-                                    <span className="relative inline-flex rounded-full h-3 w-3" style={{ backgroundColor: currentStatus.color, boxShadow: `0 0 15px ${currentStatus.color}` }}></span>
-                                </div>
-                                <span
-                                    className="text-lg md:text-xl font-black uppercase tracking-[0.2em]"
-                                    style={{ color: currentStatus.color, textShadow: `0 0 20px ${currentStatus.color}40` }}
-                                >
-                                {currentStatus.label}
-                            </span>
-
+                        {/* Status */}
+                        <div className="flex items-center gap-3">
+                            <div className="relative flex h-5 w-5 items-center justify-center">
                                 {serverStatus === 'running' && (
-                                    <div className="flex items-center gap-3 border-l-2 border-white/10 pl-4 ml-1">
-                                    <span
-                                        className="text-xs font-bold tracking-widest uppercase"
-                                        style={{ color: 'var(--color-text-label)' }}
-                                    >
-                                        {currentStatus.uptime}
-                                    </span>
-                                    </div>
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-50" style={{ backgroundColor: currentStatus.color }}></span>
                                 )}
+                                <span className="relative inline-flex rounded-full h-3 w-3" style={{ backgroundColor: currentStatus.color, boxShadow: `0 0 15px ${currentStatus.color}` }}></span>
                             </div>
-                        </div>
+                            <span
+                                className="text-lg md:text-xl font-black uppercase tracking-[0.2em]"
+                                style={{ color: currentStatus.color, textShadow: `0 0 20px ${currentStatus.color}40` }}
+                            >
+                            {currentStatus.label}
+                        </span>
 
-                        <CopyOnClick text={address} notify={true}>
-                            <p className="text-(--color-primary) text-[15px] font-bold tracking-widest uppercase font-mono">{address}</p>
-                        </CopyOnClick>
+                            {serverStatus === 'running' && (
+                                <div className="flex items-center gap-3 border-l-2 border-white/10 pl-4 ml-1">
+                                <span
+                                    className="text-xs font-bold tracking-widest uppercase"
+                                    style={{ color: 'var(--color-text-label)' }}
+                                >
+                                    {currentStatus.uptime}
+                                </span>
+                                </div>
+                            )}
+                        </div>
                     </div>
 
-                    <ServerActions status={serverStatus} />
+                    <CopyOnClick text={address} notify={true}>
+                        <p className="text-(--color-primary) text-[15px] font-bold tracking-widest uppercase font-mono">{address}</p>
+                    </CopyOnClick>
                 </div>
 
-                {/* Grid de Stats */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                    <StatCard
-                        label="Uso de Processador"
-                        value={usage ? `${usage.cpu.toFixed(2)}%` : '0.00%'}
-                        subValue={server.cpu === 0 ? "ILIMITADO" : `${server.cpu}%`}
-                        icon={<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 1v3m0 16v3M20 12h3M1 12h3" /></svg>}
-                    />
-                    <StatCard
-                        label="Memória RAM"
-                        value={formatBytes(usage?.memory)}
-                        subValue={server.ram === 0 ? "ILIMITADO" : `${server.ram} MB`}
-                        icon={<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h7m2-6h6m2 8h6" /></svg>}
-                    />
-                    <StatCard
-                        label="Armazenamento"
-                        value={formatBytes(usage?.disk)}
-                        subValue={server.disk === 0 ? "ILIMITADO" : `${server.disk} MB`}
-                        icon={<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path d="M22 12H2M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" /></svg>}
-                    />
+                {/* Grid de Stats + Botões ao lado */}
+                <div className="flex flex-col xl:flex-row gap-6 mb-6">
+
+                    {/* Grid dos Cards de Status */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 w-full">
+                        <StatCard
+                            label="Uso de Processador"
+                            value={usage && !isSuspended ? `${usage.cpu.toFixed(2)}%` : '0.00%'}
+                            subValue={server.cpu === 0 ? "ILIMITADO" : `${server.cpu}%`}
+                            icon={<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 1v3m0 16v3M20 12h3M1 12h3" /></svg>}
+                        />
+                        <StatCard
+                            label="Memória RAM"
+                            value={isSuspended ? '0.00 MiB' : formatBytes(usage?.memory)}
+                            subValue={server.ram === 0 ? "ILIMITADO" : `${server.ram} MB`}
+                            icon={<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h7m2-6h6m2 8h6" /></svg>}
+                        />
+                        <StatCard
+                            label="Armazenamento"
+                            value={isSuspended ? '0.00 MiB' : formatBytes(usage?.disk)}
+                            subValue={server.disk === 0 ? "ILIMITADO" : `${server.disk} MB`}
+                            icon={<svg width="24" height="24" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5"><path d="M22 12H2M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" /></svg>}
+                        />
+                    </div>
+
+                    {/* Botões do Servidor */}
+                    <div className="flex items-center justify-center xl:justify-end shrink-0">
+                        <ServerActions status={serverStatus} />
+                    </div>
+
                 </div>
 
                 {/* Console */}
@@ -167,7 +183,7 @@ export default function ConsoleContainer() {
                 </div>
 
                 {/* Gráficos */}
-                <ServerCharts />
+                {!isSuspended && <ServerCharts />}
             </main>
         </>
     )

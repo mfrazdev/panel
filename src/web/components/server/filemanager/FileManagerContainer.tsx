@@ -47,7 +47,7 @@ const formatDate = (timestamp: number) => {
 };
 
 // Checkbox maior (w-5 h-5), sem bordas iniciais, e com o "V" interno ajustado pro novo tamanho
-const customCheckboxClass = "appearance-none w-5 h-5 rounded-[4px] border-none bg-[var(--color-terciary)] hover:bg-white/10 checked:bg-[var(--color-primary)] checked:hover:bg-[var(--color-primary)] cursor-pointer flex-shrink-0 relative transition-all shadow-sm before:content-[''] checked:before:block before:hidden before:absolute before:left-[6px] before:top-[2px] before:w-[6px] before:h-[11px] before:border-solid before:border-white before:border-r-[2px] before:border-b-[2px] before:rotate-45";
+const customCheckboxClass = "appearance-none w-5 h-5 rounded-[4px] border-none bg-[var(--color-sidebar)] hover:bg-white/10 checked:bg-[var(--color-primary)] checked:hover:bg-[var(--color-primary)] cursor-pointer flex-shrink-0 relative transition-all shadow-sm before:content-[''] checked:before:block before:hidden before:absolute before:left-[6px] before:top-[2px] before:w-[6px] before:h-[11px] before:border-solid before:border-white before:border-r-[2px] before:border-b-[2px] before:rotate-45";
 
 interface FileManagerProps {
     action?: string;
@@ -75,6 +75,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
     const [files, setFiles] = useState<FileItem[]>([]);
     const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
     const [isLoading, setIsLoading] = useState(true);
+    const [hasError, setHasError] = useState(false); // <-- Estado de erro adicionado
 
     const [isCreateDirOpen, setIsCreateDirOpen] = useState(false);
     const [isCreateFileOpen, setIsCreateFileOpen] = useState(false);
@@ -113,6 +114,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
 
         loadingProgress.setLoadingBar(true);
         setIsLoading(true);
+        setHasError(false); // Reseta o erro ao tentar buscar novamente
         setLoadingBar(true);
 
         try {
@@ -137,6 +139,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
         } catch (error) {
             console.error("Erro ao carregar arquivos:", error);
             setFiles([]);
+            setHasError(true); // Define que deu erro
         } finally {
             const elapsed = Date.now() - start;
             const minTime = 100;
@@ -264,7 +267,8 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
     const actions = safeAction.split("/");
     const isEditing = actions[1] === 'edit' || isEditOpen;
 
-    if (isLoading && !isEditing) {
+    // Se estiver carregando OU se deu erro, ele exibe o LoadingPage
+    if ((isLoading || hasError) && !isEditing) {
         return <AnimatePresence mode={"wait"}>
             <motion.div
                 key="loading-terminal"
@@ -305,7 +309,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
     };
 
     return (
-        <div className="flex-1 flex w-full h-full text-(--color-text-value) relative z-0 overflow-hidden">
+        <div className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden flex-1 flex w-full h-full text-(--color-text-value) relative z-0 overflow-hidden">
             <input
                 type="file"
                 ref={fileInputRef}
@@ -346,7 +350,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
                     >
                         <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6 shrink-0">
                             {/* pl-[12px] para igualar o recuo da lista que agora tem mais margin (p-2 + pl-1) */}
-                            <div className="flex items-center gap-4 text-sm font-mono text-[var(--color-text-label)] pl-[12px]">
+                            <div className="flex items-center gap-4 text-sm font-mono text-(--color-text-label) pl-[12px]">
                                 <input
                                     type="checkbox"
                                     className={customCheckboxClass}
@@ -354,7 +358,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
                                     checked={selectedFiles.length === files.length && files.length > 0}
                                 />
                                 <div className="flex items-center gap-1.5 flex-wrap">
-                                    <span className="text-[var(--color-text-sub)]/50 font-bold select-none">/</span>
+                                    <span className="text-(--color-text-sub)/50 font-bold select-none">/</span>
                                     {breadcrumbs.map((crumb, index) => (
                                         <React.Fragment key={crumb.path}>
                                             <span
@@ -387,7 +391,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
                             )}
 
                             <div className="flex-1 overflow-y-auto custom-scrollbar flex flex-col gap-[8px] p-[2px]">
-                                {files.length === 0 && !isLoading && (
+                                {files.length === 0 && !isLoading && !hasError && (
                                     <div className="p-8 text-center text-[var(--color-text-sub)] m-auto">
                                         Este diretório está vazio. <br/><span className="text-xs opacity-60">Arraste arquivos aqui para fazer upload.</span>
                                     </div>

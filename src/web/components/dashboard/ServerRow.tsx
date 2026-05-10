@@ -3,7 +3,7 @@ import { ServerData } from "@/web/types";
 import { Link } from "vatts/react";
 
 interface ServerRowProps {
-    server: ServerData;
+    server: ServerData & { description?: string }; // Garantindo a tipagem da descrição, caso não tenha na interface original
     status?: string;
     stats?: {
         cpu: number;
@@ -51,14 +51,28 @@ const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats
         return mb >= 1024 ? (mb / 1024).toFixed(0) + ' GB' : mb + ' MB';
     };
 
+    // Cálculos para as barras de progresso
+    const cpuPercent = server.cpu > 0 ? Math.min((currentCpu / server.cpu) * 100, 100) : (currentCpu > 100 ? 100 : currentCpu);
+    const ramInMB = currentRamBytes / 1024 / 1024;
+    const ramPercent = server.ram > 0 ? Math.min((ramInMB / server.ram) * 100, 100) : 0;
+    const diskInMB = currentDiskBytes / 1024 / 1024;
+    const diskPercent = server.disk > 0 ? Math.min((diskInMB / server.disk) * 100, 100) : 0;
+
     return (
         <Link
             href={`/server/${server.serverUuid.split('-')[0]}`}
-            className="flex items-center justify-between p-6 rounded-md transition-all duration-300 cursor-pointer group hover:bg-(--color-terciary) bg-(--color-secondary) shadow-(--card-shadow) transform hover:-translate-y-1"
+            className="group relative flex flex-col md:flex-row items-start md:items-center justify-between p-5 rounded-xl bg-(--color-secondary) shadow-lg hover:shadow-[0_8px_30px_rgba(223,95,255,0.1)] transition-all duration-300 overflow-hidden"
         >
-            <div className="flex items-center gap-6 w-2/5">
-                <div className="w-16 h-16 rounded-md flex items-center justify-center text-(--color-primary) bg-(--color-terciary) group-hover:bg-(--color-secondary) transition-colors relative overflow-hidden">
-                    <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24" className="relative z-10">
+            {/* Faixa de cor lateral baseada no status */}
+            <div
+                className="absolute left-0 top-0 bottom-0 w-[3px] transition-colors duration-500"
+                style={{ backgroundColor: currentStatus.color, opacity: currentStatus.isAnimated ? 0.8 : 0.4 }}
+            />
+
+            {/* Esquerda: Ícone e Info do Servidor */}
+            <div className="flex items-center gap-5 w-full md:w-2/5 pl-2">
+                <div className="w-14 h-14 rounded-lg flex items-center justify-center text-(--color-primary) bg-(--color-terciary) group-hover:scale-105 transition-transform shrink-0">
+                    <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                         <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
                         <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
                         <line x1="6" y1="6" x2="6.01" y2="6"></line>
@@ -66,88 +80,104 @@ const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats
                     </svg>
                 </div>
 
-                <div>
+                <div className="flex flex-col min-w-0"> {/* min-w-0 ajuda o truncate a funcionar dentro do flex */}
                     <div className="flex items-center gap-3">
-                        <h3 className="text-[var(--color-text-value)] font-black text-lg tracking-tight group-hover:text-(--color-primary)/80 transition-colors truncate max-w-[200px]">
+                        <h3 className="text-(--color-text-label) font-bold text-lg tracking-tight group-hover:text-(--color-primary) transition-colors truncate max-w-[220px]">
                             {server.name}
                         </h3>
-                        <div className="flex items-center gap-2">
-                            <div className="flex items-center justify-center w-6 h-6 rounded-md bg-black/20">
-                                <span className="relative flex h-2 w-2">
-                                    {currentStatus.isAnimated && (
-                                        <span className="animate-ping absolute inline-flex h-full w-full rounded-md opacity-75" style={{ backgroundColor: currentStatus.color }}></span>
-                                    )}
-                                    <span className="relative inline-flex rounded-md h-2 w-2" style={{ backgroundColor: currentStatus.color, boxShadow: `0 0 8px ${currentStatus.color}` }}></span>
-                                </span>
-                            </div>
-                            <span className="text-[11px] uppercase font-bold tracking-widest" style={{ color: currentStatus.color }}>
+
+                        {/* Badge de Status Moderno */}
+                        <div className="flex items-center gap-2 px-2.5 py-1 rounded-md shrink-0">
+                            <span className="relative flex h-2 w-2">
+                                {currentStatus.isAnimated && (
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: currentStatus.color }}></span>
+                                )}
+                                <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: currentStatus.color, boxShadow: `0 0 8px ${currentStatus.color}` }}></span>
+                            </span>
+                            <span className="text-[10px] uppercase font-bold tracking-widest" style={{ color: currentStatus.color }}>
                                 {currentStatus.label}
                             </span>
                         </div>
                     </div>
 
-                    <div className="flex items-center gap-2 text-(--color-text-label) text-[13px] mt-1.5 font-semibold">
-                        <span className="font-mono text-(--color-text-label) group-hover:text-(--color-primary) transition-colors tracking-wider">{address}</span>
+                    <div className="flex items-center gap-2 mt-1.5">
+                        <span className="font-mono text-sm text-(--color-text-sub) group-hover:text-(--color-text-label) transition-colors">{address}</span>
                     </div>
+
+                    {/* Descrição Adicionada Aqui */}
+                    {server.description && (
+                        <p className="mt-1 text-xs text-(--color-text-sub) opacity-75 truncate max-w-[250px] md:max-w-[320px] group-hover:opacity-100 transition-opacity duration-300">
+                            {server.description}
+                        </p>
+                    )}
                 </div>
             </div>
 
-            <div className="flex items-center justify-end gap-6 flex-1 pr-2">
-                {/* CPU */}
-                <div className="flex flex-col items-end group-hover:-translate-y-0.5 transition-transform duration-300">
-                    <div className="flex items-center gap-2 mb-1">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-(--color-primary) group-hover:text-(--color-text-label) transition-colors">
-                            <rect x="4" y="4" width="16" height="16" rx="2" ry="2"></rect>
-                            <rect x="9" y="9" width="6" height="6"></rect>
-                        </svg>
-                        <span className="text-[10px] text-(--color-text-label) uppercase font-bold tracking-widest">CPU</span>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                        <span className="text-lg font-black text-[var(--color-text-value)]">
-                            {isConnecting ? <span className="animate-pulse">--</span> : `${currentCpu.toFixed(1)}%`}
+            {/* Direita: Métricas (CPU, RAM, DISK) */}
+            <div className="flex items-center justify-end gap-8 flex-1 w-full md:w-auto mt-6 md:mt-0 pr-4">
+
+                {/* CPU Block */}
+                <div className="flex flex-col w-24">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-(--color-text-sub) uppercase font-bold tracking-widest">CPU</span>
+                        <span className="text-xs font-mono text-text-(--color-text-label) font-medium">
+                            {isConnecting ? '--' : `${currentCpu.toFixed(1)}%`}
                         </span>
-                        <span className="text-xs text-(--color-text-label) opacity-60 font-bold">/ {server.cpu === 0 ? '∞' : `${server.cpu}%`}</span>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                                width: `${cpuPercent}%`,
+                                backgroundColor: cpuPercent > 85 ? 'var(--color-danger)' : cpuPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)'
+                            }}
+                        />
                     </div>
                 </div>
 
-                <div className="w-[1px] h-8 bg-(--color-terciary) group-hover:bg-(--color-secondary)"></div>
-
-                {/* RAM */}
-                <div className="flex flex-col items-end group-hover:-translate-y-0.5 transition-transform duration-300 delay-75">
-                    <div className="flex items-center gap-2 mb-1">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-(--color-primary) group-hover:text-(--color-text-label) transition-colors">
-                            <line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line>
-                            <line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line>
-                            <line x1="20" y1="21" x2="20" y2="16"></line>
-                        </svg>
-                        <span className="text-[10px] text-[var(--color-text-label)] uppercase font-bold tracking-widest">RAM</span>
+                {/* RAM Block */}
+                <div className="flex flex-col w-32">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-(--color-text-sub) uppercase font-bold tracking-widest">RAM</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xs font-mono text-(--color-text-label) font-medium">{isConnecting ? '--' : formatUsage(currentRamBytes)}</span>
+                            <span className="text-[10px] font-mono text-(--color-text-sub)">/ {formatLimit(server.ram)}</span>
+                        </div>
                     </div>
-                    <div className="flex items-baseline gap-1">
-                        <span className="text-lg font-black text-[var(--color-text-value)]">
-                            {isConnecting ? <span className="animate-pulse">--</span> : formatUsage(currentRamBytes)}
-                        </span>
-                        <span className="text-xs text-[var(--color-text-label)] opacity-60 font-bold">/ {formatLimit(server.ram)}</span>
+                    {/* Progress Bar */}
+                    <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                                width: `${ramPercent}%`,
+                                backgroundColor: ramPercent > 85 ? 'var(--color-danger)' : ramPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)'
+                            }}
+                        />
+                    </div>
+                </div>
+
+                {/* DISK Block */}
+                <div className="flex flex-col w-32">
+                    <div className="flex items-center justify-between mb-1">
+                        <span className="text-[10px] text-(--color-text-sub) uppercase font-bold tracking-widest">SSD</span>
+                        <div className="flex items-baseline gap-1">
+                            <span className="text-xs font-mono text-(--color-text-label) font-medium">{isConnecting ? '--' : formatUsage(currentDiskBytes)}</span>
+                            <span className="text-[10px] font-mono text-(--color-text-sub)">/ {formatLimit(server.disk)}</span>
+                        </div>
+                    </div>
+                    {/* Progress Bar */}
+                    <div className="w-full h-1.5 bg-black/30 rounded-full overflow-hidden">
+                        <div
+                            className="h-full rounded-full transition-all duration-700 ease-out"
+                            style={{
+                                width: `${diskPercent}%`,
+                                backgroundColor: diskPercent > 85 ? 'var(--color-danger)' : diskPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)'
+                            }}
+                        />
                     </div>
                 </div>
 
-                <div className="w-[1px] h-8 bg-(--color-terciary) group-hover:bg-(--color-secondary)"></div>
-
-                {/* DISK */}
-                <div className="flex flex-col items-end group-hover:-translate-y-0.5 transition-transform duration-300 delay-150">
-                    <div className="flex items-center gap-2 mb-1">
-                        <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-(--color-primary) group-hover:text-(--color-text-label) transition-colors">
-                            <path d="M22 12H2"></path>
-                            <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
-                        </svg>
-                        <span className="text-[10px] text-[var(--color-text-label)] uppercase font-bold tracking-widest">SSD</span>
-                    </div>
-                    <div className="flex items-baseline gap-1">
-                        <span className="text-lg font-black text-[var(--color-text-value)]">
-                            {isConnecting ? <span className="animate-pulse">--</span> : formatUsage(currentDiskBytes)}
-                        </span>
-                        <span className="text-xs text-[var(--color-text-label)] opacity-60 font-bold">/ {formatLimit(server.disk)}</span>
-                    </div>
-                </div>
             </div>
         </Link>
     );

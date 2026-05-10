@@ -1,6 +1,6 @@
 import React from 'react';
 import { useSession } from "@vatts/auth/react";
-import { Link } from "vatts/react";
+import {Link, router, VattsImage} from "vatts/react";
 
 const Navbar: React.FC = () => {
     const session = useSession();
@@ -8,15 +8,20 @@ const Navbar: React.FC = () => {
 
     // @ts-ignore
     const panelName = typeof window !== 'undefined' && window.PanelSettings && window.PanelSettings.name ? window.PanelSettings.name : "Lunar Panel";
+    const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    const urlImage = isDark ? '/assets/img/logo-white.png' : '/assets/img/logo-dark.png';
 
     return (
         /* Adicionado 'sticky' aqui */
         <nav className="w-full h-16 bg-(--color-navbar) backdrop-blur-xl sticky top-0 z-[100]">
 
-            <div className="w-full h-full flex items-center justify-between px-8">
+            <div className="w-full h-full flex items-center justify-between px-14">
 
                 {/* Logo - Travada na esquerda */}
-                <Link href={"/"} className="flex items-center gap-2 cursor-pointer text-[25px]">
+                <Link href={"/"} className="flex items-center gap-4 cursor-pointer text-[25px]">
+                    <VattsImage src={urlImage} width={32}/>
+                    { /* separação bodinha */}
+
                     <span className="text-(--color-text-value) font-bold tracking-tighter">
                         {/* @ts-ignore */}
                         {panelName}
@@ -33,7 +38,9 @@ const Navbar: React.FC = () => {
                             <polyline points="2 12 12 17 22 12"></polyline>
                             <polyline points="2 17 12 22 22 17"></polyline>
                         </svg>
-                        <div className="absolute bottom-0 left-0 w-full h-0.5 bg-(--color-primary) shadow-[0_-2px_10px_rgba(157,86,255,0.4)]" />
+                        {router.pathname === "/" && (
+                            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-(--color-primary) shadow-[0_-2px_10px_rgba(157,86,255,0.4)]" />
+                        )}
                     </Link>
 
                     {/* Admin Link */}
@@ -46,13 +53,15 @@ const Navbar: React.FC = () => {
                         </a>
                     )}
 
-                    {/* User / Perfil */}
-                    <button className="h-full px-5 text-(--color-text-value) hover:text-(--color-text-sub) transition-colors duration-200 flex items-center">
+                    <Link href={"/profile"} className="h-full px-5 text-(--color-text-value) flex items-center relative">
                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
                             <circle cx="12" cy="7" r="4"></circle>
                         </svg>
-                    </button>
+                        {router.pathname.startsWith('/profile') && (
+                            <div className="absolute bottom-0 left-0 w-full h-0.5 bg-(--color-primary) shadow-[0_-2px_10px_rgba(157,86,255,0.4)]" />
+                        )}
+                    </Link>
 
                     {/* Divisor */}
                     <div className="w-px h-6 bg-(--color-text-sub)/10 mx-2" />
@@ -60,7 +69,7 @@ const Navbar: React.FC = () => {
                     {/* Logout */}
                     <button
                         onClick={() => session.signOut({callbackUrl: '/auth'})}
-                        className="h-full px-5 text-(--color-text-value) hover:text-(--color-danger) transition-colors duration-200 flex items-center"
+                        className="cursor-pointer h-full px-5 text-(--color-text-value) hover:text-(--color-danger) transition-colors duration-200 flex items-center"
                     >
                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
                             <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>

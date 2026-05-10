@@ -2,15 +2,196 @@
 
 namespace App\controllers\Api\Users;
 
+use App\Services\SMTPService;
+use eftec\bladeone\BladeOne;
+use models\Codes;
 use models\Core;
+use models\Tokens;
 use models\User;
 use models\Allocation;
 use Vatts\Database\DB;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
+use Vatts\Utils\BladeConfig;
 
 class UsersApiController
 {
+
+    static function GenerateRandomString(int $qntd): string
+    {
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $string = '';
+
+        for ($i = 0; $i < $qntd; $i++) {
+            $string .= $chars[random_int(0, strlen($chars) - 1)];
+        }
+
+        return $string;
+    }
+
+
+    public static function verifyCode(Request $request, Response $response): Response
+    {
+        $code = trim($request->getQuery()['code'] ?? '');
+        if ($code === '') {
+            return $response->json(['error' => 'O código é obrigatório.'])->status(400);
+        }
+        $codedb = Codes::get('code', $code);
+        if (!$codedb) {
+            return $response->json(['error' => 'Código inválido ou expirado.'])->status(400);
+        }
+        $user = User::get($codedb->userId);
+
+        if(!$user) {
+            return $response->json(['error' => 'Usuário associado ao código não encontrado.'])->status(404);
+        }
+
+        return $response->json(['success' => true, 'email' => $codedb->email, 'userName' => $user->first_name . ' ' . $user->last_name]);
+    }
+
+    public static function changePassword(Request $request, Response $response): Response
+    {
+        $code = trim($request->getQuery()['code'] ?? '');
+        $password = trim($request->getBody()['password'] ?? '');
+        $confirmPassword = trim($request->getBody()['confirmPassword'] ?? '');
+
+        if ($code === '') {
+            return $response->json(['error' => 'O código é obrigatório.'])->status(400);
+        }
+        if ($password === '' || $confirmPassword === '') {
+            return $response->json(['error' => 'Os campos de senha são obrigatórios.'])->status(400);
+        }
+        if ($password !== $confirmPassword) {
+            return $response->json(['error' => 'As senhas não coincidem.'])->status(400);
+        }
+        if (mb_strlen($password) < 8) {
+            return $response->json(['error' => 'A senha deve ter no mínimo 8 caracteres.'])->status(400);
+        }
+        $codedb = Codes::get('code', $code);
+        if (!$codedb) {
+            return $response->json(['error' => 'Código inválido ou expirado.'])->status(400);
+        }
+        $user = User::find($codedb->userId);
+        if (!$user) {
+            return $response->json(['error' => 'Usuário associado ao código não encontrado.'])->status(404);
+        }
+        $user->password = password_hash($password, PASSWORD_DEFAULT);
+        $user->save();
+        $codedb->delete();
+        return $response->json(['success' => true]);
+    }
+
+    public static function sendRecoveryEmail(Request $request, Response $response): Response
+    {
+        $email = trim($request->getBody()['email'] ?? '');
+
+        if ($email === '') {
+            return $response->json(['error' => 'O campo de e-mail é obrigatório.'])->status(400);
+        }
+
+        if (!filter_var($email, FILTER_VALIDATE_EMAIL)) {
+            return $response->json(['error' => 'E-mail inválido.'])->status(400);
+        }
+
+        $user = User::get('email', $email);
+        if (!$user) {
+            // Para evitar revelar se o e-mail existe ou não, retornamos sucesso mesmo que o usuário não seja encontrado
+            return $response->json(['success' => true]);
+        }
+
+        // ========================================================================
+        // BLOCO 1: Lógica do Banco de Dados (Antes de desconectar)
+        // ========================================================================
+        try {
+            $code = self::generateRandomString(64);
+            $token = new Codes();
+            $token->userId = $user->id;
+            $token->email = $email;
+            $token->code = $code;
+            $token->save();
+        } catch (\Exception $e) {
+            error_log("Erro ao criar código de recuperação no DB para {$email}: " . $e->getMessage());
+            return $response->json(['error' => 'Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.'])->status(500);
+        }
+
+        // 1. Prepara a resposta de sucesso e define no objeto Response
+        $response->json(['success' => true]);
+
+        // 2. Emite a resposta HTTP e DESCONECTA o cliente (O browser vai achar que já acabou)
+        self::emitAndDisconnect($response);
+
+        // ========================================================================
+        // BLOCO 2: INÍCIO DO PROCESSAMENTO EM BACKGROUND (Depois de desconectar)
+        // ========================================================================
+        try {
+            $smtpService = new SMTPService();
+
+            // Monta o e-mail
+            $linkRecuperacao = env('URL') . "/auth/recovery?code={$code}";
+            $assunto = "Recuperação de Senha";
+
+            $corpo = BladeConfig::get()->run("emails.recovery", [
+                "url" => $linkRecuperacao,
+                "user" => $user
+            ]);
+
+            // Envia o e-mail
+            $smtpService->send($user->email, $assunto, $corpo);
+
+        } catch (\Exception $e) {
+            // Como o cliente já foi desconectado, não podemos usar "return $response".
+            // Apenas logamos o erro para debugar depois!
+            error_log("Erro no background (Email/Blade) para {$email}: " . $e->getMessage());
+        }
+
+        // 4. Mata o script para evitar que o router tente enviar a Response de novo ao finalizar
+        exit;
+    }
+
+    /**
+     * Força o envio dos headers e do corpo para o cliente,
+     * encerrando a conexão HTTP, mas mantendo o script rodando.
+     */
+    private static function emitAndDisconnect(Response $response): void
+    {
+        ignore_user_abort(true);
+        set_time_limit(0);
+
+        while (ob_get_level() > 0) {
+            ob_end_clean();
+        }
+
+        $body = (string) $response->getBody();
+
+        $response->header('Connection', 'close');
+        $response->header('Content-Length', (string) strlen($body));
+
+        http_response_code($response->getStatus());
+
+        foreach ($response->getHeaders() as $key => $value) {
+            if (is_array($value)) {
+                foreach ($value as $v) {
+                    header(sprintf('%s: %s', $key, $v), false);
+                }
+            } else {
+                header(sprintf('%s: %s', $key, $value));
+            }
+        }
+
+        echo $body;
+
+        if (function_exists('fastcgi_finish_request')) {
+            fastcgi_finish_request();
+        } else {
+            ob_flush();
+            flush();
+        }
+
+        if (session_id()) {
+            session_write_close();
+        }
+    }
+
 
 
 

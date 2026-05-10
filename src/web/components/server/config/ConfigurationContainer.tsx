@@ -61,7 +61,7 @@ export default function ConfigurationContainer() {
 
 
     return (
-        <main className="flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden">
+        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden">
             {/* Grid configurado para 2 colunas no desktop e 1 no mobile */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
@@ -113,7 +113,7 @@ export default function ConfigurationContainer() {
                 <Card title={"REINSTALAR SERVIDOR"}>
                     <div className="flex flex-col gap-4">
                         <p className={"text-(--color-text-label)"}>
-                            Reinstalar o servidor irá pará-lo e, em seguida, executar novamente o script de instalação que o configurou inicialmente. Alguns arquivos podem ser excluídos ou modificados durante este processo. Faça um backup dos seus dados antes de continuar.
+                            Para reinstalar o servidor é necessário desliga-lo, e irá executar novamente o script de instalação que o configurou inicialmente. Alguns arquivos podem ser excluídos ou modificados durante este processo. Faça um backup dos seus dados antes de continuar.
                         </p>
                         <Button disabled={usage?.state !== 'stopped'} onClick={handleReinstall} variant={"danger"}>
                             REINSTALAR

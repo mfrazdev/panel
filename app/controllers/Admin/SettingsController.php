@@ -74,9 +74,25 @@ class SettingsController
                     'default' => 'root@root.com'
                 ],
                 [
+                    'label' => 'Email de envio',
+                    'key'   => 'smtp_send_email',
+                    'type'  => 'text',
+                    'default' => 'root@root.com'
+                ],
+                [
                     'label' => 'Senha SMTP',
                     'key'   => 'smtp_pass',
                     'type'  => 'password',
+                ],
+                [
+                    'label' => 'Tipo de conexão',
+                    'key' => 'type',
+                    'type' => 'select',
+                    'options' => [
+                        'tls' => 'TLS',
+                        'ssl' => 'SSL'
+                    ],
+                    'desc' => 'Se sim, o servidor não poderá ser iniciado, modificado ou receber comandos.'
                 ],
             ]
         ];
@@ -99,12 +115,12 @@ class SettingsController
         $allowedKeys = [
             'company_name',
             'sftp_host', 'sftp_port',
-            'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass'
+            'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_send_email', 'type'
         ];
 
         // 2. Itera sobre o array e atualiza/cria no banco de dados item por item
         foreach ($allowedKeys as $key) {
-            if (isset($body[$key])) {
+            if (isset($body[$key]) && $body[$key] !== '') {
                 // Busca a config pela 'key'
                 $setting = Settings::get('key', $key);
 

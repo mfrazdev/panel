@@ -35,12 +35,20 @@ export default function ServerContainer({ action }: ServerProps) {
     // Sincroniza a URL com o estado interno
     useEffect(() => {
         const pathSegments = pathname.split('/').filter(Boolean);
-        const actionFromUrl = pathSegments[2] || 'console';
+        let actionFromUrl = pathSegments[2] || 'console';
+
+        // Força a aba console e arruma a URL se o servidor estiver suspenso
+        if (server?.suspended === 1) {
+            actionFromUrl = 'console';
+            if (pathSegments[2] && pathSegments[2] !== 'console') {
+                window.history.replaceState(null, '', `/server/${serverId}`);
+            }
+        }
 
         if (actionFromUrl !== currentAction) {
             setCurrentAction(actionFromUrl);
         }
-    }, [pathname]);
+    }, [pathname, server?.suspended, serverId]);
 
     // LÓGICA CENTRAL DE CONEXÃO
     useEffect(() => {
@@ -64,6 +72,11 @@ export default function ServerContainer({ action }: ServerProps) {
 
     const changeAction = (newAction: string) => {
         if (newAction === currentAction) return;
+
+        // Impede a troca de abas se o servidor estiver suspenso
+        if (server?.suspended === 1 && newAction !== 'console') {
+            return;
+        }
 
         setLoadingBar(true);
         setCurrentAction(newAction);
