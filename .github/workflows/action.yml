@@ -133,7 +133,11 @@ jobs:
           rm -rf ioncube_encoder_evaluation
           rm -rf /tmp/encoded_build
           rm -rf /tmp/original_views
-
+          rm -rf .git
+          rm -rf composer.json
+          rm -rf composer.lock
+          
+          mkdir -p t-cache
       # ZIP
       - name: Create ZIP
         run: |
