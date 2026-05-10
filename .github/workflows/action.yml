@@ -125,6 +125,10 @@ jobs:
           $conf->obfuscate_property_name = false;
           $conf->obfuscate_method_name = false;
           $conf->obfuscate_function_name = false;
+          
+          // Desativa a ofuscação de constantes para evitar erros com as funções defined() do Laravel/Illuminate
+          $conf->obfuscate_constant_name = false;
+          $conf->obfuscate_class_constant_name = false;
           EOF
 
           echo "Iniciando ofuscação do backend..."
