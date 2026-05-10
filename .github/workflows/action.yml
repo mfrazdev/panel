@@ -129,14 +129,15 @@ jobs:
           output: '/tmp/encoded_build'
           ignore: '.git .github web dist resources storage public vendor'
 
-      # HACK: REMOVER HEADERS DE AVALIAÇÃO E RESTAURAR VIEWS
+      # HACK: TENTATIVA DE LIMPEZA SEM QUEBRAR O HASH
       - name: Post-Encoding Cleanup and Restore
         run: |
-          echo "Removendo comentários de avaliação do IonCube dos arquivos PHP..."
-          # Deleta as linhas específicas que o IonCube Trial adiciona no topo
-          find /tmp/encoded_build -name "*.php" -exec sed -i '/IONCUBE ENCODER 15.0 EVALUATION/d' {} +
-          find /tmp/encoded_build -name "*.php" -exec sed -i '/THIS LICENSE MESSAGE IS ONLY ADDED BY THE EVALUATION ENCODER/d' {} +
-          find /tmp/encoded_build -name "*.php" -exec sed -i '/IS NOT PRESENT IN PRODUCTION ENCODED FILES/d' {} +
+          echo "Limpando avisos do IonCube (Space Replacement Hack)..."
+          # Em vez de deletar a linha, substituímos por espaços para manter o tamanho do arquivo idêntico.
+          # Isso evita o erro de "file is corrupted" se o loader checar o offset dos bytes.
+          find /tmp/encoded_build -name "*.php" -exec perl -i -pe 's/IONCUBE ENCODER 15\.0 EVALUATION/                               /g' {} +
+          find /tmp/encoded_build -name "*.php" -exec perl -i -pe 's/THIS LICENSE MESSAGE IS ONLY ADDED BY THE EVALUATION ENCODER/                                                            /g' {} +
+          find /tmp/encoded_build -name "*.php" -exec perl -i -pe 's/IS NOT PRESENT IN PRODUCTION ENCODED FILES/                                          /g' {} +
           
           echo "Restaurando views originais..."
           rm -rf /tmp/encoded_build/src/views
