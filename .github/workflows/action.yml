@@ -106,6 +106,8 @@ jobs:
         uses: MuriloChianfa/ioncube-encoder-action@v3.0.1
         with:
           trial: true               # <--- ADICIONADO AQUI PARA A VERSÃO GRÁTIS
+          binary: true
+          create-target: true
           php-target-version: '8.2'
           template: 'laravel'
           source: '.'
