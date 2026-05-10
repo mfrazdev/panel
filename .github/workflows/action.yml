@@ -109,7 +109,10 @@ jobs:
         with:
           php-version: 8.3
 
-      # 1. SETUP DO OBFUSCADOR PRIMEIRO
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader
+
+      # OBFUSCAÇÃO YAK PRO
       - name: Setup YAK Pro Obfuscator
         run: |
           git clone https://github.com/pk-fr/yakpro-po.git /tmp/yakpro-po
@@ -118,16 +121,19 @@ jobs:
           chmod a+x yakpro-po.php
           sudo ln -s /tmp/yakpro-po/yakpro-po.php /usr/local/bin/yakpro-po
 
-      # 2. OFUSCA O PROJETO (Como o composer install ainda não rodou, não tem pasta vendor para atrapalhar!)
       - name: Obfuscate Project
         run: |
           echo "Criando arquivo de configuração do YAK Pro..."
           cat << 'EOF' > yakpro-po.cnf
           <?php
-          // Removi 'vendor' e 'autoload.php' daqui porque a pasta vendor nem vai existir nesse momento da pipeline
-          $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public');
-          $conf->t_ignore_files = array('helpers.php');
+          // Protege as pastas do sistema (O vendor DEVE ser ignorado para o Composer não quebrar)
+          $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public', 'vendor');
+          $conf->t_ignore_files = array('autoload.php', 'helpers.php');
           
+          // CONFIGURAÇÃO SEGURA (PARA O PROJETO FUNCIONAR!)
+          // Nomes de namespaces, classes e métodos DEVEM ser originais para o PSR-4 e autoloaders funcionarem.
+          // Mas YAK Pro continuará embaralhando as *variáveis* internas e a lógica automaticamente!
+          $conf->obfuscate_namespace_name = false;
           $conf->obfuscate_class_name = false;
           $conf->obfuscate_interface_name = false;
           $conf->obfuscate_trait_name = false;
@@ -141,25 +147,25 @@ jobs:
           echo "Iniciando ofuscação do backend..."
           mkdir -p /tmp/obfuscated_build
           
-          yakpro-po . -o /tmp/obfuscated_build
+          # Força o YAK Pro a usar EXATAMENTE o nosso arquivo de configuração pelo caminho absoluto
+          yakpro-po --config-file "$(pwd)/yakpro-po.cnf" . -o /tmp/obfuscated_build
           
+          echo "Copiando arquivos ofuscados de volta para o diretório de build..."
+          # Procuramos pelo composer.json para achar a raiz exata do projeto ofuscado.
           REAL_PATH_TO_CODE=$(dirname "$(find /tmp/obfuscated_build/yakpro-po -name 'composer.json' | head -n 1)")
           
           if [ -n "$REAL_PATH_TO_CODE" ]; then
             echo "Pasta ofuscada encontrada em: $REAL_PATH_TO_CODE"
+            # Sobrescreve os arquivos originais pelos ofuscados
             rsync -av "$REAL_PATH_TO_CODE/" ./
           else
             echo "ERRO CRÍTICO: Diretório ofuscado não encontrado. O YAK Pro falhou durante o processo."
             exit 1
           fi
           
+          # Limpeza
           rm yakpro-po.cnf
           rm -rf /tmp/obfuscated_build
-
-      # 3. AGORA SIM! INSTALA O COMPOSER
-      # Ele vai gerar o vendor e o autoloader limpinhos trabalhando junto com o seu código ofuscado.
-      - name: Install Composer Dependencies
-        run: composer install --no-dev --optimize-autoloader
 
       # ZIP
       - name: Create ZIP
