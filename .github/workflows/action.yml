@@ -109,6 +109,15 @@ jobs:
         with:
           php-version: 8.3
 
+
+      - name: Setup YAK Pro Obfuscator
+        run: |
+          git clone https://github.com/pk-fr/yakpro-po.git /tmp/yakpro-po
+          cd /tmp/yakpro-po
+          git clone https://github.com/nikic/PHP-Parser.git --branch 4.x
+          chmod a+x yakpro-po.php
+          sudo ln -s /tmp/yakpro-po/yakpro-po.php /usr/local/bin/yakpro-po
+
       - name: Obfuscate Project
         run: |
           echo "Criando arquivo de configuração do YAK Pro..."
