@@ -13,6 +13,7 @@ use Vatts\Database\DB;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
 use Vatts\Utils\BladeConfig;
+use Vatts\Vatts;
 
 class UsersApiController
 {
@@ -127,7 +128,7 @@ class UsersApiController
             $smtpService = new SMTPService();
 
             // Monta o e-mail
-            $linkRecuperacao = env('URL') . "/auth/recovery?code={$code}";
+            $linkRecuperacao = Vatts::getEnv('URL') . "/auth/recovery?code={$code}";
             $assunto = "Recuperação de Senha";
 
             $corpo = BladeConfig::get()->run("emails.recovery", [
