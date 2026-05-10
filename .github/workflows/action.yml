@@ -121,16 +121,16 @@ jobs:
           chmod a+x yakpro-po.php
           sudo ln -s /tmp/yakpro-po/yakpro-po.php /usr/local/bin/yakpro-po
 
-      - name: Obfuscate Project (Including Vendor)
+      - name: Obfuscate Project
         run: |
           echo "Criando arquivo de configuração do YAK Pro..."
           cat << 'EOF' > yakpro-po.cnf
           <?php
-          // Protege o Frontend, arquivos estáticos e o core do Composer
-          $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage', 'public', 'composer');
+          // Protege o Frontend, arquivos estáticos e a pasta vendor (vital para o Composer/Laravel funcionar)
+          $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage', 'public', 'vendor');
           $conf->t_ignore_files = array('autoload.php', 'helpers.php');
           
-          // TUDO ATIVADO CONFORME SOLICITADO
+          // TUDO ATIVADO CONFORME SOLICITADO PARA O SEU CÓDIGO FONTE
           $conf->obfuscate_class_name = true;
           $conf->obfuscate_interface_name = true;
           $conf->obfuscate_trait_name = true;
