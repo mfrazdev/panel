@@ -29,7 +29,6 @@ jobs:
           # Pega a última tag estável (x.x.x)
           LATEST_STABLE=$(git tag --list --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
           
-          # Se não houver tag estável, define uma base
           if [ -z "$LATEST_STABLE" ]; then
             BASE_TAG="0.0.1"
             HAS_STABLE=false
@@ -45,15 +44,12 @@ jobs:
           
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           
-          # Lógica de Versão
           if [[ "$COMMIT_MSG" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             NEXT_VERSION="${BASH_REMATCH[1]}"
           else
             if [[ "$BRANCH_NAME" == "canary" ]]; then
-              # Canary usa a base da última estável
               NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
             else
-              # Stable incrementa o patch se já existir uma tag
               if [ "$HAS_STABLE" = true ]; then
                 PATCH=$((PATCH + 1))
               fi
@@ -61,7 +57,6 @@ jobs:
             fi
           fi
           
-          # Lógica de Tag Final e IS_LATEST
           if [[ "$BRANCH_NAME" == "canary" ]]; then
             LAST_CANARY=$(git tag --list "${NEXT_VERSION}-canary.*" --sort=-v:refname | head -n 1)
             if [[ "$LAST_CANARY" =~ -canary\.([0-9]+)$ ]]; then
@@ -71,7 +66,7 @@ jobs:
             fi
             FINAL_TAG="${NEXT_VERSION}-canary.${CANARY_NUMBER}"
           
-            # IS_LATEST para Canary: Só é true se NÃO existir nenhuma versão estável no repositório
+            # IS_LATEST para Canary: Só é true se NÃO existir nenhuma versão estável
             if [ "$HAS_STABLE" = false ]; then
               IS_LATEST="true"
             else
@@ -85,14 +80,11 @@ jobs:
           echo "TAG_NAME=$FINAL_TAG" >> $GITHUB_ENV
           echo "IS_LATEST=$IS_LATEST" >> $GITHUB_ENV
 
-          echo "Generated tag: $FINAL_TAG"
-          echo "Is latest: $IS_LATEST"
-
       - name: Save Version to File
         run: |
           echo "{\"version\": \"${{ env.TAG_NAME }}\"}" > version.json
 
-      # NODE
+      # NODE SETUP & BUILD
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
@@ -109,12 +101,10 @@ jobs:
       - name: Build Frontend
         run: pnpm run build
 
-      - name: Remove Node Modules and .vatts
-        run: |
-          rm -rf node_modules
-          rm -rf .vatts
+      - name: Remove Node Modules
+        run: rm -rf node_modules .vatts
 
-      # PHP
+      # PHP SETUP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
@@ -123,11 +113,10 @@ jobs:
       - name: Install Composer Dependencies
         run: composer install --no-dev --optimize-autoloader --classmap-authoritative
 
-      # Backup das Views
       - name: Backup Original Views
         run: cp -r src/views /tmp/original_views
 
-      # 2. ENCODE IONCUBE
+      # IONCUBE ENCODING
       - name: Encode with IonCube
         uses: MuriloChianfa/ioncube-encoder-action@v3.0.1
         with:
@@ -140,12 +129,23 @@ jobs:
           output: '/tmp/encoded_build'
           ignore: '.git .github web dist resources storage public vendor'
 
-      # Limpeza e Restauração
+      # HACK: REMOVER HEADERS DE AVALIAÇÃO E RESTAURAR VIEWS
       - name: Post-Encoding Cleanup and Restore
         run: |
+          echo "Removendo comentários de avaliação do IonCube dos arquivos PHP..."
+          # Deleta as linhas específicas que o IonCube Trial adiciona no topo
+          find /tmp/encoded_build -name "*.php" -exec sed -i '/IONCUBE ENCODER 15.0 EVALUATION/d' {} +
+          find /tmp/encoded_build -name "*.php" -exec sed -i '/THIS LICENSE MESSAGE IS ONLY ADDED BY THE EVALUATION ENCODER/d' {} +
+          find /tmp/encoded_build -name "*.php" -exec sed -i '/IS NOT PRESENT IN PRODUCTION ENCODED FILES/d' {} +
+          
+          echo "Restaurando views originais..."
           rm -rf /tmp/encoded_build/src/views
           cp -r /tmp/original_views /tmp/encoded_build/src/views
+          
+          echo "Sincronizando arquivos..."
           rsync -av /tmp/encoded_build/ ./
+          
+          echo "Limpando lixo..."
           rm -rf ioncube_encoder_evaluation /tmp/encoded_build /tmp/original_views .git composer.json composer.lock
           mkdir -p t-cache
 
@@ -174,10 +174,8 @@ jobs:
           files: panel.zip
           generate_release_notes: true
           make_latest: ${{ env.IS_LATEST }}
-          # Força a criação da tag no commit atual para os Source Codes ficarem corretos
           prerelease: ${{ contains(env.TAG_NAME, 'canary') }}
 
-      # LIMPEZA DE ARTIFACTS
       - name: Delete Artifact
         uses: geekyeggo/delete-artifact@v5
         with:
