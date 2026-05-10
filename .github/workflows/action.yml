@@ -6,7 +6,6 @@ on:
       - master
       - canary
 
-# Adicionado para permitir que o bot do GitHub Actions crie a release
 permissions:
   contents: write
 
@@ -18,28 +17,23 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0 # Necessário para baixar o histórico e ler as tags anteriores
+          fetch-depth: 0
 
       - name: Calculate Version
         id: versioning
         env:
           COMMIT_MSG: ${{ github.event.head_commit.message }}
         run: |
-          # Puxa todas as tags
           git fetch --tags --quiet
           
-          # Busca a última tag ESTÁVEL (exatamente X.X.X)
-          # O $ no final garante que ele IGNORA tags que tenham "-canary-..."
           LATEST_TAG=$(git tag --list --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
           
           TAG_FOUND=true
           if [ -z "$LATEST_TAG" ]; then
-            # Começa direto em 0.0.1 se não houver tags
             LATEST_TAG="0.0.1"
             TAG_FOUND=false
           fi
           
-          # Separa em Major, Minor e Patch
           IFS='.' read -r -a VERSION_PARTS <<< "$LATEST_TAG"
           MAJOR="${VERSION_PARTS[0]}"
           MINOR="${VERSION_PARTS[1]}"
@@ -48,15 +42,12 @@ jobs:
           BRANCH_NAME="${GITHUB_REF#refs/heads/}"
           SHORT_SHA=$(git rev-parse --short HEAD)
           
-          # Verifica se há "release vX.X.X" na mensagem de commit
           if [[ "$COMMIT_MSG" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             NEXT_VERSION="${BASH_REMATCH[1]}"
           else
             if [[ "$BRANCH_NAME" == "canary" ]]; then
-              # NO CANARY: Não aumenta a versão. Usa a versão base.
               NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
             else
-              # NA MASTER: Aumenta o patch apenas se já existia uma tag antes.
               if [ "$TAG_FOUND" = true ]; then
                 PATCH=$((PATCH + 1))
               fi
@@ -65,7 +56,6 @@ jobs:
           fi
           
           if [[ "$BRANCH_NAME" == "canary" ]]; then
-            # Garante que o final fica limpo: ex. 0.0.1-canary-a1b2c3d
             FINAL_TAG="${NEXT_VERSION}-canary-${SHORT_SHA}"
             IS_LATEST="false"
           else
@@ -76,7 +66,6 @@ jobs:
           echo "TAG_NAME=$FINAL_TAG" >> $GITHUB_ENV
           echo "IS_LATEST=$IS_LATEST" >> $GITHUB_ENV
 
-      # Salva a versão calculada em um arquivo JSON na raiz do projeto
       - name: Save Version to File
         run: |
           echo "{\"version\": \"${{ env.TAG_NAME }}\"}" > version.json
@@ -109,20 +98,20 @@ jobs:
         with:
           php-version: 8.3
 
-      # ENCODE IONCUBE
+      # ENCODE IONCUBE - AGORA COM OS PARÂMETROS EXATOS DA ACTION
       - name: Encode with IonCube
-        uses: MuriloChianfa/ioncube-encoder-action@v1
+        uses: MuriloChianfa/ioncube-encoder-action@v3.0.1
         with:
-          php-version: '8.3'
+          php-target-version: '8.2' # A action aceita max 8.2 no arquivo YML (Roda perfeitamente em 8.3 depois)
+          template: 'laravel'       # Template pronto para não quebrar o Laravel
           source: '.'
-          destination: '/tmp/encoded_build'
-          # Os argumentos abaixo ignoram as mesmas pastas que o YAK Pro ignorava.
-          # Adicione ou remova pastas usando --ignore 'nome_da_pasta/'
-          args: "--ignore '.git/' --ignore '.github/' --ignore 'web/' --ignore 'dist/' --ignore 'resources/' --ignore 'storage/' --ignore 'public/'"
+          output: '/tmp/encoded_build'
+          ignore: '.git .github web dist resources storage public' # Espaço como separador conforme documentação
 
       - name: Replace Original Files with Encoded Files
         run: |
           echo "Sincronizando arquivos codificados de volta para a pasta de build..."
+          # Passa os arquivos codificados por cima dos originais
           rsync -av /tmp/encoded_build/ ./
           rm -rf /tmp/encoded_build
 
