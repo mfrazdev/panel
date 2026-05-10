@@ -15,7 +15,7 @@
                 </div>
 
                 <p class="text-[12px] font-medium text-textSub mt-1 ml-2 leading-relaxed">
-                    Copie o conteúdo acima e cole no arquivo <span class="text-primary ">/etc/enderd/config.json</span> no servidor onde o node está instalado para vinculá-lo a este painel.
+                    Copie o conteúdo acima e cole no arquivo <span class="text-primary ">/etc/feather/config.json</span> no servidor onde o node está instalado para vinculá-lo a este painel.
                 </p>
             </div>
         </div>
@@ -50,10 +50,10 @@
                         "sftp": {{ $resource->sftp }},
                         "remote": "http://localhost:8000",
                         "token": "{{ $resource->token }}",
-                        "path": "/etc/enderd",
+                        "path": "/etc/feather",
                         "ssl": {{ $resource->ssl === 'https' ? 'true' : 'false' }},
-                        "certPath": "/etc/enderd/certs/cert.pem",
-                        "keyPath": "/etc/enderd/certs/key.pem"
+                        "certPath": "/etc/feather/certs/cert.pem",
+                        "keyPath": "/etc/feather/certs/key.pem"
                     }`
                 ].join('\n');
 

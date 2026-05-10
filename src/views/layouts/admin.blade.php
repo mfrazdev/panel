@@ -8,44 +8,10 @@
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap" rel="stylesheet">
     <script src="/assets/admin/modal.js"></script>
+    <link rel="icon" href="/assets/img/logo-dark.png" media="(prefers-color-scheme: light)">
+    <link rel="icon" href="/assets/img/logo-white.png" media="(prefers-color-scheme: dark)">
+    <link href="/assets/css/root.css" rel="stylesheet">
     <style>
-        :root {
-            /* Fontes */
-            --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
-            --font-mono: "JetBrains Mono", monospace;
-
-            /* accent principal */
-            --color-primary: rgb(223 95 255);
-
-            /* base */
-            --color-background: #3d334d;
-
-            /* cards */
-            --color-secondary: rgb(74 56 99);
-            --color-terciary: rgb(54 40 73);
-
-            /* layout */
-            --color-navbar: rgb(27 19 39);
-            --color-sidebar: rgb(40 30 57);
-
-            /* console */
-            --color-console: rgb(35 26 51);
-            --color-console-command: rgb(48 36 68);
-
-            /* feedback */
-            --color-success: rgb(34 197 94);
-            --color-info: rgb(161 55 184);
-            --color-warning: rgb(250 204 21);
-            --color-danger: rgb(239 68 68);
-
-            /* texto */
-            --color-text-label: rgb(230 237 243);
-            --color-text-value: rgb(255 255 255);
-            --color-text-sub: rgb(145 152 170);
-
-            /* sombra */
-            --card-shadow: 0 12px 30px rgb(0 0 0 / 0.45);
-        }
 
         body {
             background-color: var(--color-background);
@@ -363,8 +329,8 @@
     </main>
 
     <footer class="px-10 py-6 text-textSub flex items-center justify-between">
-        <span class="text-xs font-medium">Hight Cloud Admin &copy; {{ date('Y') }}</span>
-        <span class="text-xs">Versão 1.0.0</span>
+        <a href="https://hightcloud.app" class="text-xs font-medium">Lunar Panel &copy; {{ date('Y') }}</a>
+        <span class="text-xs">{{ $current_version }}</span>
     </footer>
 </div>
 

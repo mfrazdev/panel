@@ -12,13 +12,7 @@ ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
 BladeConfig::init(__DIR__ . '/../src/views', __DIR__ . '/../t-cache');
-
-// GET /hello/[name]
-$app->get('/hello/[name]', function (Request $request, Response $response) use ($v) {
-    $callable = $v->action('HomeController@hello');
-    return $callable($request, $response);
-});
-
+BladeConfig::get()->share('current_version', \App\controllers\Admin\DashboardController::getCurrentVersion() ?? 'dev');
 $app->group(["prefix" => '/api'], function (\Vatts\Router\Router $router) {
     \App\controllers\Api\ApiRoutes::setup($router);
 });

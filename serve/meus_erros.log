@@ -1,171 +1,219 @@
-[10-May-2026 13:33:45 UTC] ../panel.db
-[10-May-2026 13:33:46 UTC] ../panel.db
-[10-May-2026 13:33:46 UTC] ../panel.db
-[10-May-2026 13:33:47 UTC] ../panel.db
-[10-May-2026 13:33:47 UTC] ../panel.db
-[10-May-2026 13:35:03 UTC] ../panel.db
-[10-May-2026 13:35:05 UTC] ../panel.db
-[10-May-2026 13:35:05 UTC] ../panel.db
-[10-May-2026 13:35:06 UTC] ../panel.db
-[10-May-2026 13:35:07 UTC] ../panel.db
-[10-May-2026 13:35:07 UTC] ../panel.db
-[10-May-2026 13:37:45 UTC] ../panel.db
-[10-May-2026 13:37:45 UTC] ../panel.db
-[10-May-2026 13:37:45 UTC] ../panel.db
-[10-May-2026 13:37:45 UTC] ../panel.db
-[10-May-2026 13:37:45 UTC] ../panel.db
-[10-May-2026 13:37:45 UTC] ../panel.db
-[10-May-2026 13:37:45 UTC] ../panel.db
-[10-May-2026 13:37:46 UTC] ../panel.db
-[10-May-2026 13:37:46 UTC] ../panel.db
-[10-May-2026 13:37:46 UTC] ../panel.db
-[10-May-2026 13:37:46 UTC] ../panel.db
-[10-May-2026 13:37:46 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:46 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:46 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:46 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:46 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:46 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:48 UTC] ../panel.db
-[10-May-2026 13:37:48 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] ../panel.db
-[10-May-2026 13:37:51 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:51 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:51 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:51 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:51 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:51 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] ../panel.db
-[10-May-2026 13:37:52 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:52 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:52 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:52 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:52 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:52 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:54 UTC] ../panel.db
-[10-May-2026 13:37:55 UTC] ../panel.db
-[10-May-2026 13:37:55 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] ../panel.db
-[10-May-2026 13:37:56 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:56 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:56 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:56 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:56 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:56 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:37:57 UTC] ../panel.db
-[10-May-2026 13:38:16 UTC] ../panel.db
-[10-May-2026 13:38:16 UTC] ../panel.db
-[10-May-2026 13:38:16 UTC] ../panel.db
-[10-May-2026 13:38:16 UTC] ../panel.db
-[10-May-2026 13:38:16 UTC] ../panel.db
-[10-May-2026 13:38:16 UTC] ../panel.db
-[10-May-2026 13:38:16 UTC] ../panel.db
-[10-May-2026 13:38:17 UTC] ../panel.db
-[10-May-2026 13:38:17 UTC] ../panel.db
-[10-May-2026 13:38:17 UTC] ../panel.db
-[10-May-2026 13:38:17 UTC] ../panel.db
-[10-May-2026 13:38:17 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:38:17 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:38:17 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:38:17 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:38:17 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:38:17 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 13:38:19 UTC] ../panel.db
-[10-May-2026 13:38:37 UTC] ../panel.db
-[10-May-2026 13:38:37 UTC] ../panel.db
-[10-May-2026 13:38:37 UTC] ../panel.db
-[10-May-2026 13:38:38 UTC] ../panel.db
-[10-May-2026 13:38:38 UTC] ../panel.db
-[10-May-2026 13:38:38 UTC] ../panel.db
-[10-May-2026 13:38:38 UTC] ../panel.db
-[10-May-2026 13:38:38 UTC] ../panel.db
-[10-May-2026 13:38:38 UTC] ../panel.db
-[10-May-2026 13:38:38 UTC] ../panel.db
-[10-May-2026 14:35:40 UTC] ../panel.db
-[10-May-2026 14:35:40 UTC] ../panel.db
-[10-May-2026 14:35:44 UTC] ../panel.db
-[10-May-2026 14:35:44 UTC] ../panel.db
-[10-May-2026 14:35:46 UTC] ../panel.db
-[10-May-2026 14:35:46 UTC] ../panel.db
-[10-May-2026 14:39:28 UTC] ../panel.db
-[10-May-2026 14:39:28 UTC] ../panel.db
-[10-May-2026 14:39:28 UTC] ../panel.db
-[10-May-2026 14:39:28 UTC] ../panel.db
-[10-May-2026 14:39:30 UTC] ../panel.db
-[10-May-2026 14:39:30 UTC] ../panel.db
-[10-May-2026 14:39:30 UTC] ../panel.db
-[10-May-2026 14:39:31 UTC] getStatus cURL Error (Node 1): Connection timed out after 106 milliseconds
-[10-May-2026 14:39:36 UTC] ../panel.db
-[10-May-2026 14:39:36 UTC] getStatus cURL Error (Node 1): Connection timed out after 104 milliseconds
-[10-May-2026 14:39:41 UTC] ../panel.db
-[10-May-2026 14:39:41 UTC] getStatus cURL Error (Node 1): Connection timed out after 103 milliseconds
-[10-May-2026 14:39:46 UTC] ../panel.db
-[10-May-2026 14:39:46 UTC] getStatus cURL Error (Node 1): Connection timed out after 101 milliseconds
-[10-May-2026 14:39:51 UTC] ../panel.db
-[10-May-2026 14:39:51 UTC] getStatus cURL Error (Node 1): Connection timed out after 101 milliseconds
-[10-May-2026 14:39:56 UTC] ../panel.db
-[10-May-2026 14:39:56 UTC] getStatus cURL Error (Node 1): Connection timed out after 103 milliseconds
-[10-May-2026 14:40:01 UTC] ../panel.db
-[10-May-2026 14:40:01 UTC] getStatus cURL Error (Node 1): Connection timed out after 124 milliseconds
-[10-May-2026 14:40:06 UTC] ../panel.db
-[10-May-2026 14:40:06 UTC] getStatus cURL Error (Node 1): Connection timed out after 111 milliseconds
-[10-May-2026 14:40:11 UTC] ../panel.db
-[10-May-2026 14:40:11 UTC] getStatus cURL Error (Node 1): Connection timed out after 102 milliseconds
-[10-May-2026 14:40:15 UTC] ../panel.db
-[10-May-2026 14:40:16 UTC] getStatus cURL Error (Node 1): Connection timed out after 110 milliseconds
-[10-May-2026 14:40:21 UTC] ../panel.db
-[10-May-2026 14:40:21 UTC] getStatus cURL Error (Node 1): Connection timed out after 114 milliseconds
-[10-May-2026 14:40:25 UTC] ../panel.db
-[10-May-2026 14:40:26 UTC] ../panel.db
-[10-May-2026 14:40:26 UTC] getStatus cURL Error (Node 1): Connection timed out after 114 milliseconds
-[10-May-2026 14:40:26 UTC] ../panel.db
-[10-May-2026 14:40:26 UTC] ../panel.db
-[10-May-2026 14:40:26 UTC] getStatus cURL Error (Node 1): Connection timed out after 106 milliseconds
-[10-May-2026 14:40:27 UTC] ../panel.db
-[10-May-2026 14:40:27 UTC] ../panel.db
-[10-May-2026 14:40:27 UTC] ../panel.db
-[10-May-2026 14:40:27 UTC] ../panel.db
-[10-May-2026 14:40:27 UTC] ../panel.db
-[10-May-2026 14:40:27 UTC] ../panel.db
-[10-May-2026 14:40:28 UTC] ../panel.db
-[10-May-2026 14:40:28 UTC] ../panel.db
-[10-May-2026 14:40:28 UTC] ../panel.db
-[10-May-2026 14:40:28 UTC] ../panel.db
-[10-May-2026 14:40:28 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 207 milliseconds
-[10-May-2026 14:40:28 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
-[10-May-2026 14:40:28 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
-[10-May-2026 14:40:28 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
-[10-May-2026 14:40:28 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 14:40:29 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
-[10-May-2026 14:40:29 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
-[10-May-2026 14:40:29 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
-[10-May-2026 14:40:35 UTC] ../panel.db
+[10-May-2026 18:10:05 UTC] ========== DEBUG EMAIL THEME START ==========
+[10-May-2026 18:10:05 UTC] CAMINHO CSS: E:\panel\panel\t-cache/../public/assets/css/root.css
+[10-May-2026 18:10:05 UTC] TAMANHO TOTAL DO CSS: 1994 bytes
+[10-May-2026 18:10:05 UTC] TAMANHO APÓS CORTE @MEDIA: 167 bytes
+[10-May-2026 18:10:05 UTC] BLOCOS :root ENCONTRADOS: 1
+[10-May-2026 18:10:05 UTC] TOTAL DE VARIÁVEIS DETECTADAS: 2
+[10-May-2026 18:10:05 UTC] VARIÁVEIS NO MAPA FINAL: 2
+[10-May-2026 18:10:05 UTC] ========== DEBUG EMAIL THEME END ==========
+[10-May-2026 18:10:05 UTC] configurando
+[10-May-2026 18:10:21 UTC] ========== DEBUG EMAIL THEME START ==========
+[10-May-2026 18:10:21 UTC] CAMINHO CSS: E:\panel\panel\t-cache/../public/assets/css/root.css
+[10-May-2026 18:10:21 UTC] TAMANHO TOTAL DO CSS: 1992 bytes
+[10-May-2026 18:10:21 UTC] TAMANHO APÓS CORTE @MEDIA: 1015 bytes
+[10-May-2026 18:10:21 UTC] BLOCOS :root ENCONTRADOS: 2
+[10-May-2026 18:10:21 UTC] TOTAL DE VARIÁVEIS DETECTADAS: 18
+[10-May-2026 18:10:21 UTC] PROCESSANDO: color-primary = rgb(45, 212, 191)
+[10-May-2026 18:10:21 UTC] PROCESSANDO: color-background = rgb(23, 30, 35)
+[10-May-2026 18:10:21 UTC] VARIÁVEIS NO MAPA FINAL: 18
+[10-May-2026 18:10:21 UTC] ========== DEBUG EMAIL THEME END ==========
+[10-May-2026 18:10:21 UTC] configurando
+[10-May-2026 18:13:17 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:13:17 UTC] apiRequest cURL Error (Node 1): Connection timed out after 209 milliseconds
+[10-May-2026 18:13:17 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:13:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
+[10-May-2026 18:13:18 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:13:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 216 milliseconds
+[10-May-2026 18:13:18 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:13:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:13:18 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:13:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:13:18 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:13:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:16:45 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:45 UTC] apiRequest cURL Error (Node 1): Connection timed out after 205 milliseconds
+[10-May-2026 18:16:45 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:45 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 18:16:45 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:45 UTC] apiRequest cURL Error (Node 1): Connection timed out after 213 milliseconds
+[10-May-2026 18:16:45 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 205 milliseconds
+[10-May-2026 18:16:46 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
+[10-May-2026 18:16:46 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 18:16:47 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:47 UTC] apiRequest cURL Error (Node 1): Connection timed out after 216 milliseconds
+[10-May-2026 18:16:47 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:47 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:16:47 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:48 UTC] apiRequest cURL Error (Node 1): Connection timed out after 213 milliseconds
+[10-May-2026 18:16:48 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:48 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
+[10-May-2026 18:16:48 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:48 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:16:48 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:48 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:16:49 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:49 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 18:16:49 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:49 UTC] apiRequest cURL Error (Node 1): Connection timed out after 208 milliseconds
+[10-May-2026 18:16:49 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:50 UTC] apiRequest cURL Error (Node 1): Connection timed out after 205 milliseconds
+[10-May-2026 18:16:50 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:50 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:16:50 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:50 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
+[10-May-2026 18:16:50 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:16:50 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:16:52 UTC] configurando
+[10-May-2026 18:17:20 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:20 UTC] apiRequest cURL Error (Node 1): Connection timed out after 206 milliseconds
+[10-May-2026 18:17:20 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:20 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:17:20 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:21 UTC] apiRequest cURL Error (Node 1): Connection timed out after 212 milliseconds
+[10-May-2026 18:17:21 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:21 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
+[10-May-2026 18:17:21 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:21 UTC] apiRequest cURL Error (Node 1): Connection timed out after 216 milliseconds
+[10-May-2026 18:17:21 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:21 UTC] apiRequest cURL Error (Node 1): Connection timed out after 205 milliseconds
+[10-May-2026 18:17:45 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
+[10-May-2026 18:17:46 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:17:46 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 216 milliseconds
+[10-May-2026 18:17:46 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 205 milliseconds
+[10-May-2026 18:17:46 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:46 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:17:46 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:17:47 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 18:18:18 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:18:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:18:18 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:18:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 18:18:18 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:18:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:18:18 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:18:18 UTC] apiRequest cURL Error (Node 1): Connection timed out after 200 milliseconds
+[10-May-2026 18:18:18 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:18:19 UTC] apiRequest cURL Error (Node 1): Connection timed out after 200 milliseconds
+[10-May-2026 18:18:19 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:18:19 UTC] apiRequest cURL Error (Node 1): Connection timed out after 205 milliseconds
+[10-May-2026 18:18:24 UTC] PHP Deprecated:  Rakit\Validation\Attribute::getValue(): Implicitly marking parameter $key as nullable is deprecated, the explicit nullable type must be used instead in E:\panel\panel\vendor\rakit\validation\src\Attribute.php on line 214
+[10-May-2026 18:18:24 UTC] PHP Deprecated:  Rakit\Validation\Helper::join(): Implicitly marking parameter $lastSeparator as nullable is deprecated, the explicit nullable type must be used instead in E:\panel\panel\vendor\rakit\validation\src\Helper.php on line 222
+[10-May-2026 18:18:24 UTC] PHP Deprecated:  Rakit\Validation\Helper::wraps(): Implicitly marking parameter $suffix as nullable is deprecated, the explicit nullable type must be used instead in E:\panel\panel\vendor\rakit\validation\src\Helper.php on line 248
+[10-May-2026 18:20:07 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:08 UTC] apiRequest cURL Error (Node 1): Connection timed out after 205 milliseconds
+[10-May-2026 18:20:08 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:08 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:20:08 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:08 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:20:08 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:08 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:20:08 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:08 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
+[10-May-2026 18:20:08 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:09 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 18:20:10 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:10 UTC] apiRequest cURL Error (Node 1): Connection timed out after 209 milliseconds
+[10-May-2026 18:20:10 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:10 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 18:20:10 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:10 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:20:10 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:10 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:20:10 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:11 UTC] apiRequest cURL Error (Node 1): Connection timed out after 212 milliseconds
+[10-May-2026 18:20:11 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:20:11 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:30:52 UTC] PHP Warning:  Attempt to read property "password" on null in E:\panel\panel\app\controllers\Api\Users\UsersApiController.php on line 45
+[10-May-2026 18:30:52 UTC] PHP Deprecated:  password_verify(): Passing null to parameter #2 ($hash) of type string is deprecated in E:\panel\panel\app\controllers\Api\Users\UsersApiController.php on line 45
+[10-May-2026 18:30:57 UTC] PHP Warning:  Attempt to read property "password" on null in E:\panel\panel\app\controllers\Api\Users\UsersApiController.php on line 45
+[10-May-2026 18:30:57 UTC] PHP Deprecated:  password_verify(): Passing null to parameter #2 ($hash) of type string is deprecated in E:\panel\panel\app\controllers\Api\Users\UsersApiController.php on line 45
+[10-May-2026 18:31:42 UTC] PHP Warning:  Attempt to read property "password" on null in E:\panel\panel\app\controllers\Api\Users\UsersApiController.php on line 45
+[10-May-2026 18:31:42 UTC] PHP Deprecated:  password_verify(): Passing null to parameter #2 ($hash) of type string is deprecated in E:\panel\panel\app\controllers\Api\Users\UsersApiController.php on line 45
+[10-May-2026 18:36:04 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:36:05 UTC] apiRequest cURL Error (Node 1): Connection timed out after 213 milliseconds
+[10-May-2026 18:36:05 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:36:05 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:36:05 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:36:05 UTC] apiRequest cURL Error (Node 1): Connection timed out after 216 milliseconds
+[10-May-2026 18:36:05 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:36:05 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:36:05 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:36:05 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:36:05 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:36:06 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
+[10-May-2026 18:36:50 UTC] GitHub API response: 
+[10-May-2026 18:36:51 UTC] GitHub API response: 
+[10-May-2026 18:39:41 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:39:42 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:39:42 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:39:42 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
+[10-May-2026 18:39:42 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:39:42 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
+[10-May-2026 18:39:42 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:39:42 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:39:42 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:39:42 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
+[10-May-2026 18:39:42 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:39:43 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:43:11 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:43:11 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
+[10-May-2026 18:43:11 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:43:11 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 18:43:11 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:43:12 UTC] apiRequest cURL Error (Node 1): Connection timed out after 200 milliseconds
+[10-May-2026 18:43:12 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:43:12 UTC] apiRequest cURL Error (Node 1): Connection timed out after 215 milliseconds
+[10-May-2026 18:43:12 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:43:12 UTC] apiRequest cURL Error (Node 1): Connection timed out after 212 milliseconds
+[10-May-2026 18:43:12 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 18:43:12 UTC] apiRequest cURL Error (Node 1): Connection timed out after 203 milliseconds
+[10-May-2026 18:43:13 UTC] GitHub API response: 
+[10-May-2026 18:45:09 UTC] GitHub API response: 
+[10-May-2026 18:45:12 UTC] GitHub API response: 
+[10-May-2026 18:45:13 UTC] GitHub API response: 
+[10-May-2026 18:46:26 UTC] GitHub API response: 
+[10-May-2026 18:46:27 UTC] GitHub API response: 
+[10-May-2026 18:47:28 UTC] GitHub API response: 
+[10-May-2026 18:47:33 UTC] GitHub API response: 
+[10-May-2026 19:02:55 UTC] GitHub API response: 
+[10-May-2026 19:03:03 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:03:03 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:03:03 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:03:03 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:03:03 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:03:03 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:03:04 UTC] GitHub API response: 
+[10-May-2026 19:03:09 UTC] getStatus cURL Error (Node 1): Operation timed out after 215 milliseconds with 0 bytes received
+[10-May-2026 19:05:59 UTC] getStatus cURL Error (Node 1): Operation timed out after 210 milliseconds with 0 bytes received
+[10-May-2026 19:11:03 UTC] getStatus cURL Error (Node 1): Operation timed out after 208 milliseconds with 0 bytes received
+[10-May-2026 19:12:44 UTC] Status do Node 1: {"cpu":12,"hasUpdate":false,"latestVersion":"","os":"windows","ram":1,"status":"success","uptime":"0h 0m","version":"dev"}
+[10-May-2026 19:12:49 UTC] Status do Node 1: {"cpu":12,"hasUpdate":false,"latestVersion":"","os":"windows","ram":1,"status":"success","uptime":"0h 0m","version":"dev"}
+[10-May-2026 19:12:54 UTC] Status do Node 1: {"cpu":12,"hasUpdate":false,"latestVersion":"","os":"windows","ram":1,"status":"success","uptime":"0h 0m","version":"dev"}
+[10-May-2026 19:12:59 UTC] Status do Node 1: {"cpu":12,"hasUpdate":false,"latestVersion":"","os":"windows","ram":1,"status":"success","uptime":"0h 0m","version":"dev"}
+[10-May-2026 19:13:04 UTC] Status do Node 1: {"cpu":12,"hasUpdate":false,"latestVersion":"","os":"windows","ram":1,"status":"success","uptime":"0h 0m","version":"dev"}
+[10-May-2026 19:13:09 UTC] Status do Node 1: {"cpu":12,"hasUpdate":false,"latestVersion":"","os":"windows","ram":1,"status":"success","uptime":"0h 1m","version":"dev"}
+[10-May-2026 19:14:16 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:16 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:16 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:16 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:16 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:16 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:17 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:17 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:17 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:17 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:17 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:14:17 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:44:51 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:44:51 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:44:51 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:44:51 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:44:51 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 19:44:51 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}

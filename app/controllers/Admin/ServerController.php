@@ -2,7 +2,7 @@
 
 namespace App\controllers\Admin;
 
-require_once __DIR__ . '/../../utils/EnvVarUtils.php';
+require_once __DIR__ . '/../../Utils/EnvVarUtils.php';
 
 use App\Services\ServerService;
 use models\Server;

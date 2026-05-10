@@ -21,17 +21,51 @@
                     <span class="text-[10px] text-textSub uppercase font-bold tracking-wider block mb-1">Uso de RAM</span>
                     <span class="text-xl font-mono text-textValue node-ram-{{ $resource->id }}">--</span>
                 </div>
+
                 <div class="bg-bgBase p-4 rounded-xl shadow-inner">
                     <span class="text-[10px] text-textSub uppercase font-bold tracking-wider block mb-1">Carga de CPU</span>
                     <span class="text-xl font-mono text-textValue node-cpu-{{ $resource->id }}">--</span>
                 </div>
+
                 <div class="bg-bgBase p-4 rounded-xl shadow-inner">
                     <span class="text-[10px] text-textSub uppercase font-bold tracking-wider block mb-1">Sistema Operacional</span>
                     <span class="text-sm font-medium text-textSub node-os-{{ $resource->id }}">--</span>
                 </div>
+
                 <div class="bg-bgBase p-4 rounded-xl shadow-inner">
                     <span class="text-[10px] text-textSub uppercase font-bold tracking-wider block mb-1">Uptime</span>
                     <span class="text-sm font-medium text-textSub node-uptime-{{ $resource->id }}">--</span>
+                </div>
+
+                <!-- Versão -->
+                <div class="bg-bgBase p-4 rounded-xl shadow-inner col-span-2">
+                    <div class="flex items-center justify-between gap-4">
+                        <div class="flex flex-col">
+                            <span class="text-[10px] text-textSub uppercase font-bold tracking-wider block mb-1">
+                                Versão do Agent
+                            </span>
+
+                            <div class="flex items-center gap-3">
+                                <span class="text-lg font-mono text-textValue node-version-{{ $resource->id }}">
+                                    --
+                                </span>
+
+                                <span class="hidden text-[10px] px-2 py-1 rounded-full font-bold uppercase tracking-wider node-update-badge-{{ $resource->id }}">
+                                    Atualização disponível
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="hidden text-right node-latest-wrapper-{{ $resource->id }}">
+                            <span class="text-[10px] text-textSub uppercase font-bold tracking-wider block mb-1">
+                                Última versão
+                            </span>
+
+                            <span class="text-sm font-mono text-primary node-latest-version-{{ $resource->id }}">
+                                --
+                            </span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

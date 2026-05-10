@@ -16,10 +16,46 @@ class DashboardController
 
         $hasUpdate = false;
 
-        // Só compara se não for uma versão canary (ou você pode adaptar a lógica se quiser)
-        // e se conseguiu pegar a última versão do GitHub e a versão atual local.
-        if ($latestVersion && $currentVersion && strpos($currentVersion, 'canary') === false) {
-            $hasUpdate = version_compare($currentVersion, $latestVersion, '<');
+        if ($latestVersion && $currentVersion) {
+            $normalizedCurrent = ltrim(strtolower($currentVersion), 'v');
+            $normalizedLatest = ltrim(strtolower($latestVersion), 'v');
+
+            // Detecta canary/builds especiais
+            $isCurrentCanary = str_contains($normalizedCurrent, 'canary');
+            $isLatestCanary = str_contains($normalizedLatest, 'canary');
+
+            /*
+             * Regras:
+             *
+             * stable -> stable
+             * canary -> canary
+             * stable -> canary
+             * canary -> stable
+             *
+             * Tudo comparando corretamente.
+             */
+
+            if ($isCurrentCanary || $isLatestCanary) {
+                /*
+                 * Usa comparação "natural" para versões com labels:
+                 * Ex:
+                 * 1.0.0-canary.1
+                 * 1.0.0-canary.2
+                 * 1.0.1
+                 */
+                $hasUpdate = version_compare(
+                    $normalizedCurrent,
+                    $normalizedLatest,
+                    '<'
+                );
+            } else {
+                // versões normais
+                $hasUpdate = version_compare(
+                    $normalizedCurrent,
+                    $normalizedLatest,
+                    '<'
+                );
+            }
         }
 
         return $response->view('Dashboard', [
@@ -32,7 +68,7 @@ class DashboardController
     /**
      * Lê a versão atual do arquivo gerado pelo GitHub Actions.
      */
-    private function getCurrentVersion(): ?string
+    public static function getCurrentVersion(): ?string
     {
         // Caminho para o arquivo version.json na raiz do projeto
         // Ajuste o __DIR__ . '/../../../' dependendo de onde este controller está em relação à raiz
@@ -44,7 +80,7 @@ class DashboardController
 
             if (isset($data['version'])) {
                 // Remove o 'v' da frente, caso o actions tenha salvo com 'v'
-                return ltrim($data['version'], 'v');
+                return 'v' . ltrim($data['version'], 'v');
             }
         }
 

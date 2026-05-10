@@ -31,6 +31,33 @@ class UsersApiController
     }
 
 
+    public static function changeEmail(Request $request, Response $response): Response
+    {
+        $currentPassword = trim($request->getBody()['currentPassword'] ?? '');
+        $newEmail = trim($request->getBody()['newEmail'] ?? '');
+        if ($currentPassword === '' || $newEmail === '') {
+            return $response->json(['error' => 'Todos os campos são obrigatórios.'])->status(400);
+        }
+        if (!filter_var($newEmail, FILTER_VALIDATE_EMAIL)) {
+            return $response->json(['error' => 'E-mail inválido.'])->status(400);
+        }
+        $user = $request->getParsed('user');
+        if (!password_verify($currentPassword, $user->password)) {
+            return $response->json(['error' => 'Senha atual incorreta.'])->status(400);
+        }
+        if($user->email === $newEmail) {
+            return $response->json(['error' => 'Este já é seu e-mail atual.'])->status(400);
+        }
+        if (User::get('email', $newEmail)) {
+            return $response->json(['error' => 'E-mail já está em uso por outro usuário.'])->status(400);
+        }
+
+        $user->email = $newEmail;
+        $user->save();
+        return $response->json(['success' => true]);
+    }
+
+
     public static function verifyCode(Request $request, Response $response): Response
     {
         $code = trim($request->getQuery()['code'] ?? '');
@@ -41,9 +68,16 @@ class UsersApiController
         if (!$codedb) {
             return $response->json(['error' => 'Código inválido ou expirado.'])->status(400);
         }
-        $user = User::get($codedb->userId);
 
-        if(!$user) {
+        // Validação: Expira em 15 minutos
+        $createdAt = strtotime($codedb->created_at);
+        if ($createdAt < strtotime('-15 minutes')) {
+            $codedb->delete();
+            return $response->json(['error' => 'O link de recuperação expirou (limite de 15 minutos).'])->status(400);
+        }
+
+        $user = User::get($codedb->userId);
+        if (!$user) {
             return $response->json(['error' => 'Usuário associado ao código não encontrado.'])->status(404);
         }
 
@@ -68,17 +102,28 @@ class UsersApiController
         if (mb_strlen($password) < 8) {
             return $response->json(['error' => 'A senha deve ter no mínimo 8 caracteres.'])->status(400);
         }
+
         $codedb = Codes::get('code', $code);
         if (!$codedb) {
             return $response->json(['error' => 'Código inválido ou expirado.'])->status(400);
         }
+
+        // Validação: Expira em 15 minutos
+        $createdAt = strtotime($codedb->created_at);
+        if ($createdAt < strtotime('-15 minutes')) {
+            $codedb->delete();
+            return $response->json(['error' => 'O link de recuperação expirou.'])->status(400);
+        }
+
         $user = User::find($codedb->userId);
         if (!$user) {
             return $response->json(['error' => 'Usuário associado ao código não encontrado.'])->status(404);
         }
+
         $user->password = password_hash($password, PASSWORD_DEFAULT);
         $user->save();
         $codedb->delete();
+
         return $response->json(['success' => true]);
     }
 
@@ -96,13 +141,24 @@ class UsersApiController
 
         $user = User::get('email', $email);
         if (!$user) {
-            // Para evitar revelar se o e-mail existe ou não, retornamos sucesso mesmo que o usuário não seja encontrado
             return $response->json(['success' => true]);
         }
 
         // ========================================================================
-        // BLOCO 1: Lógica do Banco de Dados (Antes de desconectar)
+        // BLOCO: Validação de Delay (1 minuto) e Limpeza de Antigos
         // ========================================================================
+        $existingCode = Codes::get('userId', $user->id);
+
+        if ($existingCode) {
+            $lastSent = strtotime($existingCode->created_at);
+            if ($lastSent > strtotime('-1 minute')) {
+                return $response->json(['error' => 'Aguarde 1 minuto para solicitar uma nova recuperação.'])->status(429);
+            }
+
+            // Apaga o antigo antes de gerar o novo para não acumular lixo
+            $existingCode->delete();
+        }
+
         try {
             $code = self::generateRandomString(64);
             $token = new Codes();
@@ -112,22 +168,15 @@ class UsersApiController
             $token->save();
         } catch (\Exception $e) {
             error_log("Erro ao criar código de recuperação no DB para {$email}: " . $e->getMessage());
-            return $response->json(['error' => 'Ocorreu um erro ao processar sua solicitação. Por favor, tente novamente mais tarde.'])->status(500);
+            return $response->json(['error' => 'Erro interno ao processar solicitação.'])->status(500);
         }
 
-        // 1. Prepara a resposta de sucesso e define no objeto Response
         $response->json(['success' => true]);
-
-        // 2. Emite a resposta HTTP e DESCONECTA o cliente (O browser vai achar que já acabou)
         self::emitAndDisconnect($response);
 
-        // ========================================================================
-        // BLOCO 2: INÍCIO DO PROCESSAMENTO EM BACKGROUND (Depois de desconectar)
-        // ========================================================================
+        // BACKGROUND PROCESSING
         try {
             $smtpService = new SMTPService();
-
-            // Monta o e-mail
             $linkRecuperacao = Vatts::getEnv('URL') . "/auth/recovery?code={$code}";
             $assunto = "Recuperação de Senha";
 
@@ -136,16 +185,12 @@ class UsersApiController
                 "user" => $user
             ]);
 
-            // Envia o e-mail
             $smtpService->send($user->email, $assunto, $corpo);
 
         } catch (\Exception $e) {
-            // Como o cliente já foi desconectado, não podemos usar "return $response".
-            // Apenas logamos o erro para debugar depois!
             error_log("Erro no background (Email/Blade) para {$email}: " . $e->getMessage());
         }
 
-        // 4. Mata o script para evitar que o router tente enviar a Response de novo ao finalizar
         exit;
     }
 

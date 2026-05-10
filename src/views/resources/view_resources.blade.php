@@ -80,7 +80,7 @@
 
                                     @elseif($type === 'date')
                                         <span class="text-[14px] font-medium text-textSub">
-                                            {{ \Carbon\Carbon::parse($val)->translatedFormat('d M, Y') }}
+                                            {{ date('d M, Y', strtotime($val)) }}
                                         </span>
 
                                     @elseif($type === 'custom')

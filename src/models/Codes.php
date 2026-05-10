@@ -30,5 +30,6 @@ class Codes extends Model
     public string $userId;
     public string $email;
     public string $code;
-
+    public ?string $createdAt = null;
+    public ?string $updatedAt = null;
 }

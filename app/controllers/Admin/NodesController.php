@@ -2,6 +2,7 @@
 
 namespace App\controllers\Admin;
 
+use JetBrains\PhpStorm\NoReturn;
 use models\Node;
 use models\Allocation;
 use models\Server;
@@ -95,6 +96,7 @@ class NodesController
      * Endpoint para buscar o status das nodes via AJAX
      * Retorna informações detalhadas (RAM, CPU, OS, Uptime)
      */
+    #[NoReturn]
     public function getStatus(Request $request, Response $response)
     {
         $nodes = Node::all();
@@ -109,7 +111,10 @@ class NodesController
                     'ram'    => $info['ram'] ?? '0%',
                     'cpu'    => $info['cpu'] ?? '0%',
                     'os'     => $info['os'] ?? 'Linux',
-                    'uptime' => $info['uptime'] ?? '0h 0m'
+                    'uptime' => $info['uptime'] ?? '0h 0m',
+                    'version' => $info['version'] ?? 'dev',
+                    'hasUpdate' => $info['hasUpdate'] ?? false,
+                    'latestVersion' => $info['latestVersion'] ?? null,
                 ];
             } else {
                 $statuses[$node->id] = [

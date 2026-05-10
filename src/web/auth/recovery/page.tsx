@@ -14,26 +14,51 @@ export default function Recovery() {
     const [confirmPassword, setConfirmPassword] = useState('');
     const [code, setCode] = useState<string | null>(null);
     const [loading, setLoading] = useState(false);
-    const toast = useToast();
+    const [cooldown, setCooldown] = useState(0); // Estado para o contador visual
 
-    const session = useSession()
+    const toast = useToast();
+    const session = useSession();
+
+    const COOLDOWN_KEY = 'recovery_email_cooldown';
+
+    // 1. Efeito para preencher e-mail se logado e gerenciar o Cooldown do LocalStorage
+    useEffect(() => {
+        // Preenche e-mail se logado
+        if (session.data?.user?.email) {
+            setEmail(session.data.user.email);
+        }
+
+        // Verifica se há um cooldown ativo no localStorage
+        const expiry = localStorage.getItem(COOLDOWN_KEY);
+        if (expiry) {
+            const remaining = Math.ceil((parseInt(expiry) - Date.now()) / 1000);
+            if (remaining > 0) {
+                setCooldown(remaining);
+            }
+        }
+    }, [session.data]);
+
+    // 2. Timer do Cooldown
+    useEffect(() => {
+        if (cooldown > 0) {
+            const timer = setTimeout(() => setCooldown(cooldown - 1), 1000);
+            return () => clearTimeout(timer);
+        }
+    }, [cooldown]);
 
     useEffect(() => {
         const params = new URLSearchParams(window.location.search);
         const recoveryCode = params.get('code');
 
         if (recoveryCode) {
-            // Função para validar o código assim que a página carregar
             const validateCode = async () => {
                 try {
                     const response = await fetch(`/api/v1/users/recovery/validate?code=${recoveryCode}`);
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        // Código válido, define o estado para mostrar o form de nova senha
                         setCode(recoveryCode);
                     } else {
-                        // Código inválido ou expirado
                         toast.addToast(data.error || 'Código inválido ou expirado.', 'error');
                         router.push('/auth');
                     }
@@ -49,6 +74,9 @@ export default function Recovery() {
 
     const handleSendEmail = async (e: { preventDefault: () => void; }) => {
         e.preventDefault();
+
+        if (cooldown > 0) return;
+
         setLoading(true);
         try {
             const response = await fetch('/api/v1/users/recovery/send', {
@@ -61,8 +89,20 @@ export default function Recovery() {
 
             if (response.ok && data.success) {
                 toast.addToast('E-mail de recuperação enviado! Verifique sua caixa de entrada.', 'success');
-                setEmail('');
+
+                // Define o cooldown de 60 segundos no estado e no localStorage
+                const expiry = Date.now() + 60000;
+                localStorage.setItem(COOLDOWN_KEY, expiry.toString());
+                setCooldown(60);
+
+                if (!session.data) setEmail('');
             } else {
+                // Se o backend retornar 429 (Too Many Requests), também ativamos o cooldown aqui por precaução
+                if (response.status === 429) {
+                    const expiry = Date.now() + 60000;
+                    localStorage.setItem(COOLDOWN_KEY, expiry.toString());
+                    setCooldown(60);
+                }
                 toast.addToast(data.error || 'Erro ao enviar e-mail de recuperação.', 'error');
             }
         } catch (error) {
@@ -83,7 +123,6 @@ export default function Recovery() {
         }
 
         try {
-            // Ajustado para '/change' e passando o code via query string para bater com o backend PHP
             const response = await fetch(`/api/v1/users/recovery/change?code=${code}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
@@ -104,8 +143,10 @@ export default function Recovery() {
             setLoading(false);
         }
     };
+
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const urlImage = isDark ? '/assets/img/logo-white.png' : '/assets/img/logo-dark.png';
+
     return (
         <div className="min-h-screen flex flex-col justify-center items-center font-sans relative">
             <h1 className="text-[32px] text-(--color-primary) font-semibold text-center mb-10 tracking-tight">
@@ -114,12 +155,10 @@ export default function Recovery() {
 
             <Card>
                 <div className="grid grid-cols-[1fr_1.5fr] gap-4">
-                    {/* Lado Esquerdo: Logo */}
                     <div className="grid place-items-center p-7">
                         <VattsImage src={urlImage} width={250}/>
                     </div>
 
-                    {/* Lado Direito: Formulário */}
                     <div className="w-full grid place-items-center p-5 pl-8">
                         {!code ? (
                             <form onSubmit={handleSendEmail} className="space-y-6 w-full">
@@ -129,9 +168,9 @@ export default function Recovery() {
                                     </label>
                                     <Input
                                         type="email"
-                                        value={session.data ? session.data.user.email : email}
-                                        readOnly={!!session.data} // Se o usuário estiver logado, o campo de email fica readonly
-                                        placeholder={session.data ? session.data.user.email : 'Digite seu e-mail'}
+                                        value={email}
+                                        readOnly={!!session.data}
+                                        placeholder={'Digite seu e-mail'}
                                         onChange={(e) => setEmail(e.target.value)}
                                         required
                                     />
@@ -140,9 +179,9 @@ export default function Recovery() {
                                 <Button
                                     type="submit"
                                     className="w-full font-bold py-3 px-4 uppercase"
-                                    disabled={loading}
+                                    disabled={loading || cooldown > 0}
                                 >
-                                    {loading ? 'Enviando...' : 'Enviar Link'}
+                                    {loading ? 'Enviando...' : cooldown > 0 ? `Aguarde ${cooldown}s` : 'Enviar Link'}
                                 </Button>
 
                                 {!session.data && (

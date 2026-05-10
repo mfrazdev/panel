@@ -84,7 +84,7 @@
 
                     <!-- Cards customizados renderizados ACIMA -->
             @if(!$isBelow && count($customCardList) > 0)
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+                <div class="grid grid-cols-1 {{ count($customCardList) > 1 ? 'lg:grid-cols-2' : '' }} gap-8 mb-8">
                     @foreach($customCardList as $card)
                         @include($card)
                     @endforeach
