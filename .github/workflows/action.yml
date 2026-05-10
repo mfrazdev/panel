@@ -125,8 +125,8 @@ jobs:
           // 'composer' protege os arquivos do vendor/composer para não quebrar o autoloader.
           $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage', 'public', 'composer');
           
-          // Ignora o index do vendor do composer para proteger as strings cruciais de dependências
-          $conf->t_ignore_files = array('autoload.php');
+          // Ignora o index do vendor e arquivos helpers (protege func globais como env() do Laravel)
+          $conf->t_ignore_files = array('autoload.php', 'helpers.php');
           
           // Mantém nomes estruturais para não quebrar autoload do Composer e Vendor
           $conf->obfuscate_class_name = false;
