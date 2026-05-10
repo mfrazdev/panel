@@ -110,6 +110,7 @@ jobs:
           php-version: 8.3
 
 
+      # OBFUSCAÇÃO YAK PRO
       - name: Setup YAK Pro Obfuscator
         run: |
           git clone https://github.com/pk-fr/yakpro-po.git /tmp/yakpro-po
@@ -125,17 +126,13 @@ jobs:
           <?php
           $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public');
           
-          // --- O QUE NÃO PODE OFUSCAR ---
-          // Isso garante que o Composer (PSR-4) e as Rotas do painel se encontrem.
-          $conf->obfuscate_namespace_name = false;
-          $conf->obfuscate_class_name = false;          
-          $conf->obfuscate_interface_name = false;
-          $conf->obfuscate_trait_name = false;
-          $conf->obfuscate_method_name = false; // Métodos precisam ficar originais por causa das rotas (ex: UserController@index)
-          
-          // --- O QUE PODE (E DEVE) OFUSCAR ---
-          // Isso esconde suas chaves, lógicas, propriedades e variáveis.
+          // MODO HARDCORE ATIVADO - TUDO TRUE
+          $conf->obfuscate_namespace_name = true;
+          $conf->obfuscate_class_name = true;          
+          $conf->obfuscate_interface_name = true;
+          $conf->obfuscate_trait_name = true;
           $conf->obfuscate_property_name = true;
+          $conf->obfuscate_method_name = true;
           $conf->obfuscate_function_name = true;
           $conf->obfuscate_constant_name = true;
           $conf->obfuscate_class_constant_name = true;
@@ -145,13 +142,11 @@ jobs:
           echo "Iniciando ofuscação do backend..."
           mkdir -p /tmp/obfuscated_build
           
-          # Força a leitura do config
           yakpro-po --config-file yakpro-po.cnf . -o /tmp/obfuscated_build
           
           REAL_PATH_TO_CODE=$(dirname "$(find /tmp/obfuscated_build/yakpro-po -name 'composer.json' | head -n 1)")
           
           if [ -n "$REAL_PATH_TO_CODE" ]; then
-            echo "Movendo arquivos ofuscados..."
             rsync -av "$REAL_PATH_TO_CODE/" ./
           else
             echo "ERRO CRÍTICO: YAK Pro falhou."
@@ -161,9 +156,20 @@ jobs:
           rm yakpro-po.cnf
           rm -rf /tmp/obfuscated_build
 
-      # Instala o Composer normalmente sem gambiarras
+      # PASSO BRUTAL: ARRANCAR O PSR-4 DO COMPOSER.JSON
+      - name: Hack Composer to Accept Obfuscated Classes
+        run: |
+          echo "Modificando o composer.json na força bruta..."
+          # Deleta o PSR-4 inteiro e joga as pastas app/ e src/ pro classmap
+          jq 'del(.autoload."psr-4") | .autoload.classmap = (.autoload.classmap // []) + ["app/", "src/"]' composer.json > composer_temp.json
+          mv composer_temp.json composer.json
+          
+          echo "Olha como ficou o autoload do composer.json:"
+          cat composer.json | jq '.autoload'
+
+      # INSTALAÇÃO DO COMPOSER
       - name: Install Composer Dependencies
-        run: composer install --no-dev --optimize-autoloader
+        run: composer install --no-dev --optimize-autoloader --classmap-authoritative
 
       # ZIP
       - name: Create ZIP
