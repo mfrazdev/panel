@@ -113,9 +113,10 @@ jobs:
           cat << 'EOF' > yakpro-po.cnf
           <?php
           // Protege o Frontend e arquivos estáticos de serem lidos pelo ofuscador
-          // A pasta 'web' protege o src/web e a pasta 'dist' protege o public/dist (evitando o loop infinito).
-          // A pasta 'public' NÃO está aqui, então o public/index.php será ofuscado!
-          $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage');
+          // 'dist' protege o serve/dist (evitando o loop infinito).
+          // 'public' protege a pasta public inteira.
+          // 'web' protege o src/web.
+          $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage', 'public');
           
           // Mantém nomes estruturais para não quebrar autoload do Composer e Vendor
           $conf->obfuscate_class_name = false;

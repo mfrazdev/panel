@@ -5,8 +5,8 @@
   "scripts": {
     "start": "vatts start",
     "dev": "vatts dev",
-    "php": "powershell -Command \"& 'C:\\Users\\Murillo Frazão Cunha\\Downloads\\frankenphp-windows-x86_64\\frankenphp.exe' php-server -r public/ --listen=0.0.0.0:8000\"",
-    "build": "vatts export -o public/dist"
+    "php": "powershell -Command \"& 'C:\\Users\\Murillo Frazão Cunha\\Downloads\\frankenphp-windows-x86_64\\frankenphp.exe' php-server -r serve/ --listen=0.0.0.0:8000\"",
+    "build": "vatts export -o serve/dist"
   },
   "dependencies": {
     "@monaco-editor/react": "^4.7.0",
