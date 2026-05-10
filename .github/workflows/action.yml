@@ -40,18 +40,22 @@ jobs:
           MINOR="${VERSION_PARTS[1]}"
           PATCH="${VERSION_PARTS[2]}"
           
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          SHORT_SHA=$(git rev-parse --short HEAD)
+          
           # Verifica se há "release vX.X.X" na mensagem de commit
           if [[ "$COMMIT_MSG" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
             NEXT_VERSION="${BASH_REMATCH[1]}"
           else
-            # Se não houver, incrementa o patch automaticamente
-            PATCH=$((PATCH + 1))
-            NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+            if [[ "$BRANCH_NAME" == "canary" ]]; then
+                # Se for canary, mantém a versão atual (LATEST_TAG) como base
+                NEXT_VERSION="$LATEST_TAG"
+            else
+                # Se não houver, incrementa o patch automaticamente (apenas na master)
+                PATCH=$((PATCH + 1))
+                NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+            fi
           fi
-          
-          # Lógica para o branch
-          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-          SHORT_SHA=$(git rev-parse --short HEAD)
           
           if [[ "$BRANCH_NAME" == "canary" ]]; then
             FINAL_TAG="${NEXT_VERSION}-canary-${SHORT_SHA}"
@@ -143,10 +147,22 @@ jobs:
           # Ofusca as lógicas do PHP baseando-se no yakpro-po.cnf recém-criado
           yakpro-po . -o /tmp/obfuscated_build
           
-          # Traz o código ofuscado de volta para o projeto.
-          # O YAK Pro espelha o diretório absoluto da máquina (ex: /home/runner/work/panel/panel)
-          # Então usamos a variável GITHUB_WORKSPACE para copiar a partir da pasta correta que foi ofuscada
-          rsync -a "/tmp/obfuscated_build/yakpro-po${GITHUB_WORKSPACE}/" ./
+          # Encontra a pasta raiz gerada pelo YAK Pro (pois ela varia baseada no caminho absoluto de execução)
+          # e copia o seu conteúdo diretamente para a raiz do nosso projeto
+          OBFUSCATED_ROOT_DIR=$(find /tmp/obfuscated_build/yakpro-po -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          
+          if [ -n "$OBFUSCATED_ROOT_DIR" ]; then
+            # Pega o caminho completo até onde está o código de fato e copia
+            REAL_PATH_TO_CODE=$(find "$OBFUSCATED_ROOT_DIR" -type d -name "panel" | head -n 1)
+            if [ -n "$REAL_PATH_TO_CODE" ]; then
+                rsync -a "$REAL_PATH_TO_CODE/" ./
+            else
+                # Fallback caso a estrutura de pastas seja um pouco diferente, copia tudo da raiz encontrada
+                rsync -a "$OBFUSCATED_ROOT_DIR/" ./
+            fi
+          else
+            echo "Aviso: Diretório ofuscado não encontrado. Verifique se o YAK Pro funcionou corretamente."
+          fi
           
           # Limpeza
           rm yakpro-po.cnf
