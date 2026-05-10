@@ -109,7 +109,7 @@ jobs:
         with:
           php-version: 8.3
 
-      # 1. SETUP DO OBFUSCADOR PRIMEIRO
+      # OBFUSCAÇÃO YAK PRO
       - name: Setup YAK Pro Obfuscator
         run: |
           git clone https://github.com/pk-fr/yakpro-po.git /tmp/yakpro-po
@@ -123,47 +123,64 @@ jobs:
           echo "Criando arquivo de configuração do YAK Pro..."
           cat << 'EOF' > yakpro-po.cnf
           <?php
+          // Ignora essas pastas na ofuscação
           $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public');
-          $conf->t_ignore_files = array('helpers.php');
           
-          // REGRAS DE OURO PARA FUNCIONAR COM COMPOSER PSR-4
-          $conf->obfuscate_namespace_name = false;      // <-- FALTAVA ESSA AQUI!
-          $conf->obfuscate_class_name = false;          
-          $conf->obfuscate_interface_name = false;
-          $conf->obfuscate_trait_name = false;
-          $conf->obfuscate_property_name = false;
-          $conf->obfuscate_method_name = false;
-          $conf->obfuscate_function_name = false;
-          $conf->obfuscate_constant_name = false;
-          $conf->obfuscate_class_constant_name = false;
-          
-          // Opcional: Ativar ofuscação de strings (se quiser mais proteção, deixe true)
+          // OFUSCAÇÃO TOTAL ATIVADA! 
+          $conf->obfuscate_namespace_name = true;
+          $conf->obfuscate_class_name = true;          
+          $conf->obfuscate_interface_name = true;
+          $conf->obfuscate_trait_name = true;
+          $conf->obfuscate_property_name = true;
+          $conf->obfuscate_method_name = true;
+          $conf->obfuscate_function_name = true;
+          $conf->obfuscate_constant_name = true;
+          $conf->obfuscate_class_constant_name = true;
           $conf->obfuscate_string_literal = true;
           EOF
-          
+
           echo "Iniciando ofuscação do backend..."
           mkdir -p /tmp/obfuscated_build
           
-          yakpro-po . -o /tmp/obfuscated_build
+          # Forcei o uso do config file com --config-file
+          yakpro-po --config-file yakpro-po.cnf . -o /tmp/obfuscated_build
           
           REAL_PATH_TO_CODE=$(dirname "$(find /tmp/obfuscated_build/yakpro-po -name 'composer.json' | head -n 1)")
           
           if [ -n "$REAL_PATH_TO_CODE" ]; then
-          echo "Pasta ofuscada encontrada em: $REAL_PATH_TO_CODE"
-          rsync -av "$REAL_PATH_TO_CODE/" ./
+            echo "Pasta ofuscada encontrada, movendo arquivos..."
+            rsync -av "$REAL_PATH_TO_CODE/" ./
           else
-          echo "ERRO CRÍTICO: Diretório ofuscado não encontrado. O YAK Pro falhou."
-          exit 1
+            echo "ERRO CRÍTICO: YAK Pro falhou."
+            exit 1
           fi
           
           rm yakpro-po.cnf
           rm -rf /tmp/obfuscated_build
 
-      # 3. AGORA SIM! INSTALA O COMPOSER
-      # Ele vai gerar o vendor e o autoloader limpinhos trabalhando junto com o seu código ofuscado.
-      - name: Install Composer Dependencies
-        run: composer install --no-dev --optimize-autoloader
+      # PASSO MÁGICO: Transforma PSR-4 em Classmap
+      - name: Convert Composer PSR-4 to Classmap
+        run: |
+          php -r '
+            $file = "composer.json";
+            $data = json_decode(file_get_contents($file), true);
+            if(isset($data["autoload"]["psr-4"])) {
+                if(!isset($data["autoload"]["classmap"])) $data["autoload"]["classmap"] = [];
+                foreach($data["autoload"]["psr-4"] as $namespace => $paths) {
+                    $paths = (array)$paths;
+                    foreach($paths as $p) {
+                        $data["autoload"]["classmap"][] = $p;
+                    }
+                }
+                unset($data["autoload"]["psr-4"]);
+                file_put_contents($file, json_encode($data, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES));
+                echo "Composer PSR-4 convertido para Classmap com sucesso!\n";
+            }
+          '
 
+      # AGORA RODA O COMPOSER (Ele vai escanear tudo e mapear as classes ofuscadas)
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --classmap-authoritative
       # ZIP
       - name: Create ZIP
         run: |
