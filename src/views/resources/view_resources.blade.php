@@ -47,7 +47,9 @@
                             @foreach($map as $column)
                                 <td class="px-10 py-6">
                                     @php
-                                        $val = data_get($item, $column['key']);
+                                        $val = (is_array($item) || $item instanceof \ArrayAccess)
+    ? ($item[$column['key']] ?? null)
+    : ($item->{$column['key']} ?? null);
                                         $type = $column['type'] ?? 'text';
                                     @endphp
 
@@ -72,7 +74,7 @@
                                             </div>
                                             <div class="flex flex-col">
                                                 <span class="text-[15px] text-textValue font-bold">{{ $val }}</span>
-                                                <span class="text-[12px] text-textSub font-medium">{{ data_get($item, 'email', 'Sem e-mail') }}</span>
+                                                <span class="text-[12px] text-textSub font-medium">{{ (is_array($item) || $item instanceof \ArrayAccess) ? ($item['email'] ?? 'Sem e-mail') : ($item->email ?? 'Sem e-mail') }}</span>
                                             </div>
                                         </div>
 

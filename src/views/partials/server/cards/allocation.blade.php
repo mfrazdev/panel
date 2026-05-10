@@ -6,9 +6,9 @@
 
     <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
         <!-- Hidden fields -->
-        <input type="hidden" name="ownerId" id="server-owner-id" value="{{ isset($resource) ? data_get($resource, 'ownerId', '') : '' }}">
-        <input type="hidden" name="nodeId" id="server-node-id" value="{{ isset($resource) ? data_get($resource, 'nodeUuid', '') : (isset($resource) ? data_get($resource, 'nodeId', '') : '') }}">
-        <input type="hidden" name="allocationId" id="server-allocation-id" value="{{ isset($resource) ? data_get($resource, 'allocationId', '') : '' }}">
+        <input type="hidden" name="ownerId" id="server-owner-id" value="{{ isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['ownerId'] ?? '') : ($resource->ownerId ?? '')) : '' }}">
+        <input type="hidden" name="nodeId" id="server-node-id" value="{{ isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['nodeUuid'] ?? '') : ($resource->nodeUuid ?? '')) : (isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['nodeId'] ?? '') : ($resource->nodeId ?? '')) : '') }}">
+        <input type="hidden" name="allocationId" id="server-allocation-id" value="{{ isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['allocationId'] ?? '') : ($resource->allocationId ?? '')) : '' }}">
 
         <!-- LADO ESQUERDO: Proprietário -->
         <div class="flex flex-col gap-4">
@@ -26,7 +26,7 @@
                         class="w-full bg-sidebar rounded-xl px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none"
                         placeholder="Digite o e-mail do usuário..."
                         autocomplete="off"
-                        value="{{ isset($ownerUser) ? $ownerUser->email : (isset($resource) ? data_get($resource, 'ownerEmail', '') : '') }}"
+                        value="{{ isset($ownerUser) ? $ownerUser->email : (isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['ownerEmail'] ?? '') : ($resource->ownerEmail ?? '')) : '') }}"
                 >
                 <div id="server-owner-dropdown" class="absolute left-0 right-0 mt-2 bg-sidebar rounded-xl shadow-main overflow-hidden hidden z-50 border border-terciary/20">
                     <div class="p-4 text-sm text-textSub">Digite para buscar...</div>
@@ -78,7 +78,7 @@
                             {{ !isset($resource) ? 'disabled' : '' }}
                     >
                         @if(isset($resource))
-                            <option value="{{ data_get($resource, 'allocationId') }}">Carregando portas...</option>
+                            <option value="{{ (is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['allocationId'] ?? '') : ($resource->allocationId ?? '') }}">Carregando portas...</option>
                         @else
                             <option value="">Selecione um Node primeiro...</option>
                         @endif
@@ -152,7 +152,7 @@
         const ownerSearch = document.getElementById('server-owner-search');
         const ownerIdInput = document.getElementById('server-owner-id');
         const ownerDropdown = document.getElementById('server-owner-dropdown');
-        const serverId = "{{ isset($resource) ? data_get($resource, 'id', '') : '' }}";
+        const serverId = "{{ isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['id'] ?? '') : ($resource->id ?? '')) : '' }}";
 
         const nodeSelect = document.getElementById('server-node-select');
         const nodeIdInput = document.getElementById('server-node-id');

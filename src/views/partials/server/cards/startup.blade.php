@@ -14,7 +14,7 @@
                     type="text"
                     name="startupCommand"
                     id="server-startup-command"
-                    value="{{ isset($resource) ? data_get($resource, 'startupCommand', '') : '' }}"
+                    value="{{ isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['startupCommand'] ?? '') : ($resource->startupCommand ?? '')) : '' }}"
                     class="w-full bg-sidebar rounded-xl px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none selection:bg-primary selection:text-textValue"
                     placeholder="Ex.: java -Xms128M -jar server.jar"
             >

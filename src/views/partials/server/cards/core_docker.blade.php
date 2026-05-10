@@ -6,9 +6,8 @@
 
     <div class="p-8 grid grid-cols-1 lg:grid-cols-2 gap-10">
         <!-- Hidden fields controlled by JS -->
-        <input type="hidden" name="coreId" id="server-core-id" value="{{ isset($resource) ? data_get($resource, 'coreId', '') : '' }}">
-        <input type="hidden" name="dockerImage" id="server-docker-image" value="{{ isset($resource) ? data_get($resource, 'dockerImage', '') : '' }}">
-
+        <input type="hidden" name="coreId" id="server-core-id" value="{{ isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['coreId'] ?? '') : ($resource->coreId ?? '')) : '' }}">
+        <input type="hidden" name="dockerImage" id="server-docker-image" value="{{ isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['dockerImage'] ?? '') : ($resource->dockerImage ?? '')) : '' }}">
         <!-- LADO ESQUERDO: Seleção de Core -->
         <div class="flex flex-col gap-4">
             <div>

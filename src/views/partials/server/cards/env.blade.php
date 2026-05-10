@@ -126,7 +126,7 @@
             // -------------------- Core & Env Logic --------------------
             const envSaved = (() => {
                 try {
-                    const raw = {!! json_encode(isset($resource) ? data_get($resource, 'envVars', '') : '') !!};
+                    const raw = {!! json_encode(isset($resource) ? ((is_array($resource) || $resource instanceof \ArrayAccess) ? ($resource['envVars'] ?? '') : ($resource->envVars ?? '')) : '') !!};
                     return raw ? JSON.parse(raw) : {};
                 } catch (e) { return {}; }
             })();

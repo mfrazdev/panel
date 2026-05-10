@@ -143,9 +143,15 @@
                                                     $desc = $field['desc'] ?? null;
                                                     $placeholder = $field['placeholder'] ?? '';
 
-                                                    $value = isset($resource)
-                                                        ? data_get($resource, $key, $field['default'] ?? '')
-                                                        : ($field['default'] ?? '');
+                                                    // REMOVIDO DATA_GET: Solução nativa
+                                                    $defaultValue = $field['default'] ?? '';
+                                                    if (!isset($resource)) {
+                                                        $value = $defaultValue;
+                                                    } else {
+                                                        $value = (is_array($resource) || $resource instanceof \ArrayAccess)
+                                                            ? ($resource[$key] ?? $defaultValue)
+                                                            : ($resource->{$key} ?? $defaultValue);
+                                                    }
 
                                                     $isReadonly = isset($field['readonly']) && $field['readonly'];
                                                     $readonlyClass = $isReadonly ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
@@ -264,9 +270,15 @@
                                         $desc = $field['desc'] ?? null;
                                         $placeholder = $field['placeholder'] ?? '';
 
-                                        $value = isset($resource)
-                                            ? data_get($resource, $key, $field['default'] ?? '')
-                                            : ($field['default'] ?? '');
+                                        // REMOVIDO DATA_GET: Solução nativa
+                                        $defaultValue = $field['default'] ?? '';
+                                        if (!isset($resource)) {
+                                            $value = $defaultValue;
+                                        } else {
+                                            $value = (is_array($resource) || $resource instanceof \ArrayAccess)
+                                                ? ($resource[$key] ?? $defaultValue)
+                                                : ($resource->{$key} ?? $defaultValue);
+                                        }
 
                                         $isReadonly = isset($field['readonly']) && $field['readonly'];
                                         $readonlyClass = $isReadonly ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
