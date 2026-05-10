@@ -109,16 +109,36 @@ jobs:
 
       - name: Obfuscate Project (Including Vendor)
         run: |
-          echo "Iniciando ofuscação de todo o diretório..."
+          echo "Criando arquivo de configuração do YAK Pro..."
+          cat << 'EOF' > yakpro-po.cnf
+          <?php
+          // Protege o Frontend e arquivos estáticos de serem lidos pelo ofuscador
+          // A pasta 'web' protege o src/web e a pasta 'dist' protege o public/dist (evitando o loop infinito).
+          // A pasta 'public' NÃO está aqui, então o public/index.php será ofuscado!
+          $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage');
+          
+          // Mantém nomes estruturais para não quebrar autoload do Composer e Vendor
+          $conf->obfuscate_class_name = false;
+          $conf->obfuscate_interface_name = false;
+          $conf->obfuscate_trait_name = false;
+          $conf->obfuscate_property_name = false;
+          $conf->obfuscate_method_name = false;
+          $conf->obfuscate_function_name = false;
+          EOF
+
+          echo "Iniciando ofuscação do backend..."
           mkdir -p /tmp/obfuscated_build
           
-          # Ofusca a pasta atual (.) e manda o resultado para /tmp/obfuscated_build.
-          # Desativamos APENAS a alteração de nomes estruturais para o Composer e pacotes do vendor não quebrarem,
-          # mas variáveis, strings, comentários e o fluxo de controle (if/else/etc) vão ser todos ofuscados!
-          yakpro-po . -o /tmp/obfuscated_build --no-obfuscate-class-name --no-obfuscate-interface-name --no-obfuscate-trait-name --no-obfuscate-property-name --no-obfuscate-method-name --no-obfuscate-function-name
+          # Ofusca as lógicas do PHP baseando-se no yakpro-po.cnf recém-criado
+          yakpro-po . -o /tmp/obfuscated_build
           
-          # Sobrescreve os arquivos originais pelos arquivos ofuscados recém-gerados
-          rsync -a --delete /tmp/obfuscated_build/yakpro-po/ ./
+          # Traz o código ofuscado de volta para o projeto.
+          # REMOVIDO o "--delete" para garantir que a pasta public/ e assets intactos NÃO sejam apagados!
+          rsync -a /tmp/obfuscated_build/yakpro-po/ ./
+          
+          # Limpeza
+          rm yakpro-po.cnf
+          rm -rf /tmp/obfuscated_build
 
       # ZIP
       - name: Create ZIP
