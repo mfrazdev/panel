@@ -105,14 +105,14 @@ jobs:
       - name: Encode with IonCube
         uses: MuriloChianfa/ioncube-encoder-action@v3.0.1
         with:
-          trial: true               # <--- ADICIONADO AQUI PARA A VERSÃO GRÁTIS
+          trial: true
           binary: true
           create-target: true
           php-target-version: '8.2'
           template: 'laravel'
           source: '.'
           output: '/tmp/encoded_build'
-          ignore: '.git .github web dist resources storage public vendor' # Ignorei a vendor para não demorar horas compilando as libs
+          ignore: '.git .github web dist resources storage public vendor src/views' # Adicionado src/views para ignorar a codificação das views
 
       - name: Replace Original Files with Encoded Files
         run: |
