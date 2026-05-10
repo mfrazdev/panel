@@ -126,29 +126,27 @@ jobs:
           echo "Criando arquivo de configuração do YAK Pro..."
           cat << 'EOF' > yakpro-po.cnf
           <?php
-          // Protege outras pastas importantes. O vendor não precisa estar aqui porque vamos removê-lo fisicamente.
-          $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public');
+          // Protege as pastas do sistema (O vendor DEVE ser ignorado para o Composer não quebrar)
+          $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public', 'vendor');
           $conf->t_ignore_files = array('autoload.php', 'helpers.php');
           
-          // TUDO ATIVADO CONFORME SOLICITADO PARA O SEU CÓDIGO FONTE
-          $conf->obfuscate_class_name = true;
-          $conf->obfuscate_interface_name = true;
-          $conf->obfuscate_trait_name = true;
-          $conf->obfuscate_property_name = true;
-          $conf->obfuscate_method_name = true;
-          $conf->obfuscate_function_name = true;
-          $conf->obfuscate_constant_name = true;
-          $conf->obfuscate_class_constant_name = true;
+          // CONFIGURAÇÃO SEGURA (PARA O PROJETO FUNCIONAR!)
+          // Nomes de classes e métodos DEVEM ser falsos para rotas e autoloaders continuarem conectando tudo.
+          // Mas YAK Pro continuará embaralhando as *variáveis* internas e a lógica automaticamente!
+          $conf->obfuscate_class_name = false;
+          $conf->obfuscate_interface_name = false;
+          $conf->obfuscate_trait_name = false;
+          $conf->obfuscate_property_name = false;
+          $conf->obfuscate_method_name = false;
+          $conf->obfuscate_function_name = false;
+          $conf->obfuscate_constant_name = false;
+          $conf->obfuscate_class_constant_name = false;
           EOF
-
-          # BLINDAGEM MÁXIMA: Move a pasta vendor pra fora do projeto antes do YAK Pro rodar
-          echo "Protegendo pasta vendor fisicamente..."
-          mv vendor /tmp/vendor_backup
 
           echo "Iniciando ofuscação do backend..."
           mkdir -p /tmp/obfuscated_build
           
-          # Ofusca as lógicas do PHP (O YAK Pro não vai achar o vendor, então não vai tocar nele)
+          # Ofusca as lógicas do PHP com segurança
           yakpro-po . -o /tmp/obfuscated_build
           
           echo "Copiando arquivos ofuscados de volta para o diretório de build..."
@@ -161,13 +159,8 @@ jobs:
             rsync -av "$REAL_PATH_TO_CODE/" ./
           else
             echo "ERRO CRÍTICO: Diretório ofuscado não encontrado. O YAK Pro falhou durante o processo."
-            mv /tmp/vendor_backup vendor # Devolve o vendor antes de estourar o erro só por segurança
             exit 1
           fi
-          
-          # Traz o vendor 100% puro e original de volta pro projeto antes de zipar
-          echo "Restaurando a pasta vendor original e intacta..."
-          mv /tmp/vendor_backup vendor
           
           # Limpeza
           rm yakpro-po.cnf
