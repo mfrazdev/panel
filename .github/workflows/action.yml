@@ -118,24 +118,18 @@ jobs:
           output: '/tmp/encoded_build'
           ignore: '.git .github web dist resources storage public vendor'
 
-      # Limpeza e Restauração
+      # Limpeza e Restauração (Sem corromper os binários)
       - name: Post-Encoding Cleanup and Restore
         run: |
-          echo "Removendo headers de avaliação do ionCube..."
-          # Remove as 3 linhas da header de avaliação de todos os arquivos PHP no diretório temporário
-          find /tmp/encoded_build -name "*.php" -exec sed -i '/IONCUBE ENCODER.*EVALUATION/d' {} +
-          find /tmp/encoded_build -name "*.php" -exec sed -i '/THIS LICENSE MESSAGE IS ONLY ADDED/d' {} +
-          find /tmp/encoded_build -name "*.php" -exec sed -i '/IS NOT PRESENT IN PRODUCTION ENCODED FILES/d' {} +
-          
-          echo "Restaurando views originais..."
+          echo "Restaurando views originais (Copy/Paste method)..."
+          # Removemos a pasta que o ionCube tentou mexer e colocamos a sua original
           rm -rf /tmp/encoded_build/src/views
           cp -r /tmp/original_views /tmp/encoded_build/src/views
           
-          echo "Sincronizando arquivos codificados..."
+          echo "Sincronizando arquivos de volta para a pasta de build..."
           rsync -av /tmp/encoded_build/ ./
           
-          echo "Removendo lixo do ionCube (evaluation binary)..."
-          # Remove a pasta/binário de 40MB que vem no trial
+          echo "Removendo o binário de 40MB do ionCube Trial..."
           rm -rf ioncube_encoder_evaluation
           rm -rf /tmp/encoded_build
           rm -rf /tmp/original_views
@@ -143,7 +137,6 @@ jobs:
       # ZIP
       - name: Create ZIP
         run: |
-          # Garante que a pasta ioncube_encoder_evaluation não entre no ZIP caso ainda exista
           zip -r panel.zip . \
             -x "*.git*" \
             -x "node_modules/*" \
