@@ -91,15 +91,19 @@ jobs:
         run: |
           rm -rf node_modules
           rm -rf .vatts
+
       # PHP
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: 8.3
 
-      # 1. INSTALA O COMPOSER ANTES DE CODIFICAR (Mais seguro)
       - name: Install Composer Dependencies
         run: composer install --no-dev --optimize-autoloader --classmap-authoritative
+
+      # Backup das Views para garantir que não fiquem codificadas
+      - name: Backup Original Views
+        run: cp -r src/views /tmp/original_views
 
       # 2. ENCODE IONCUBE
       - name: Encode with IonCube
@@ -112,21 +116,39 @@ jobs:
           template: 'laravel'
           source: '.'
           output: '/tmp/encoded_build'
-          ignore: '.git .github web dist resources storage public vendor src/views' # Adicionado src/views para ignorar a codificação das views
+          ignore: '.git .github web dist resources storage public vendor'
 
-      - name: Replace Original Files with Encoded Files
+      # Limpeza e Restauração
+      - name: Post-Encoding Cleanup and Restore
         run: |
-          echo "Sincronizando arquivos codificados de volta para a pasta de build..."
+          echo "Removendo headers de avaliação do ionCube..."
+          # Remove as 3 linhas da header de avaliação de todos os arquivos PHP no diretório temporário
+          find /tmp/encoded_build -name "*.php" -exec sed -i '/IONCUBE ENCODER.*EVALUATION/d' {} +
+          find /tmp/encoded_build -name "*.php" -exec sed -i '/THIS LICENSE MESSAGE IS ONLY ADDED/d' {} +
+          find /tmp/encoded_build -name "*.php" -exec sed -i '/IS NOT PRESENT IN PRODUCTION ENCODED FILES/d' {} +
+          
+          echo "Restaurando views originais..."
+          rm -rf /tmp/encoded_build/src/views
+          cp -r /tmp/original_views /tmp/encoded_build/src/views
+          
+          echo "Sincronizando arquivos codificados..."
           rsync -av /tmp/encoded_build/ ./
+          
+          echo "Removendo lixo do ionCube (evaluation binary)..."
+          # Remove a pasta/binário de 40MB que vem no trial
+          rm -rf ioncube_encoder_evaluation
           rm -rf /tmp/encoded_build
+          rm -rf /tmp/original_views
 
-      # ZIP (mantém igual)
+      # ZIP
       - name: Create ZIP
         run: |
+          # Garante que a pasta ioncube_encoder_evaluation não entre no ZIP caso ainda exista
           zip -r panel.zip . \
             -x "*.git*" \
             -x "node_modules/*" \
-            -x ".github/*"
+            -x ".github/*" \
+            -x "ioncube_encoder_evaluation/*"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
