@@ -86,8 +86,10 @@ jobs:
       - name: Build Frontend
         run: pnpm run build
 
-      - name: Remove node_modules
-        run: rm -rf node_modules
+      - name: Remove Node Modules and .vatts
+        run: |
+          rm -rf node_modules
+          rm -rf .vatts
 
       # PHP
       - name: Setup PHP
@@ -112,11 +114,15 @@ jobs:
           echo "Criando arquivo de configuração do YAK Pro..."
           cat << 'EOF' > yakpro-po.cnf
           <?php
-          // Protege o Frontend e arquivos estáticos de serem lidos pelo ofuscador
+          // Protege o Frontend, arquivos estáticos e o core do Composer
           // 'dist' protege o serve/dist (evitando o loop infinito).
           // 'public' protege a pasta public inteira.
           // 'web' protege o src/web.
-          $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage', 'public');
+          // 'composer' protege os arquivos do vendor/composer para não quebrar o autoloader.
+          $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage', 'public', 'composer');
+          
+          // Ignora o index do vendor do composer para proteger as strings cruciais de dependências
+          $conf->t_ignore_files = array('autoload.php');
           
           // Mantém nomes estruturais para não quebrar autoload do Composer e Vendor
           $conf->obfuscate_class_name = false;
@@ -138,8 +144,9 @@ jobs:
           yakpro-po . -o /tmp/obfuscated_build
           
           # Traz o código ofuscado de volta para o projeto.
-          # REMOVIDO o "--delete" para garantir que a pasta public/ e assets intactos NÃO sejam apagados!
-          rsync -a /tmp/obfuscated_build/yakpro-po/ ./
+          # O YAK Pro espelha o diretório absoluto da máquina (ex: /home/runner/work/panel/panel)
+          # Então usamos a variável GITHUB_WORKSPACE para copiar a partir da pasta correta que foi ofuscada
+          rsync -a "/tmp/obfuscated_build/yakpro-po${GITHUB_WORKSPACE}/" ./
           
           # Limpeza
           rm yakpro-po.cnf
