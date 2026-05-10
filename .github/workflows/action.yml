@@ -76,7 +76,7 @@ jobs:
           echo "TAG_NAME=$FINAL_TAG" >> $GITHUB_ENV
           echo "IS_LATEST=$IS_LATEST" >> $GITHUB_ENV
 
-      # NOVO PASSO: Salva a versão calculada em um arquivo JSON na raiz do projeto
+      # Salva a versão calculada em um arquivo JSON na raiz do projeto
       - name: Save Version to File
         run: |
           echo "{\"version\": \"${{ env.TAG_NAME }}\"}" > version.json
@@ -109,55 +109,24 @@ jobs:
         with:
           php-version: 8.3
 
-      # OBFUSCAÇÃO YAK PRO (MODO SEGURO)
-      - name: Setup YAK Pro Obfuscator
+      # ENCODE IONCUBE
+      - name: Encode with IonCube
+        uses: MuriloChianfa/ioncube-encoder-action@v1
+        with:
+          php-version: '8.3'
+          source: '.'
+          destination: '/tmp/encoded_build'
+          # Os argumentos abaixo ignoram as mesmas pastas que o YAK Pro ignorava.
+          # Adicione ou remova pastas usando --ignore 'nome_da_pasta/'
+          args: "--ignore '.git/' --ignore '.github/' --ignore 'web/' --ignore 'dist/' --ignore 'resources/' --ignore 'storage/' --ignore 'public/'"
+
+      - name: Replace Original Files with Encoded Files
         run: |
-          git clone https://github.com/pk-fr/yakpro-po.git /tmp/yakpro-po
-          cd /tmp/yakpro-po
-          git clone https://github.com/nikic/PHP-Parser.git --branch 4.x
-          chmod a+x yakpro-po.php
-          sudo ln -s /tmp/yakpro-po/yakpro-po.php /usr/local/bin/yakpro-po
+          echo "Sincronizando arquivos codificados de volta para a pasta de build..."
+          rsync -av /tmp/encoded_build/ ./
+          rm -rf /tmp/encoded_build
 
-      - name: Obfuscate Project
-        run: |
-          echo "Criando arquivo de configuração do YAK Pro..."
-          cat << 'EOF' > yakpro-po.cnf
-          <?php
-          $conf->t_ignore_directories_tree = array('.git', '.github', 'web', 'dist', 'resources', 'storage', 'public');
-          
-          // MODO SEGURO: Desativa ofuscação estrutural que quebra o Autoload e Frameworks
-          $conf->obfuscate_namespace_name = false;
-          $conf->obfuscate_class_name = false;          
-          $conf->obfuscate_interface_name = false;
-          $conf->obfuscate_trait_name = false;
-          $conf->obfuscate_property_name = false;
-          $conf->obfuscate_method_name = false;
-          $conf->obfuscate_function_name = false;
-          $conf->obfuscate_constant_name = false;
-          $conf->obfuscate_class_constant_name = false;
-          
-          // MANTÉM ATIVADO: Ofuscação de strings, remoção de comentários, espaços e embaralhamento interno
-          $conf->obfuscate_string_literal = true;
-          EOF
-
-          echo "Iniciando ofuscação do backend..."
-          mkdir -p /tmp/obfuscated_build
-          
-          yakpro-po --config-file yakpro-po.cnf . -o /tmp/obfuscated_build
-          
-          REAL_PATH_TO_CODE=$(dirname "$(find /tmp/obfuscated_build/yakpro-po -name 'composer.json' | head -n 1)")
-          
-          if [ -n "$REAL_PATH_TO_CODE" ]; then
-            rsync -av "$REAL_PATH_TO_CODE/" ./
-          else
-            echo "ERRO CRÍTICO: YAK Pro falhou."
-            exit 1
-          fi
-          
-          rm yakpro-po.cnf
-          rm -rf /tmp/obfuscated_build
-
-      # INSTALAÇÃO DO COMPOSER (SEM O HACK DESTRUÍDOR, AGORA O PSR-4 VAI FUNCIONAR)
+      # INSTALAÇÃO DO COMPOSER
       - name: Install Composer Dependencies
         run: composer install --no-dev --optimize-autoloader --classmap-authoritative
 
