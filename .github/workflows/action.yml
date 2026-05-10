@@ -28,10 +28,15 @@ jobs:
           # Puxa todas as tags
           git fetch --tags --quiet
           
-          # Busca a última tag no formato X.X.X, ignorando as de canary
-          LATEST_TAG=$(git tag --list --sort=-v:refname "[0-9]*.[0-9]*.[0-9]*" | head -n 1)
+          # Busca a última tag ESTÁVEL (exatamente X.X.X)
+          # O $ no final garante que ele IGNORA tags que tenham "-canary-..."
+          LATEST_TAG=$(git tag --list --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          
+          TAG_FOUND=true
           if [ -z "$LATEST_TAG" ]; then
-            LATEST_TAG="0.0.0"
+            # Começa direto em 0.0.1 se não houver tags
+            LATEST_TAG="0.0.1"
+            TAG_FOUND=false
           fi
           
           # Separa em Major, Minor e Patch
@@ -48,16 +53,19 @@ jobs:
             NEXT_VERSION="${BASH_REMATCH[1]}"
           else
             if [[ "$BRANCH_NAME" == "canary" ]]; then
-                # Se for canary, mantém a versão atual (LATEST_TAG) como base
-                NEXT_VERSION="$LATEST_TAG"
+              # NO CANARY: Não aumenta a versão. Usa a versão base.
+              NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
             else
-                # Se não houver, incrementa o patch automaticamente (apenas na master)
+              # NA MASTER: Aumenta o patch apenas se já existia uma tag antes.
+              if [ "$TAG_FOUND" = true ]; then
                 PATCH=$((PATCH + 1))
-                NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
+              fi
+              NEXT_VERSION="$MAJOR.$MINOR.$PATCH"
             fi
           fi
           
           if [[ "$BRANCH_NAME" == "canary" ]]; then
+            # Garante que o final fica limpo: ex. 0.0.1-canary-a1b2c3d
             FINAL_TAG="${NEXT_VERSION}-canary-${SHORT_SHA}"
             IS_LATEST="false"
           else
@@ -119,49 +127,38 @@ jobs:
           cat << 'EOF' > yakpro-po.cnf
           <?php
           // Protege o Frontend, arquivos estáticos e o core do Composer
-          // 'dist' protege o serve/dist (evitando o loop infinito).
-          // 'public' protege a pasta public inteira.
-          // 'web' protege o src/web.
-          // 'composer' protege os arquivos do vendor/composer para não quebrar o autoloader.
           $conf->t_ignore_directories_tree = array('.git', '.github', 'node_modules', 'web', 'dist', 'resources', 'storage', 'public', 'composer');
-          
-          // Ignora o index do vendor e arquivos helpers (protege func globais como env() do Laravel)
           $conf->t_ignore_files = array('autoload.php', 'helpers.php');
           
-          // Mantém nomes estruturais para não quebrar autoload do Composer e Vendor
-          $conf->obfuscate_class_name = false;
-          $conf->obfuscate_interface_name = false;
-          $conf->obfuscate_trait_name = false;
-          $conf->obfuscate_property_name = false;
-          $conf->obfuscate_method_name = false;
-          $conf->obfuscate_function_name = false;
-          
-          // Desativa a ofuscação de constantes para evitar erros com as funções defined() do Laravel/Illuminate
-          $conf->obfuscate_constant_name = false;
-          $conf->obfuscate_class_constant_name = false;
+          // TUDO ATIVADO CONFORME SOLICITADO
+          $conf->obfuscate_class_name = true;
+          $conf->obfuscate_interface_name = true;
+          $conf->obfuscate_trait_name = true;
+          $conf->obfuscate_property_name = true;
+          $conf->obfuscate_method_name = true;
+          $conf->obfuscate_function_name = true;
+          $conf->obfuscate_constant_name = true;
+          $conf->obfuscate_class_constant_name = true;
           EOF
 
           echo "Iniciando ofuscação do backend..."
           mkdir -p /tmp/obfuscated_build
           
-          # Ofusca as lógicas do PHP baseando-se no yakpro-po.cnf recém-criado
+          # Ofusca as lógicas do PHP baseando-se no yakpro-po.cnf
           yakpro-po . -o /tmp/obfuscated_build
           
-          # Encontra a pasta raiz gerada pelo YAK Pro (pois ela varia baseada no caminho absoluto de execução)
-          # e copia o seu conteúdo diretamente para a raiz do nosso projeto
-          OBFUSCATED_ROOT_DIR=$(find /tmp/obfuscated_build/yakpro-po -mindepth 1 -maxdepth 1 -type d | head -n 1)
+          echo "Copiando arquivos ofuscados de volta para o diretório de build..."
+          # O YAK Pro recria a árvore de diretórios inteira do sistema (ex: /home/runner/work/...).
+          # Procuramos pelo composer.json para achar a raiz exata do projeto ofuscado.
+          REAL_PATH_TO_CODE=$(dirname "$(find /tmp/obfuscated_build/yakpro-po -name 'composer.json' | head -n 1)")
           
-          if [ -n "$OBFUSCATED_ROOT_DIR" ]; then
-            # Pega o caminho completo até onde está o código de fato e copia
-            REAL_PATH_TO_CODE=$(find "$OBFUSCATED_ROOT_DIR" -type d -name "panel" | head -n 1)
-            if [ -n "$REAL_PATH_TO_CODE" ]; then
-                rsync -a "$REAL_PATH_TO_CODE/" ./
-            else
-                # Fallback caso a estrutura de pastas seja um pouco diferente, copia tudo da raiz encontrada
-                rsync -a "$OBFUSCATED_ROOT_DIR/" ./
-            fi
+          if [ -n "$REAL_PATH_TO_CODE" ]; then
+            echo "Pasta ofuscada encontrada em: $REAL_PATH_TO_CODE"
+            # Sobrescreve os arquivos originais pelos ofuscados (o -v vai mostrar no log da Action tudo que foi copiado)
+            rsync -av "$REAL_PATH_TO_CODE/" ./
           else
-            echo "Aviso: Diretório ofuscado não encontrado. Verifique se o YAK Pro funcionou corretamente."
+            echo "ERRO CRÍTICO: Diretório ofuscado não encontrado. O YAK Pro falhou durante o processo."
+            exit 1
           fi
           
           # Limpeza

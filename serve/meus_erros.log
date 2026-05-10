@@ -132,3 +132,40 @@
 [10-May-2026 14:39:56 UTC] getStatus cURL Error (Node 1): Connection timed out after 103 milliseconds
 [10-May-2026 14:40:01 UTC] ../panel.db
 [10-May-2026 14:40:01 UTC] getStatus cURL Error (Node 1): Connection timed out after 124 milliseconds
+[10-May-2026 14:40:06 UTC] ../panel.db
+[10-May-2026 14:40:06 UTC] getStatus cURL Error (Node 1): Connection timed out after 111 milliseconds
+[10-May-2026 14:40:11 UTC] ../panel.db
+[10-May-2026 14:40:11 UTC] getStatus cURL Error (Node 1): Connection timed out after 102 milliseconds
+[10-May-2026 14:40:15 UTC] ../panel.db
+[10-May-2026 14:40:16 UTC] getStatus cURL Error (Node 1): Connection timed out after 110 milliseconds
+[10-May-2026 14:40:21 UTC] ../panel.db
+[10-May-2026 14:40:21 UTC] getStatus cURL Error (Node 1): Connection timed out after 114 milliseconds
+[10-May-2026 14:40:25 UTC] ../panel.db
+[10-May-2026 14:40:26 UTC] ../panel.db
+[10-May-2026 14:40:26 UTC] getStatus cURL Error (Node 1): Connection timed out after 114 milliseconds
+[10-May-2026 14:40:26 UTC] ../panel.db
+[10-May-2026 14:40:26 UTC] ../panel.db
+[10-May-2026 14:40:26 UTC] getStatus cURL Error (Node 1): Connection timed out after 106 milliseconds
+[10-May-2026 14:40:27 UTC] ../panel.db
+[10-May-2026 14:40:27 UTC] ../panel.db
+[10-May-2026 14:40:27 UTC] ../panel.db
+[10-May-2026 14:40:27 UTC] ../panel.db
+[10-May-2026 14:40:27 UTC] ../panel.db
+[10-May-2026 14:40:27 UTC] ../panel.db
+[10-May-2026 14:40:28 UTC] ../panel.db
+[10-May-2026 14:40:28 UTC] ../panel.db
+[10-May-2026 14:40:28 UTC] ../panel.db
+[10-May-2026 14:40:28 UTC] ../panel.db
+[10-May-2026 14:40:28 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 207 milliseconds
+[10-May-2026 14:40:28 UTC] {"serverId":"4c09c109-1764-445c-beda-bafce5c08b83","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 202 milliseconds
+[10-May-2026 14:40:28 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 214 milliseconds
+[10-May-2026 14:40:28 UTC] {"serverId":"6d51f2c4-a03d-4373-a278-4932147e3c5a","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 14:40:28 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 14:40:28 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 14:40:29 UTC] apiRequest cURL Error (Node 1): Connection timed out after 201 milliseconds
+[10-May-2026 14:40:29 UTC] {"serverId":"06ac013c-1f14-4f03-8c5a-bd97d0d0499f","userUuid":"1","token":"7dcd5010-b674-417d-b121-113eb9200a9a"}
+[10-May-2026 14:40:29 UTC] apiRequest cURL Error (Node 1): Connection timed out after 204 milliseconds
+[10-May-2026 14:40:35 UTC] ../panel.db
