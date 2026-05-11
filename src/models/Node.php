@@ -52,7 +52,7 @@ class Node extends Model
     public string $port;
     public string $sftp;
     public ?string $token;
-    public int $httpsConnection;
+    public ?int $httpsConnection;
     public string $location;
 
     public function getUrl(): string
