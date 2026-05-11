@@ -46,12 +46,18 @@
                             </div>
                         </div>
 
-                        <div class="z-10 w-full sm:w-auto">
+                        <div class="z-10 w-full sm:w-auto flex flex-col sm:flex-row gap-3">
+                            <!-- Botão de Atualizar -->
+                            <button id="btn-update" class="w-full sm:w-auto bg-primary hover:brightness-110 text-textValue px-9 py-3.5 rounded-2xl text-sm font-bold shadow-main transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1 cursor-pointer">
+                                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                                Atualizar Agora
+                            </button>
+
                             <!-- Link direto para o GitHub -->
-                            <a href="{{ $github_url ?? 'https://github.com/mfrazlab/panel/releases/latest' }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-primary hover:brightness-110 text-textValue px-9 py-3.5 rounded-2xl text-sm font-bold shadow-main transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1">
+                            <a href="{{ $github_url ?? 'https://github.com/mfrazlab/panel/releases/latest' }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-cards hover:brightness-110 text-textValue px-9 py-3.5 rounded-2xl text-sm font-bold shadow-main transition-all duration-300 flex items-center justify-center gap-3 transform hover:-translate-y-1">
                                 <!-- Ícone do GitHub -->
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
-                                Ver no GitHub
+                                GitHub
                             </a>
                         </div>
                     </div>
@@ -81,3 +87,55 @@
         </div>
     </div>
 @endsection
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const btnUpdate = document.getElementById('btn-update');
+
+        if (btnUpdate) {
+            btnUpdate.addEventListener('click', async () => {
+                // Salva o conteúdo original do botão e coloca um loading
+                const originalContent = btnUpdate.innerHTML;
+                btnUpdate.innerHTML = `
+                    <svg class="animate-spin -ml-1 mr-3 h-5 w-5 text-current" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                        <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                        <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Atualizando...
+                `;
+                btnUpdate.disabled = true;
+                btnUpdate.classList.add('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
+
+                try {
+                    // ATENÇÃO: Troque '/admin/update' pela rota exata que você registrou no Vatts.js
+                    const response = await fetch('/admin/update', {
+                        method: 'POST', // ou GET dependendo de como você definiu a rota no Router
+                        headers: {
+                            'Accept': 'application/json'
+                        }
+                    });
+
+                    const data = await response.json();
+
+                    if (data.success) {
+                        alert(data.message);
+                        window.location.reload();
+                    } else {
+                        alert('Erro: ' + data.message);
+                        restaurarBotao();
+                    }
+                } catch (error) {
+                    alert('Erro na requisição de atualização. Verifique o console.');
+                    console.error('Update error:', error);
+                    restaurarBotao();
+                }
+
+                function restaurarBotao() {
+                    btnUpdate.innerHTML = originalContent;
+                    btnUpdate.disabled = false;
+                    btnUpdate.classList.remove('opacity-70', 'cursor-not-allowed', 'pointer-events-none');
+                }
+            });
+        }
+    });
+</script>

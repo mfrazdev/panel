@@ -282,6 +282,7 @@ export default function FileEditContainer() {
 
         setIsSaving(true);
         try {
+            console.log(content)
             await writeFile(safeFilePath, content);
             toast.addToast("Arquivo salvo com sucesso!", "success");
         } catch (error) {

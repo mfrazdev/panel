@@ -75,55 +75,20 @@ class Node extends Model
 
     public function getStatus(): array|bool
     {
-        $url = $this->getUrl() . "/api/v1/status";
-        $ch = $this->getPersistentHandle();
-
-        $payload = json_encode(['token' => $this->token]);
-
-        $options = [
-            CURLOPT_URL => $url,
-            CURLOPT_RETURNTRANSFER => true,
-            CURLOPT_POST => true,
-            CURLOPT_POSTFIELDS => $payload,
-            CURLOPT_HTTPHEADER => [
-                'Content-Type: application/json',
-                'Content-Length: ' . strlen($payload),
-                'Expect:',
-                'Connection: keep-alive'
-            ],
-            CURLOPT_NOSIGNAL => true,           // Essencial para timeouts em milissegundos não travarem no DNS
-            CURLOPT_CONNECTTIMEOUT_MS => 100,   // 100ms para conectar (baixíssimo)
-            CURLOPT_TIMEOUT_MS => 200,          // 200ms de tempo total de resposta
-            CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
-            CURLOPT_TCP_NODELAY => true,
-            CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1 // Força HTTP/1.1 para evitar problemas de negociação TLS
-        ];
-
-        // Se SSL estiver ativado, desativamos verificação (comum em Nodes com IPs diretos ou auto-assinados)
-        // Se estiver desativado, garantimos que o cURL não tente usar configurações de SSL de uma requisição anterior no mesmo handle
-        if ($this->ssl) {
-            $options[CURLOPT_SSL_VERIFYPEER] = false;
-            $options[CURLOPT_SSL_VERIFYHOST] = false;
-        } else {
-            $options[CURLOPT_SSL_VERIFYPEER] = true;
-            $options[CURLOPT_SSL_VERIFYHOST] = 2;
+        // Reutiliza o apiRequest, mas passa os timeouts super curtos (100/200ms)
+        $response = $this->apiRequest('POST', '/api/v1/status', [], [], [
+            CURLOPT_CONNECTTIMEOUT_MS => 150,
+            CURLOPT_TIMEOUT_MS => 200
+        ]);
+        json_encode($response);
+        if ($response !== false && $response['success'] && isset($response['body']['status']) && $response['body']['status'] === 'success') {
+            return $response['body'];
         }
 
-        curl_setopt_array($ch, $options);
-
-        $response = curl_exec($ch);
-        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
-
-        if ($response === false) {
-            error_log("getStatus cURL Error (Node {$this->id}): " . curl_error($ch));
-            return false;
-        }
-
-        $data = json_decode($response, true);
-        return ($httpCode === 200 && isset($data['status']) && $data['status'] === 'success') ? $data : false;
+        return false;
     }
 
-    public function apiRequest(string $method, string $endpoint, array $data = [], array $headers = []): array|bool
+    public function apiRequest(string $method, string $endpoint, array $data = [], array $headers = [], array $customOptions = []): array|bool
     {
         $endpoint = ltrim($endpoint, '/');
         $url = $this->getUrl() . "/{$endpoint}";
@@ -143,12 +108,17 @@ class Node extends Model
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_NOSIGNAL => true,             // Essencial para timeouts curtos
-            CURLOPT_CONNECTTIMEOUT_MS => 200,     // 200ms para conectar na API
-            CURLOPT_TIMEOUT_MS => 500,            // 500ms máximo para responder
+            CURLOPT_CONNECTTIMEOUT_MS => $customOptions[CURLOPT_CONNECTTIMEOUT_MS] ?? 200,     // 200ms para conectar na API
+            CURLOPT_TIMEOUT_MS => $customOptions[CURLOPT_TIMEOUT_MS] ?? 500,            // 500ms máximo para responder
             CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
             CURLOPT_TCP_NODELAY => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1
         ];
+
+        foreach ($customOptions as $key => $value) {
+            $options[$key] = $value;
+        }
+
         error_log(json_encode($data));
         if ($method === 'GET') {
             if (!empty($data)) $options[CURLOPT_URL] = $url . '?' . http_build_query($data);
@@ -161,7 +131,7 @@ class Node extends Model
         }
 
         $options[CURLOPT_HTTPHEADER] = $headers;
-        if ($this->ssl) {
+        if ($this->httpsConnection === 1) {
             $options[CURLOPT_SSL_VERIFYPEER] = false;
             $options[CURLOPT_SSL_VERIFYHOST] = false;
         } else {
