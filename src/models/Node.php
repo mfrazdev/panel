@@ -31,7 +31,7 @@ class Node extends Model
             ['label' => 'Porta SFTP', 'key' => 'sftp', 'type' => 'number', 'desc' => 'Porta utilizada para a conexão de arquivos via SFTP.', 'default' => 2022],
         ],
         'Segurança' => [
-            ['label' => 'Conexão SSL', 'key' => 'ssl', 'type' => 'select', 'options' => ['false' => 'Não (HTTP)', 'true' => 'Sim (HTTPS)'], 'desc' => 'Define se a comunicação com o daemon utilizará criptografia SSL/HTTPS.']
+            ['label' => 'Conexão SSL', 'key' => 'httpsConnection', 'type' => 'select', 'options' => ['0' => 'Não (HTTP)', '1' => 'Sim (HTTPS)'], 'desc' => 'Define se a comunicação com o daemon utilizará criptografia SSL/HTTPS.']
         ]
     ];
 
@@ -41,7 +41,7 @@ class Node extends Model
         'ip'         => 'string',
         'port'       => 'string',
         'sftp'       => 'string',
-        'ssl'        => 'boolean',
+        'httpsConnection'        => 'int',
         'token'      => 'string',
         'location'   => 'string'
     ];
@@ -52,12 +52,12 @@ class Node extends Model
     public string $port;
     public string $sftp;
     public ?string $token;
-    public bool $ssl;
+    public int $httpsConnection;
     public string $location;
 
     public function getUrl(): string
     {
-        $protocol = 'http';
+        $protocol = $this->httpsConnection === 1 ? 'https' : 'http';
         return "{$protocol}://{$this->ip}:{$this->port}";
     }
 

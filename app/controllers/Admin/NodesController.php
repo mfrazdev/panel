@@ -76,7 +76,7 @@ class NodesController
             ['label' => 'Nome do Node', 'key' => 'name', 'type' => 'text'],
             ['label' => 'Localização', 'key' => 'location', 'type' => 'text'],
             ['label' => 'Porta SFTP', 'key' => 'sftp', 'type' => 'text'],
-            ['label' => 'SSL', 'key' => 'ssl', 'type' => 'text'],
+            ['label' => 'SSL', 'key' => 'httpsConnection', 'type' => 'text'],
             ['label' => 'Status', 'key' => 'id', 'type' => 'custom', 'template' => 'partials.node.status_cell'],
         ];
 
@@ -194,7 +194,7 @@ class NodesController
         $node->ip = $body['ip'] ?? '';
         $node->port = $body['port'] ?? '';
         $node->sftp = $body['sftp'] ?? '';
-        $node->ssl = $body['ssl'] ?? '';
+        $node->httpsConnection = $body['httpsConnection'] ?? '';
         $node->location = $body['location'] ?? '';
         $node->save();
 
@@ -239,7 +239,7 @@ class NodesController
         $node->ip = $body['ip'] ?? '';
         $node->port = $body['port'] ?? '';
         $node->sftp = $body['sftp'] ?? '';
-        $node->ssl = $body['ssl'] ?? '';
+        $node->httpsConnection = $body['httpsConnection'] ?? '';
         $node->token = $this->uuidv4();//gerar token
         $node->location = $body['location'] ?? '';
         $node->save();
