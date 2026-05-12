@@ -249,22 +249,24 @@ class Server extends Model
                     // MEGA OTIMIZAÇÃO: Busca o Core e a Alocação Primária num JOIN rápido.
                     // Evita criar classes do ORM e reduz o tempo de banco de dados para < 1ms.
                     $stmt = $pdo->prepare("
-                        SELECT 
-                            c.id as core_id, c.name as core_name, 
-                            c.startupCommand as core_startup, c.stopCommand as core_stop, 
-                            c.installScript,
-                            c.installImage,
-                            c.installEntrypoint,
-                            c.startupParser, c.configSystem,
-                            c.rootAcess,
-                            c.maintainable,
-                            c.variables,
-                            a.ip, a.port, a.externalIp
-                        FROM `cores` c
-                        LEFT JOIN `allocations` a ON a.id = :allocId
-                        WHERE c.id = :coreId
-                        LIMIT 1
-                    ");
+                    SELECT 
+                        c.id as core_id, c.name as core_name, 
+                        c.startupCommand as core_startup, c.stopCommand as core_stop, 
+                        c.startupScript,
+                        c.dockerEntrypoint,
+                        c.installScript,
+                        c.installImage,
+                        c.installEntrypoint,
+                        c.startupParser, c.configSystem,
+                        c.rootAcess,
+                        c.maintainable,
+                        c.variables,
+                        a.ip, a.port, a.externalIp
+                    FROM `cores` c
+                    LEFT JOIN `allocations` a ON a.id = :allocId
+                    WHERE c.id = :coreId
+                    LIMIT 1
+                ");
                     $stmt->execute([
                         'allocId' => $this->allocationId,
                         'coreId'  => $this->coreId
@@ -342,6 +344,8 @@ class Server extends Model
                             'id'             => $related['core_id'],
                             'name'           => $related['core_name'],
                             'startupCommand' => !empty($this->startupCommand) ? $this->startupCommand : $related['core_startup'],
+                            'startupScript'  => $related['startupScript'] ?? null,
+                            'dockerEntrypoint' => $related['dockerEntrypoint'] ?? null,
                             'stopCommand'    => $related['core_stop'],
                             'startupParser'  => json_decode($related['startupParser'] ?? '{}', true),
                             'configSystem'   => json_decode($related['configSystem'] ?? '{}', true),

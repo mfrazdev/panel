@@ -20,7 +20,9 @@ class CoreUtils
     {
         return [
             'startupCommand' => '',
+            'startupScript' => '', // Adicionado
             'stopCommand' => '',
+            'dockerEntrypoint' => '', // Adicionado
             'dockerImages' => "[]",
             'startupParser' => "{}",
             'configSystem' => "{}",
@@ -82,7 +84,9 @@ class CoreUtils
         $data['description'] = trim((string) ($body['description'] ?? $data['description'] ?? ''));
         $data['creatorEmail'] = trim((string) ($body['creatorEmail'] ?? $data['creatorEmail'] ?? ''));
         $data['startupCommand'] = trim((string) ($body['startupCommand'] ?? $data['startupCommand'] ?? ''));
+        $data['startupScript'] = self::normalizeScript($body['startupScript'] ?? $data['startupScript'] ?? ''); // Adicionado
         $data['stopCommand'] = trim((string) ($body['stopCommand'] ?? $data['stopCommand'] ?? ''));
+        $data['dockerEntrypoint'] = trim((string) ($body['dockerEntrypoint'] ?? $data['dockerEntrypoint'] ?? '')); // Adicionado
         $data['installScript'] = self::normalizeScript($body['installScript'] ?? $data['installScript'] ?? '');
         $data['installImage'] = trim((string) ($body['installImage'] ?? $data['installImage'] ?? ''));
         $data['installEntrypoint'] = trim((string) ($body['installEntrypoint'] ?? $data['installEntrypoint'] ?? ''));
@@ -116,6 +120,7 @@ class CoreUtils
         }
 
         $clone->installScript = self::normalizeScript($clone->installScript ?? '');
+        $clone->startupScript = self::normalizeScript($clone->startupScript ?? ''); // Adicionado
 
         return $clone;
     }
@@ -217,4 +222,3 @@ class CoreUtils
         return trim($script, "\n");
     }
 }
-

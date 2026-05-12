@@ -19,10 +19,12 @@ class Core extends Model
         ],
         'Scripts de Automação' => [
             ['label' => 'Comando de Início', 'key' => 'startupCommand', 'type' => 'text', 'desc' => 'Comando base para iniciar o processo.'],
+            ['label' => 'Script de Início (Bash)', 'key' => 'startupScript', 'type' => 'monaco:shell', 'desc' => 'Script bash complexo executado ao iniciar o servidor. Útil para lógicas de pré-inicialização ou para substituir o comando de início básico.'],
             ['label' => 'Comando de Parada', 'key' => 'stopCommand', 'type' => 'text', 'desc' => 'Comando enviado para encerrar o processo graciosamente. Utilize ^C para dar o sinal de SIGNINT (Ctrl+C).'],
         ],
         'Configurações Avançadas' => [
             ['label' => 'Imagens Docker (JSON)', 'key' => 'dockerImages', 'type' => 'monaco:json', 'desc' => 'Lista de imagens compatíveis no formato JSON.'],
+            ['label' => 'Entrypoint do Container', 'key' => 'dockerEntrypoint', 'type' => 'text', 'desc' => 'Substitui o entrypoint padrão da imagem Docker de execução (ex: /bin/sh -c).'],
             ['label' => 'Startup Parser', 'key' => 'startupParser', 'type' => 'monaco:json', 'desc' => 'JSON com as regras para identificar quando o servidor iniciou.'],
             ['label' => 'Sistema de Configuração', 'key' => 'configSystem', 'type' => 'monaco:json', 'desc' => 'Mapeamento de arquivos de configuração.'],
             ['label' => 'Variáveis (JSON)', 'key' => 'variables', 'type' => 'monaco:json', 'desc' => 'Definição de variáveis de ambiente personalizáveis.'],
@@ -35,35 +37,39 @@ class Core extends Model
     ];
 
     public static array $schema = [
-        'id'             => 'id',
-        'name'           => 'string',
-        'startupCommand' => 'text',
-        'stopCommand'    => 'text',
-        'rootAcess' => 'boolean',
-        'maintainable' => 'string',
-        'dockerImages'   => 'text', // Corrigido de string para text para suportar JSONs grandes
-        'startupParser'  => 'text', // Corrigido para text
-        'configSystem'   => 'text', // Corrigido para text
-        'variables'      => 'text', // Corrigido para text
-        'installScript'  => 'text',
-        'installImage' => 'text',
-        'installEntrypoint' => 'text',
-        'description'    => 'string',
-        'creatorEmail'   => 'string',
+        'id'               => 'id',
+        'name'             => 'string',
+        'startupCommand'   => 'text',
+        'startupScript'    => 'text', // Adicionado para suportar scripts grandes no banco
+        'stopCommand'      => 'text',
+        'rootAcess'        => 'boolean',
+        'maintainable'     => 'string',
+        'dockerImages'     => 'text',
+        'dockerEntrypoint' => 'string', // Adicionado para controle total do container
+        'startupParser'    => 'text',
+        'configSystem'     => 'text',
+        'variables'        => 'text',
+        'installScript'    => 'text',
+        'installImage'     => 'text',
+        'installEntrypoint'=> 'text',
+        'description'      => 'string',
+        'creatorEmail'     => 'string',
     ];
 
     // Propriedades para Autocomplete
-// Obrigatórios (Não podem ser null)
+    // Obrigatórios (Não podem ser null)
     public int $id;
     public string $name;
     public string $description;
     public string $creatorEmail;
 
-// Opcionais (Podem ser null)
+    // Opcionais (Podem ser null)
     public ?string $installScript = null;
     public ?string $startupCommand = null;
+    public ?string $startupScript = null;
     public ?string $stopCommand = null;
     public ?string $dockerImages = null;
+    public ?string $dockerEntrypoint = null;
     public ?string $startupParser = null;
     public ?string $installImage = null;
     public ?string $installEntrypoint = null;
