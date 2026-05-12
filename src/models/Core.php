@@ -37,8 +37,8 @@ class Core extends Model
     public static array $schema = [
         'id'             => 'id',
         'name'           => 'string',
-        'startupCommand' => 'string',
-        'stopCommand'    => 'string',
+        'startupCommand' => 'text',
+        'stopCommand'    => 'text',
         'rootAcess' => 'boolean',
         'maintainable' => 'string',
         'dockerImages'   => 'text', // Corrigido de string para text para suportar JSONs grandes

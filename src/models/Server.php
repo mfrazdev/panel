@@ -41,7 +41,7 @@ class Server extends Model
         'coreId'      => 'string',
         'nodeUuid'    => 'string',
         'dockerImage' => 'string',
-        'startupCommand' => 'string',
+        'startupCommand' => 'text',
         'envVars'     => 'text',
         'group'       => 'string',
         'serverUuid'  => 'string',

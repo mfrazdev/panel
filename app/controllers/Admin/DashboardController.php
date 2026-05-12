@@ -14,23 +14,27 @@ class DashboardController
 
     public function view(Request $request, Response $response): Response
     {
-        $currentVersion = $this->getCurrentVersion();
+        // Força a limpeza de cache do GitHub caso passe ?check=1 na URL
+        if ($request->getQuery('check') == '1') {
+            unset($_SESSION['github_release_info']);
+            unset($_SESSION['github_release_time']);
+        }
 
-        // Pega as informações completas da release (para saber a tag e ter os assets dps)
+        $currentVersion = $this->getCurrentVersion();
         $releaseInfo = $this->getLatestGitHubReleaseInfo($currentVersion);
         $latestVersion = $releaseInfo['version'] ?? null;
 
         $hasUpdate = false;
 
-        if ($latestVersion && $currentVersion) {
+        if ($latestVersion && $currentVersion && strtolower($currentVersion) !== 'dev') {
             $normalizedCurrent = ltrim(strtolower($currentVersion), 'v');
             $normalizedLatest = ltrim(strtolower($latestVersion), 'v');
 
-            // O PHP nativamente não sabe que "canary" é uma versão anterior a "stable".
-            // Para o version_compare() funcionar com perfeição e sem bugar as versões normais:
-            // Trocamos 'canary' por 'beta' apenas para a matemática interna da função.
-            $cmpCurrent = str_replace('canary', 'beta', $normalizedCurrent);
-            $cmpLatest  = str_replace('canary', 'beta', $normalizedLatest);
+            // Nativamente, o PHP converte hífen em ponto e compara as partes.
+            // Para garantir 100% de precisão (ex: 0.0.1-canary.7 vs 0.0.1-canary.8),
+            // transformamos a string 'canary' temporariamente na keyword 'rc'
+            $cmpCurrent = str_replace('canary', 'rc', $normalizedCurrent);
+            $cmpLatest  = str_replace('canary', 'rc', $normalizedLatest);
 
             $hasUpdate = version_compare($cmpCurrent, $cmpLatest, '<');
         }
@@ -47,14 +51,19 @@ class DashboardController
      */
     public function update(Request $request, Response $response)
     {
+        header('Content-Type: application/json'); // Garante que a saída seja sempre JSON
+
         $currentVersion = $this->getCurrentVersion();
+
+        unset($_SESSION['github_release_info']);
+        unset($_SESSION['github_release_time']);
+
         $releaseInfo = $this->getLatestGitHubReleaseInfo($currentVersion);
 
         if (!$releaseInfo || empty($releaseInfo['assets'])) {
             die(json_encode(['success' => false, 'message' => 'Nenhuma release ou asset encontrado.']));
         }
 
-        // Localiza o panel.zip nos assets
         $zipUrl = null;
         foreach ($releaseInfo['assets'] as $asset) {
             if ($asset['name'] === 'panel.zip') {
@@ -69,7 +78,6 @@ class DashboardController
 
         $tempZipPath = sys_get_temp_dir() . '/panel_update_' . time() . '.zip';
 
-        // Baixa o panel.zip usando opções para suportar redirects do GitHub
         $options = [
             'http' => [
                 'method' => 'GET',
@@ -86,25 +94,33 @@ class DashboardController
 
         file_put_contents($tempZipPath, $zipData);
 
-        // Descompacta
         $zip = new ZipArchive();
         if ($zip->open($tempZipPath) === true) {
-            // Ajuste o caminho da extração conforme a raiz do seu projeto
             $extractPath = realpath(__DIR__ . '/../../../');
 
-            $zip->extractTo($extractPath);
-            $zip->close();
+            // Segura os Warnings do PHP para não sujarem nosso JSON
+            ob_start();
+            $extractSuccess = @$zip->extractTo($extractPath); // @ oculta o Warning
+            ob_get_clean(); // Limpa qualquer resíduo de erro da memória
 
-            // Apaga o zip temporário
+            $zip->close();
             unlink($tempZipPath);
 
-            // Aplica as permissões recursivamente (Linux e Windows)
-            $this->applyPermissions($extractPath);
-
-            die(json_encode(['success' => true, 'message' => 'Painel atualizado com sucesso!']));
+            if ($extractSuccess) {
+                $this->applyPermissions($extractPath);
+                unset($_SESSION['github_release_info']);
+                unset($_SESSION['github_release_time']);
+                die(json_encode(['success' => true, 'message' => 'Painel atualizado com sucesso!']));
+            } else {
+                // Se a extração falhou (geralmente por permissão), avisa o usuário com um JSON limpo
+                die(json_encode([
+                    'success' => false,
+                    'message' => 'Permissão negada ao extrair a atualização. Rode "chown -R www-data:www-data /var/www/lunar" no terminal da sua máquina e tente novamente.'
+                ]));
+            }
         }
 
-        die(json_encode(['success' => false, 'message' => 'Falha ao extrair o arquivo ZIP.']));
+        die(json_encode(['success' => false, 'message' => 'Falha ao abrir o arquivo ZIP baixado.']));
     }
 
     /**
@@ -132,12 +148,11 @@ class DashboardController
     private function getLatestGitHubReleaseInfo(?string $currentVersion): ?array
     {
         if (isset($_SESSION['github_release_info']) && isset($_SESSION['github_release_time'])) {
-            if (time() - $_SESSION['github_release_time'] < 3600) {
+            if (time() - $_SESSION['github_release_time'] < 60) {
                 return $_SESSION['github_release_info'];
             }
         }
 
-        // Trocado de /releases/latest para /releases para obtermos as pré-releases (canary) também
         $url = 'https://api.github.com/repos/' . self::GITHUB_REPO . '/releases';
 
         $options = [
@@ -168,13 +183,10 @@ class DashboardController
         foreach ($releases as $release) {
             $isPreRelease = $release['prerelease'];
 
-            // Se a nossa versão atual não for canary, pulamos qualquer pre-release do GitHub
-            // garantindo que quem tá no modo estável não receba builds de canary
             if (!$isCurrentCanary && $isPreRelease) {
                 continue;
             }
 
-            // A API retorna a lista em ordem cronológica reversa, então o primeiro que passar na regra é o mais atual.
             $selectedRelease = $release;
             break;
         }
@@ -196,8 +208,6 @@ class DashboardController
 
     /**
      * Aplica as permissões nos arquivos extraídos.
-     * Funciona no Linux nativamente. No Windows, ele apenas mapeia os atributos
-     * suportados pelo SO (read-only) sem estourar nenhum erro.
      */
     private function applyPermissions(string $dir): void
     {
