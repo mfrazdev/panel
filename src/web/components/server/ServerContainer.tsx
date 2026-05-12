@@ -11,6 +11,7 @@ import StartupContainer from "@/web/components/server/startup/StartupContainer";
 import FileManagerContainer from "@/web/components/server/filemanager/FileManagerContainer";
 import AllocationsContainer from "@/web/components/server/allocations/AllocationsContainer";
 import DatabasesContainer from "@/web/components/server/databases/DatabasesContainer";
+import SchedulersContainer from "@/web/components/server/schedulers/SchedulersContainer";
 type ServerProps = {
     action?: string;
 }
@@ -104,6 +105,8 @@ export default function ServerContainer({ action }: ServerProps) {
                 return <StartupContainer/>
             case 'allocations':
                 return <AllocationsContainer />
+            case 'schedulers':
+                return <SchedulersContainer></SchedulersContainer>
             default:
                 return <ConsoleContainer />;
         }

@@ -119,6 +119,7 @@
                     let data;
                     const text = await response.text()
                     try {
+                        console.log(text)
                         data = JSON.parse(text)
                     } catch (e) {
                         console.log(text, 'invalido json')

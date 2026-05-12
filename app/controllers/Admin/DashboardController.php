@@ -37,68 +37,79 @@ class DashboardController
         ]);
     }
 
-    public function update(Request $request, Response $response)
+    public function update(Request $request, Response $response): Response
     {
-        header('Content-Type: application/json');
-
         $currentVersion = $this->getCurrentVersion();
         $latestVersion = $this->getLatestGitHubVersion($currentVersion);
 
         if (!$latestVersion) {
-            die(json_encode(['success' => false, 'message' => 'Não foi possível encontrar a última versão no GitHub.']));
+            return $response->json(['success' => false, 'message' => 'Não foi possível verificar a versão mais recente. Tente novamente mais tarde.']);
         }
 
-        // Formata a tag de volta para vX.X.X caso não tenha
-        $tagName = str_starts_with($latestVersion, 'v') ? $latestVersion : 'v' . $latestVersion;
-
-        // URL direta e estática de download (Não passa por API)
+        $tagName = $latestVersion;
         $zipUrl = "https://github.com/" . self::GITHUB_REPO . "/releases/download/{$tagName}/panel.zip";
-
         $tempZipPath = sys_get_temp_dir() . '/panel_update_' . time() . '.zip';
 
-        // Baixa o arquivo ZIP seguindo redirecionamentos da CDN do GitHub
-        $options = [
-            'http' => [
-                'method' => 'GET',
-                'header' => "User-Agent: Vatts-App\r\n",
-                'follow_location' => 1,
-                'max_redirects' => 5
-            ]
-        ];
+        $ch = curl_init($zipUrl);
+        $fp = fopen($tempZipPath, 'w+');
 
-        $zipData = @file_get_contents($zipUrl, false, stream_context_create($options));
+        curl_setopt($ch, CURLOPT_FILE, $fp);
+        curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+        curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
+        curl_setopt($ch, CURLOPT_USERAGENT, 'Vatts-App');
+        curl_setopt($ch, CURLOPT_FAILONERROR, true);
 
-        if ($zipData === false) {
-            die(json_encode(['success' => false, 'message' => 'Falha ao baixar o arquivo de atualização.']));
+        curl_exec($ch);
+        $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+        $curlError = curl_error($ch);
+        curl_close($ch);
+        fclose($fp);
+
+        if ($httpCode !== 200) {
+            @unlink($tempZipPath);
+            return $response->json([
+                'success' => false,
+                'message' => "Falha ao baixar o arquivo (HTTP {$httpCode}). " . ($httpCode == 404 ? "O arquivo panel.zip não foi encontrado na release {$tagName}." : "Erro cURL: {$curlError}")
+            ]);
         }
-
-        file_put_contents($tempZipPath, $zipData);
 
         $zip = new ZipArchive();
         if ($zip->open($tempZipPath) === true) {
             $extractPath = realpath(__DIR__ . '/../../../');
 
-            ob_start();
-            $extractSuccess = @$zip->extractTo($extractPath);
-            ob_get_clean();
+            // --- INÍCIO DO DEBUG ---
+            error_log("[Update Debug] Iniciando extração da versão {$tagName}");
+            error_log("[Update Debug] Caminho de extração resolvido (realpath): " . ($extractPath ?: 'FALSO - CAMINHO INVÁLIDO'));
+
+            if ($extractPath) {
+                error_log("[Update Debug] O diretório existe. Permissão de escrita: " . (is_writable($extractPath) ? 'SIM' : 'NÃO'));
+            } else {
+                error_log("[Update Debug] __DIR__ atual é: " . __DIR__);
+            }
+            // --- FIM DO DEBUG ---
+
+            // Sem o @ para o PHP poder registrar Warnings nativos no log se der BO
+            $extractSuccess = $zip->extractTo($extractPath);
+
+            if (!$extractSuccess) {
+                // Captura o motivo interno do ZipArchive ter falhado
+                error_log("[Update Debug] ZipArchive->extractTo() retornou false. Status do Zip: " . $zip->getStatusString());
+            }
 
             $zip->close();
             unlink($tempZipPath);
 
             if ($extractSuccess) {
                 $this->applyPermissions($extractPath);
-                die(json_encode(['success' => true, 'message' => 'Painel atualizado com sucesso!']));
+                return $response->json(['success' => true, 'message' => 'Atualização aplicada com sucesso!']);
             } else {
-                die(json_encode([
-                    'success' => false,
-                    'message' => 'Permissão negada ao extrair a atualização. Rode "chown -R www-data:www-data /var/www" e tente novamente.'
-                ]));
+                return $response->json(['success' => false, 'message' => 'Falha ao extrair o arquivo de atualização. Verifique o error_log do PHP para detalhes.']);
             }
         }
 
-        die(json_encode(['success' => false, 'message' => 'Falha ao abrir o arquivo ZIP baixado.']));
+        @unlink($tempZipPath);
+        return $response->json(['success' => false, 'message' => 'Falha ao abrir o arquivo de atualização. Tente novamente mais tarde.']);
     }
-
     public static function getCurrentVersion(): ?string
     {
         $versionFile = __DIR__ . '/../../../version.json';

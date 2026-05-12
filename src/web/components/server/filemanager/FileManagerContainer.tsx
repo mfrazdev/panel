@@ -163,27 +163,50 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
         }
     }, [currentPath, listFiles, setLoadingBar]);
 
-    // -------------------------------------------------------------
-    // ATUALIZAÇÃO AUTOMÁTICA AO VOLTAR PRA ABA / FOCAR NA JANELA
-    // -------------------------------------------------------------
     useEffect(() => {
+        let hiddenAt: number | null = null;
+
         const handleVisibilityChange = () => {
-            if (document.visibilityState === 'visible' && server?.nodeUrl && !isEditOpen) {
-                fetchFiles();
+            if (document.visibilityState === 'hidden') {
+                hiddenAt = Date.now();
+                return;
             }
+
+            if (
+                document.visibilityState === 'visible' &&
+                server?.nodeUrl &&
+                !isEditOpen
+            ) {
+                const timeAway = hiddenAt ? Date.now() - hiddenAt : 0;
+
+                // 10 segundos
+                if (timeAway >= 10000) {
+                    fetchFiles();
+                }
+            }
+        };
+
+        const handleWindowBlur = () => {
+            hiddenAt = Date.now();
         };
 
         const handleWindowFocus = () => {
             if (server?.nodeUrl && !isEditOpen) {
-                fetchFiles();
+                const timeAway = hiddenAt ? Date.now() - hiddenAt : 0;
+
+                if (timeAway >= 10000) {
+                    fetchFiles();
+                }
             }
         };
 
         document.addEventListener("visibilitychange", handleVisibilityChange);
+        window.addEventListener("blur", handleWindowBlur);
         window.addEventListener("focus", handleWindowFocus);
 
         return () => {
             document.removeEventListener("visibilitychange", handleVisibilityChange);
+            window.removeEventListener("blur", handleWindowBlur);
             window.removeEventListener("focus", handleWindowFocus);
         };
     }, [server?.nodeUrl, isEditOpen, fetchFiles]);

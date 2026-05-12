@@ -50,6 +50,7 @@ class Server extends Model
         'databases'   => 'text',
         'maxDatabases'=> 'int',
         'suspended'   => 'int',
+        'schedulers'  => 'text', // NOVO CAMPO: Para armazenar os agendamentos em JSON
 
         'allocationId' => 'foreign:allocations.id',
     ];
@@ -75,6 +76,7 @@ class Server extends Model
     public ?int $maxAdditionalAllocations = null;
     public ?string $databases = null;
     public ?int $maxDatabases = null;
+    public ?string $schedulers = null; // NOVO CAMPO
 
     // Allocation (definida na criação)
     public ?int $allocationId = null;
@@ -106,6 +108,82 @@ class Server extends Model
         });
         $this->databases = json_encode(array_values($dbs), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $this->save();
+    }
+
+    // ==========================================
+    // MÉTODOS DE SCHEDULERS (AGENDAMENTOS)
+    // ==========================================
+    public function getSchedulersList(): array
+    {
+        $data = json_decode($this->schedulers ?? '[]', true);
+        return is_array($data) ? $data : [];
+    }
+
+    public function addScheduler(string $name, string $cron, array $tasks, bool $isActive = true): string
+    {
+        $schedulers = $this->getSchedulersList();
+        $id = uniqid('sched_'); // Gera um ID único para a task
+
+        $schedulers[] = [
+            'id' => $id,
+            'name' => $name,
+            'cron' => $cron, // Ex: "*/5 * * * *"
+            'active' => $isActive,
+            'tasks' => $tasks // Array de tasks. Ex: [['type' => 'action', 'payload' => 'restart'], ['type' => 'command', 'payload' => 'say Oi']]
+        ];
+
+        $this->schedulers = json_encode($schedulers, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $this->save();
+
+        return $id;
+    }
+
+    public function removeScheduler(string $schedulerId): void
+    {
+        $schedulers = $this->getSchedulersList();
+        $schedulers = array_filter($schedulers, function($sched) use ($schedulerId) {
+            return $sched['id'] !== $schedulerId;
+        });
+
+        $this->schedulers = json_encode(array_values($schedulers), JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $this->save();
+    }
+
+    public function toggleScheduler(string $schedulerId, bool $status): void
+    {
+        $schedulers = $this->getSchedulersList();
+        foreach ($schedulers as &$sched) {
+            if ($sched['id'] === $schedulerId) {
+                $sched['active'] = $status;
+                break;
+            }
+        }
+        $this->schedulers = json_encode($schedulers, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+        $this->save();
+    }
+
+    public function editScheduler(string $schedulerId, string $name, string $cron, array $tasks, bool $isActive): bool
+    {
+        $schedulers = $this->getSchedulersList();
+        $updated = false;
+
+        foreach ($schedulers as &$sched) {
+            if ($sched['id'] === $schedulerId) {
+                $sched['name'] = $name;
+                $sched['cron'] = $cron;
+                $sched['tasks'] = $tasks;
+                $sched['active'] = $isActive;
+                $updated = true;
+                break;
+            }
+        }
+
+        if ($updated) {
+            $this->schedulers = json_encode($schedulers, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
+            $this->save();
+        }
+
+        return $updated;
     }
 
     // ==========================================
@@ -177,7 +255,7 @@ class Server extends Model
         $stmt = $pdo->prepare("SELECT * FROM `{$table}` WHERE `serverUuid` LIKE :p LIMIT 1");
         $stmt->execute(['p' => $short . '-%']);
         $row = $stmt->fetch(\PDO::FETCH_ASSOC);
-        return $row ? new self($row, false) : null; // false = Bypassa syncSchema para + velocidade
+        return $row ? new self($row, false) : null;
     }
 
     public function getNode(): Node
@@ -187,7 +265,6 @@ class Server extends Model
 
     public function getStatus(?string $requestUserUuid = null): array|bool
     {
-        // Se estiver suspenso, não há necessidade de bater no Node. Ele está travado.
         if ($this->suspended === 1) {
             return [
                 'status' => 'suspended',
@@ -240,14 +317,12 @@ class Server extends Model
                 'action'   => $action
             ];
 
-            $pdo = DB::getPdo(); // Usamos conexão direta do cache para máxima velocidade
+            $pdo = DB::getPdo();
 
             switch ($action) {
                 case 'install':
                 case 'start':
                 case 'restart':
-                    // MEGA OTIMIZAÇÃO: Busca o Core e a Alocação Primária num JOIN rápido.
-                    // Evita criar classes do ORM e reduz o tempo de banco de dados para < 1ms.
                     $stmt = $pdo->prepare("
                     SELECT 
                         c.id as core_id, c.name as core_name, 
@@ -301,7 +376,6 @@ class Server extends Model
                         }, $rows);
                     }
 
-                    // --- INÍCIO PROCESSAMENTO DE VARIÁVEIS COM DEFAULTS ---
                     $serverEnv = json_decode($this->envVars ?? '{}', true) ?: [];
                     $finalEnv = [];
 
@@ -315,23 +389,19 @@ class Server extends Model
                             if (!$envName) continue;
 
                             $default = '';
-                            // Extrair o default das rules (ex: "required|string|default:latest")
                             $rulesArray = explode('|', $rules);
                             foreach ($rulesArray as $rule) {
                                 if (str_starts_with($rule, 'default:')) {
-                                    $default = substr($rule, 8); // Pega o que tem depois de "default:"
+                                    $default = substr($rule, 8);
                                     break;
                                 }
                             }
 
-                            // Adiciona no Array final a variável com seu respectivo valor default
                             $finalEnv[$envName] = $default;
                         }
                     }
 
-                    // array_merge vai sobrescrever as defaults do core com as específicas configuradas no servidor (se existirem)
                     $payload['environment'] = array_merge($finalEnv, $serverEnv);
-                    // --- FIM PROCESSAMENTO DE VARIÁVEIS COM DEFAULTS ---
 
                     if ($related) {
                         $payload['primaryAllocation'] = $related['ip'] ? [
@@ -362,7 +432,6 @@ class Server extends Model
                     break;
 
                 case 'stop':
-                    // Otimização: Busca apenas a coluna stopCommand invés de carregar a tabela `cores` inteira na RAM
                     $stmt = $pdo->prepare("SELECT `stopCommand` FROM `cores` WHERE `id` = :id LIMIT 1");
                     $stmt->execute(['id' => $this->coreId]);
                     $cmd = $stmt->fetchColumn() ?: 'stop';
@@ -380,23 +449,20 @@ class Server extends Model
                     return false;
             }
 
-            // OTIMIZAÇÃO EXTREMA: Removido o $this->getNode() para evitar o syncSchema() na tabela nodes
             $stmtNode = $pdo->prepare("SELECT * FROM `nodes` WHERE `id` = :id LIMIT 1");
             $stmtNode->execute(['id' => $this->nodeUuid]);
             $nodeRow = $stmtNode->fetch(\PDO::FETCH_ASSOC);
 
             if (!$nodeRow) return false;
 
-            // Instancia passando "false" como segundo parâmetro para ignorar o schema checker
             $node = new Node($nodeRow, false);
 
-            // Fim da contagem de tempo de processamento interno do PHP (CPU + MySQL Local)
             $timePayloadReady = microtime(true);
 
-            // Dispara requisição HTTP cURL para a rede
             $request = $node->apiRequest("POST", '/api/v1/servers/action', $payload);
-
-            // Fim da contagem de tempo de rede (Latência + Tempo do Daemon Processar)
+            if($action === 'command') {
+                error_log("[sendAction] Enviando comando para o servidor #{$this->id}: " . $command);
+            }
             $timeApiDone = microtime(true);
 
             $ms_php = round(($timePayloadReady - $timeStart) * 1000, 2);

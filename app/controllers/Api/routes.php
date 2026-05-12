@@ -78,6 +78,12 @@ class ApiRoutes
                 $router->get("/[server_id]/databases", [\App\controllers\Api\Servers\ServerDatabasesApiController::class, 'getDatabases']);
                 $router->post("/[server_id]/databases/create", [\App\controllers\Api\Servers\ServerDatabasesApiController::class, 'createDatabase']);   
                 $router->post("/[server_id]/databases/remove", [\App\controllers\Api\Servers\ServerDatabasesApiController::class, 'deleteDatabase']);
+
+                $router->get('/[server_id]/schedulers', [\App\controllers\Api\Users\Servers\ServerSchedulersApiController::class, 'list']);
+                $router->post('/[server_id]/schedulers/create', [\App\controllers\Api\Users\Servers\ServerSchedulersApiController::class, 'create']);
+                $router->post('/[server_id]/schedulers/delete', [\App\controllers\Api\Users\Servers\ServerSchedulersApiController::class, 'delete']);
+                $router->post('/[server_id]/schedulers/toggle', [\App\controllers\Api\Users\Servers\ServerSchedulersApiController::class, 'toggle']);
+                $router->post('/[server_id]/schedulers/edit', [\App\controllers\Api\Users\Servers\ServerSchedulersApiController::class, 'edit']);
             });
 
         });

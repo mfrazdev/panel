@@ -31,6 +31,7 @@ const menuCategories = [
         title: "Gerenciamento",
         items: [
             { id: 'allocations', name: 'Rede', icon: <ChartNoAxesColumnIncreasing /> },
+            { id: 'schedulers', name: 'Agendamentos', icon: <ListStartIcon /> },
         ]
     },
     {
