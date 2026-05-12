@@ -103,7 +103,6 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
 
     const loadingProgress = useLoading()
 
-    // Lógica para auto-fechar Modal e limpar Upload quando terminar
     useEffect(() => {
         const hasTasks = uploadTasks.length > 0;
         const allTasksFinished = hasTasks && uploadTasks.every(t => t.status === 'completed' || t.status === 'error');
@@ -117,7 +116,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
         }
     }, [uploadTasks, clearUploads]);
 
-    // Carregar arquivos da pasta atual
+// Carregar arquivos da pasta atual
     const fetchFiles = useCallback(async () => {
         const start = Date.now();
 
@@ -134,7 +133,8 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
                 type: item.type,
                 size: formatBytes(item.size),
                 lastModified: formatDate(item.lastModified),
-                rawPath: `${rootPath === '/' ? '' : rootPath}/${item.name}`
+                // CORREÇÃO: Usando currentPath para concatenar o caminho correto em subpastas!
+                rawPath: `${currentPath.replace(/\/$/, '')}/${item.name}`
             }));
 
             formattedFiles.sort((a: FileItem, b: FileItem) => {
@@ -161,7 +161,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
             setIsLoading(false);
             setLoadingBar(false);
         }
-    }, [currentPath, listFiles, setLoadingBar, rootPath]);
+    }, [currentPath, listFiles, setLoadingBar]);
 
     // -------------------------------------------------------------
     // ATUALIZAÇÃO AUTOMÁTICA AO VOLTAR PRA ABA / FOCAR NA JANELA

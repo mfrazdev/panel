@@ -14,15 +14,8 @@ class DashboardController
 
     public function view(Request $request, Response $response): Response
     {
-        // Força a limpeza de cache do GitHub caso passe ?check=1 na URL
-        if ($request->getQuery('check') == '1') {
-            unset($_SESSION['github_release_info']);
-            unset($_SESSION['github_release_time']);
-        }
-
         $currentVersion = $this->getCurrentVersion();
-        $releaseInfo = $this->getLatestGitHubReleaseInfo($currentVersion);
-        $latestVersion = $releaseInfo['version'] ?? null;
+        $latestVersion = $this->getLatestGitHubVersion($currentVersion);
 
         $hasUpdate = false;
 
@@ -30,9 +23,7 @@ class DashboardController
             $normalizedCurrent = ltrim(strtolower($currentVersion), 'v');
             $normalizedLatest = ltrim(strtolower($latestVersion), 'v');
 
-            // Nativamente, o PHP converte hífen em ponto e compara as partes.
-            // Para garantir 100% de precisão (ex: 0.0.1-canary.7 vs 0.0.1-canary.8),
-            // transformamos a string 'canary' temporariamente na keyword 'rc'
+            // Substitui 'canary' por 'rc' para o PHP comparar corretamente (rc = Release Candidate)
             $cmpCurrent = str_replace('canary', 'rc', $normalizedCurrent);
             $cmpLatest  = str_replace('canary', 'rc', $normalizedLatest);
 
@@ -46,50 +37,39 @@ class DashboardController
         ]);
     }
 
-    /**
-     * Função para atualizar o painel automaticamente
-     */
     public function update(Request $request, Response $response)
     {
-        header('Content-Type: application/json'); // Garante que a saída seja sempre JSON
+        header('Content-Type: application/json');
 
         $currentVersion = $this->getCurrentVersion();
+        $latestVersion = $this->getLatestGitHubVersion($currentVersion);
 
-        unset($_SESSION['github_release_info']);
-        unset($_SESSION['github_release_time']);
-
-        $releaseInfo = $this->getLatestGitHubReleaseInfo($currentVersion);
-
-        if (!$releaseInfo || empty($releaseInfo['assets'])) {
-            die(json_encode(['success' => false, 'message' => 'Nenhuma release ou asset encontrado.']));
+        if (!$latestVersion) {
+            die(json_encode(['success' => false, 'message' => 'Não foi possível encontrar a última versão no GitHub.']));
         }
 
-        $zipUrl = null;
-        foreach ($releaseInfo['assets'] as $asset) {
-            if ($asset['name'] === 'panel.zip') {
-                $zipUrl = $asset['browser_download_url'];
-                break;
-            }
-        }
+        // Formata a tag de volta para vX.X.X caso não tenha
+        $tagName = str_starts_with($latestVersion, 'v') ? $latestVersion : 'v' . $latestVersion;
 
-        if (!$zipUrl) {
-            die(json_encode(['success' => false, 'message' => 'O arquivo panel.zip não foi encontrado na última release.']));
-        }
+        // URL direta e estática de download (Não passa por API)
+        $zipUrl = "https://github.com/" . self::GITHUB_REPO . "/releases/download/{$tagName}/panel.zip";
 
         $tempZipPath = sys_get_temp_dir() . '/panel_update_' . time() . '.zip';
 
+        // Baixa o arquivo ZIP seguindo redirecionamentos da CDN do GitHub
         $options = [
             'http' => [
                 'method' => 'GET',
-                'header' => [
-                    'User-Agent: Vatts-App',
-                ]
+                'header' => "User-Agent: Vatts-App\r\n",
+                'follow_location' => 1,
+                'max_redirects' => 5
             ]
         ];
+
         $zipData = @file_get_contents($zipUrl, false, stream_context_create($options));
 
         if ($zipData === false) {
-            die(json_encode(['success' => false, 'message' => 'Falha ao baixar o arquivo de atualização do GitHub.']));
+            die(json_encode(['success' => false, 'message' => 'Falha ao baixar o arquivo de atualização.']));
         }
 
         file_put_contents($tempZipPath, $zipData);
@@ -98,24 +78,20 @@ class DashboardController
         if ($zip->open($tempZipPath) === true) {
             $extractPath = realpath(__DIR__ . '/../../../');
 
-            // Segura os Warnings do PHP para não sujarem nosso JSON
             ob_start();
-            $extractSuccess = @$zip->extractTo($extractPath); // @ oculta o Warning
-            ob_get_clean(); // Limpa qualquer resíduo de erro da memória
+            $extractSuccess = @$zip->extractTo($extractPath);
+            ob_get_clean();
 
             $zip->close();
             unlink($tempZipPath);
 
             if ($extractSuccess) {
                 $this->applyPermissions($extractPath);
-                unset($_SESSION['github_release_info']);
-                unset($_SESSION['github_release_time']);
                 die(json_encode(['success' => true, 'message' => 'Painel atualizado com sucesso!']));
             } else {
-                // Se a extração falhou (geralmente por permissão), avisa o usuário com um JSON limpo
                 die(json_encode([
                     'success' => false,
-                    'message' => 'Permissão negada ao extrair a atualização. Rode "chown -R www-data:www-data /var/www/lunar" no terminal da sua máquina e tente novamente.'
+                    'message' => 'Permissão negada ao extrair a atualização. Rode "chown -R www-data:www-data /var/www" e tente novamente.'
                 ]));
             }
         }
@@ -123,15 +99,12 @@ class DashboardController
         die(json_encode(['success' => false, 'message' => 'Falha ao abrir o arquivo ZIP baixado.']));
     }
 
-    /**
-     * Lê a versão atual do arquivo gerado pelo GitHub Actions.
-     */
     public static function getCurrentVersion(): ?string
     {
         $versionFile = __DIR__ . '/../../../version.json';
 
         if (file_exists($versionFile)) {
-            $json = file_get_contents($versionFile);
+            $json = @file_get_contents($versionFile);
             $data = json_decode($json, true);
 
             if (isset($data['version'])) {
@@ -143,72 +116,56 @@ class DashboardController
     }
 
     /**
-     * Consulta a API do GitHub para pegar a última release (suportando Canary e Stable)
+     * MAGIA NEGRA: Busca a versão pelo FEED ATOM do GitHub em vez da API REST.
+     * É instantâneo, real-time, não tem rate-limit chato e lê pre-releases (canary).
      */
-    private function getLatestGitHubReleaseInfo(?string $currentVersion): ?array
+    private function getLatestGitHubVersion(?string $currentVersion): ?string
     {
-        if (isset($_SESSION['github_release_info']) && isset($_SESSION['github_release_time'])) {
-            if (time() - $_SESSION['github_release_time'] < 60) {
-                return $_SESSION['github_release_info'];
-            }
-        }
-
-        $url = 'https://api.github.com/repos/' . self::GITHUB_REPO . '/releases';
+        $url = 'https://github.com/' . self::GITHUB_REPO . '/releases.atom';
 
         $options = [
             'http' => [
                 'method' => 'GET',
-                'header' => [
-                    'User-Agent: Vatts-App',
-                    'Accept: application/vnd.github.v3+json'
-                ]
+                'header' => "User-Agent: Vatts-App\r\n"
             ]
         ];
 
-        $context = stream_context_create($options);
-        $json = @file_get_contents($url, false, $context);
+        // Baixa o XML incrivelmente leve e rápido
+        $xmlData = @file_get_contents($url, false, stream_context_create($options));
 
-        if ($json === false) {
+        if ($xmlData === false) {
             return null;
         }
 
-        $releases = json_decode($json, true);
-        if (!is_array($releases) || empty($releases)) {
+        $xml = @simplexml_load_string($xmlData);
+        if (!$xml || !isset($xml->entry)) {
             return null;
         }
 
         $isCurrentCanary = $currentVersion ? str_contains(strtolower($currentVersion), 'canary') : false;
-        $selectedRelease = null;
 
-        foreach ($releases as $release) {
-            $isPreRelease = $release['prerelease'];
+        // Varre as últimas releases do arquivo XML
+        foreach ($xml->entry as $entry) {
+            // O link href sempre contém a tag da release, ex: /releases/tag/v1.0.5-canary.2
+            $link = (string) $entry->link['href'];
 
-            if (!$isCurrentCanary && $isPreRelease) {
-                continue;
+            if (preg_match('/\/releases\/tag\/(.+)$/', $link, $matches)) {
+                $tag = $matches[1];
+                $isPreRelease = str_contains(strtolower($tag), 'canary');
+
+                // Se eu NÃO sou canary, ignoro tudo que tiver canary no nome
+                if (!$isCurrentCanary && $isPreRelease) {
+                    continue;
+                }
+
+                // Retorna a primeira versão válida que encontrar (a mais recente)
+                return ltrim($tag, 'v');
             }
-
-            $selectedRelease = $release;
-            break;
-        }
-
-        if ($selectedRelease && isset($selectedRelease['tag_name'])) {
-            $info = [
-                'version' => ltrim($selectedRelease['tag_name'], 'v'),
-                'assets'  => $selectedRelease['assets'] ?? []
-            ];
-
-            $_SESSION['github_release_info'] = $info;
-            $_SESSION['github_release_time'] = time();
-
-            return $info;
         }
 
         return null;
     }
 
-    /**
-     * Aplica as permissões nos arquivos extraídos.
-     */
     private function applyPermissions(string $dir): void
     {
         if (!is_dir($dir)) return;
@@ -220,9 +177,9 @@ class DashboardController
         foreach ($iterator as $item) {
             $path = $item->getPathname();
             if ($item->isDir()) {
-                @chmod($path, 0755); // R/W/X para o owner, R/X para os demais
+                @chmod($path, 0755);
             } else {
-                @chmod($path, 0644); // R/W para o owner, R para os demais
+                @chmod($path, 0644);
             }
         }
     }

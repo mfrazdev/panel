@@ -5,6 +5,8 @@ import { ArrowLeft } from "lucide-react";
 import { useFileManager } from "./FileManagerContext";
 import { useServerContext } from "@/web/contexts/ServerContext";
 import { useToast } from "@/web/contexts/ToastContext";
+import LoadingPage from "@/web/components/commons/LoadingPage"; // Importando o LoadingPage
+import { AnimatePresence, motion } from "framer-motion"; // Importando framer-motion para transição suave
 
 const SUPPORTED_LANGUAGES = [
     { value: "json", label: "JSON" },
@@ -92,7 +94,9 @@ export default function FileEditContainer() {
         };
 
         fetchFileContent();
-    }, [safeFilePath, server?.nodeUrl, readFile]);
+        // IGNORANDO O LINT E REMOVENDO O readFile PARA MATAR O LOOP INFINITO:
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [safeFilePath, server?.nodeUrl]);
 
     // Setup do Monaco (Compilador configurado para Intellisense JS/TS)
     const handleEditorDidMount = (editor: any, monacoInstance: any) => {
@@ -299,7 +303,9 @@ export default function FileEditContainer() {
             });
             loadedLibsRef.current = [];
         };
-    }, [monaco, safeFilePath, readFile, listFiles]);
+        // IGNORANDO O LINT E REMOVENDO listFiles E readFile DAQUI TAMBÉM:
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [monaco, safeFilePath]);
 
     const handleSave = async () => {
         if (!safeFilePath) return;
@@ -327,7 +333,28 @@ export default function FileEditContainer() {
 
         window.addEventListener("keydown", handleKeyDown);
         return () => window.removeEventListener("keydown", handleKeyDown);
-    }, [content, safeFilePath]); // <-- Dependências adicionadas para garantir que salve o conteúdo mais recente
+    }, [content, safeFilePath]);
+
+    // Se estiver carregando o conteúdo, exibe o LoadingPage
+    if (isLoading) {
+        return (
+            <AnimatePresence mode="wait">
+                <motion.div
+                    key="loading-editor"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{
+                        duration: 0.35,
+                        ease: [0.4, 0, 0.2, 1],
+                    }}
+                    className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[var(--color-secondary)]"
+                >
+                    <LoadingPage />
+                </motion.div>
+            </AnimatePresence>
+        );
+    }
 
     return (
         <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden relative text-[var(--color-text-value)] h-full w-full">
@@ -364,7 +391,7 @@ export default function FileEditContainer() {
                         height="100%"
                         language={language}
                         theme="vs-dark"
-                        value={isLoading ? "// Carregando conteudo..." : content}
+                        value={content}
                         onChange={(value) => setContent(value || "")}
                         onMount={handleEditorDidMount}
                         options={{
@@ -376,7 +403,6 @@ export default function FileEditContainer() {
                             smoothScrolling: true,
                             cursorBlinking: "smooth",
                             padding: { top: 16, bottom: 16 },
-                            readOnly: isLoading,
                         }}
                     />
                 </div>
@@ -388,7 +414,6 @@ export default function FileEditContainer() {
                         value={language}
                         onChange={(e) => setLanguage(e.target.value)}
                         className="appearance-none bg-(--color-terciary) text-(--color-text-label) font-medium text-sm rounded-md px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer transition hover:brightness-110"
-                        disabled={isLoading}
                     >
                         {SUPPORTED_LANGUAGES.map((lang) => (
                             <option key={lang.value} value={lang.value}>
@@ -406,7 +431,7 @@ export default function FileEditContainer() {
                 <Button
                     variant="info"
                     onClick={handleSave}
-                    disabled={isSaving || isLoading}
+                    disabled={isSaving}
                     className="min-w-[160px]"
                 >
                     {isSaving ? "Salvando..." : "Salvar"}
