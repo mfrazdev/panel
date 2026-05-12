@@ -1,175 +1,183 @@
-steps:
-  - name: Checkout
-    uses: actions/checkout@v4
-    with:
-      fetch-depth: 0
+name: Build Project
 
-  # STREAMING_CHUNK:Calculating version and timestamp...
-  - name: Calculate Version
-    id: versioning
-    env:
-      COMMIT_MSG: ${{ github.event.head_commit.message }}
-    run: |
-      git fetch --tags --quiet
+on:
+  push:
+    branches:
+      - master
+      - canary
 
-      # Pega a última tag estável (x.x.x)
-      LATEST_STABLE=$(git tag --list --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
-      
-      # Se não houver tag estável, define uma base
-      if [ -z "$LATEST_STABLE" ]; then
-        BASE_TAG="0.0.1"
-        HAS_STABLE=false
-      else
-        BASE_TAG="$LATEST_STABLE"
-        HAS_STABLE=true
-      fi
-      
-      IFS='.' read -r -a VERSION_PARTS <<< "$BASE_TAG"
-      MAJOR="${VERSION_PARTS[0]}"
-      MINOR="${VERSION_PARTS[1]}"
-      PATCH="${VERSION_PARTS[2]}"
-      
-      BRANCH_NAME="${GITHUB_REF#refs/heads/}"
-      
-      # Pega o horário atual em formato numérico (Timestamp Unix)
-      BUILD_TIME=$(date +%s)
-      
-      # Lógica de Versão
-      if [[ "$COMMIT_MSG" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
-        FINAL_TAG="${BASH_REMATCH[1]}"
-        IS_LATEST="true"
-      elif [[ "$BRANCH_NAME" == "canary" ]]; then
-        # Tag estática para Canary
-        FINAL_TAG="$MAJOR.$MINOR.$PATCH-canary"
-      
-        # IS_LATEST para Canary: Só é true se NÃO existir nenhuma versão estável
-        if [ "$HAS_STABLE" = false ]; then
-          IS_LATEST="true"
-        else
-          IS_LATEST="false"
-        fi
-      else
-        # Stable incrementa o patch se já existir uma tag
-        if [ "$HAS_STABLE" = true ]; then
-          PATCH=$((PATCH + 1))
-        fi
-        FINAL_TAG="$MAJOR.$MINOR.$PATCH"
-        IS_LATEST="true"
-      fi
-      
-      echo "TAG_NAME=$FINAL_TAG" >> $GITHUB_ENV
-      echo "IS_LATEST=$IS_LATEST" >> $GITHUB_ENV
-      echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
+permissions:
+  contents: write
 
-      echo "Generated tag: $FINAL_TAG"
-      echo "Is latest: $IS_LATEST"
-      echo "Build time: $BUILD_TIME"
+jobs:
+  build:
+    runs-on: ubuntu-latest
 
-  # STREAMING_CHUNK:Saving version to json...
-  - name: Save Version to File
-    run: |
-      echo "{\"version\": \"${{ env.TAG_NAME }}\", \"build_time\": ${{ env.BUILD_TIME }}}" > version.json
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
-  # STREAMING_CHUNK:Setting up Node and building frontend...
-  # NODE
-  - name: Setup Node
-    uses: actions/setup-node@v4
-    with:
-      node-version: 24
+      - name: Calculate Version
+        id: versioning
+        env:
+          COMMIT_MSG: ${{ github.event.head_commit.message }}
+        run: |
+          git fetch --tags --quiet
 
-  - name: Setup PNPM
-    uses: pnpm/action-setup@v4
-    with:
-      version: 9
+          # Pega a última tag estável (x.x.x)
+          LATEST_STABLE=$(git tag --list --sort=-v:refname | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | head -n 1)
+          
+          # Se não houver tag estável, define uma base
+          if [ -z "$LATEST_STABLE" ]; then
+            BASE_TAG="0.0.1"
+            HAS_STABLE=false
+          else
+            BASE_TAG="$LATEST_STABLE"
+            HAS_STABLE=true
+          fi
+          
+          IFS='.' read -r -a VERSION_PARTS <<< "$BASE_TAG"
+          MAJOR="${VERSION_PARTS[0]}"
+          MINOR="${VERSION_PARTS[1]}"
+          PATCH="${VERSION_PARTS[2]}"
+          
+          BRANCH_NAME="${GITHUB_REF#refs/heads/}"
+          
+          # Pega o horário atual em formato numérico (Timestamp Unix)
+          BUILD_TIME=$(date +%s)
+          
+          # Lógica de Versão
+          if [[ "$COMMIT_MSG" =~ release\ v([0-9]+\.[0-9]+\.[0-9]+) ]]; then
+            FINAL_TAG="${BASH_REMATCH[1]}"
+            IS_LATEST="true"
+          elif [[ "$BRANCH_NAME" == "canary" ]]; then
+            # Tag estática para Canary
+            FINAL_TAG="$MAJOR.$MINOR.$PATCH-canary"
+          
+            # IS_LATEST para Canary: Só é true se NÃO existir nenhuma versão estável
+            if [ "$HAS_STABLE" = false ]; then
+              IS_LATEST="true"
+            else
+              IS_LATEST="false"
+            fi
+          else
+            # Stable incrementa o patch se já existir uma tag
+            if [ "$HAS_STABLE" = true ]; then
+              PATCH=$((PATCH + 1))
+            fi
+            FINAL_TAG="$MAJOR.$MINOR.$PATCH"
+            IS_LATEST="true"
+          fi
+          
+          echo "TAG_NAME=$FINAL_TAG" >> $GITHUB_ENV
+          echo "IS_LATEST=$IS_LATEST" >> $GITHUB_ENV
+          echo "BUILD_TIME=$BUILD_TIME" >> $GITHUB_ENV
 
-  - name: Install Node Dependencies
-    run: pnpm install
+          echo "Generated tag: $FINAL_TAG"
+          echo "Is latest: $IS_LATEST"
+          echo "Build time: $BUILD_TIME"
 
-  - name: Build Frontend
-    run: pnpm run build
+      - name: Save Version to File
+        run: |
+          echo "{\"version\": \"${{ env.TAG_NAME }}\", \"build_time\": ${{ env.BUILD_TIME }}}" > version.json
 
-  - name: Remove Node Modules and .vatts
-    run: |
-      rm -rf node_modules
-      rm -rf .vatts
+      # NODE
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24
 
-  # STREAMING_CHUNK:Setting up PHP and Composer...
-  # PHP
-  - name: Setup PHP
-    uses: shivammathur/setup-php@v2
-    with:
-      php-version: 8.3
+      - name: Setup PNPM
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9
 
-  - name: Install Composer Dependencies
-    run: composer install --no-dev --optimize-autoloader --classmap-authoritative
+      - name: Install Node Dependencies
+        run: pnpm install
 
-  # Backup das Views
-  - name: Backup Original Views
-    run: cp -r src/views /tmp/original_views
+      - name: Build Frontend
+        run: pnpm run build
 
-  # STREAMING_CHUNK:Encoding with IonCube...
-  # 2. ENCODE IONCUBE
-  - name: Encode with IonCube
-    uses: MuriloChianfa/ioncube-encoder-action@v3.0.1
-    with:
-      trial: false
-      binary: true
-      create-target: true
-      php-target-version: '8.2'
-      template: 'laravel'
-      source: '.'
-      output: '/tmp/encoded_build'
-      ignore: '.git .github web dist resources storage public vendor'
+      - name: Remove Node Modules and .vatts
+        run: |
+          rm -rf node_modules
+          rm -rf .vatts
 
-  # Limpeza e Restauração
-  - name: Post-Encoding Cleanup and Restore
-    run: |
-      rm -rf /tmp/encoded_build/src/views
-      cp -r /tmp/original_views /tmp/encoded_build/src/views
-      rsync -av /tmp/encoded_build/ ./
-      rm -rf ioncube_encoder_evaluation /tmp/encoded_build /tmp/original_views .git composer.json composer.lock
-      mkdir -p t-cache
+      # PHP
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: 8.3
 
-  # STREAMING_CHUNK:Packaging and uploading artifacts...
-  # ZIP
-  - name: Create ZIP
-    run: |
-      zip -r panel.zip . \
-        -x "*.git*" \
-        -x "node_modules/*" \
-        -x ".github/*" \
-        -x "ioncube_encoder_evaluation/*"
+      - name: Install Composer Dependencies
+        run: composer install --no-dev --optimize-autoloader --classmap-authoritative
 
-  - name: Upload Artifact
-    uses: actions/upload-artifact@v4
-    with:
-      name: production-build
-      path: panel.zip
+      # Backup das Views
+      - name: Backup Original Views
+        run: cp -r src/views /tmp/original_views
 
-  # STREAMING_CHUNK:Publishing release and cleaning up...
-  # FORÇA A TAG NO COMMIT ATUAL SE FOR CANARY
-  - name: Force Update Canary Tag
-    if: contains(env.TAG_NAME, 'canary')
-    run: |
-      git config user.name "github-actions[bot]"
-      git config user.email "github-actions[bot]@users.noreply.github.com"
-      git tag -f ${{ env.TAG_NAME }}
-      git push -f origin ${{ env.TAG_NAME }}
+      # 2. ENCODE IONCUBE
+      - name: Encode with IonCube
+        uses: MuriloChianfa/ioncube-encoder-action@v3.0.1
+        with:
+          trial: false
+          binary: true
+          create-target: true
+          php-target-version: '8.2'
+          template: 'laravel'
+          source: '.'
+          output: '/tmp/encoded_build'
+          ignore: '.git .github web dist resources storage public vendor'
 
-  # RELEASE
-  - name: Create Release
-    uses: softprops/action-gh-release@v2
-    with:
-      tag_name: ${{ env.TAG_NAME }}
-      target_commitish: ${{ github.sha }}
-      name: v${{ env.TAG_NAME }}
-      files: panel.zip
-      generate_release_notes: true
-      make_latest: ${{ env.IS_LATEST }}
-      prerelease: ${{ contains(env.TAG_NAME, 'canary') }}
+      # Limpeza e Restauração
+      - name: Post-Encoding Cleanup and Restore
+        run: |
+          rm -rf /tmp/encoded_build/src/views
+          cp -r /tmp/original_views /tmp/encoded_build/src/views
+          rsync -av /tmp/encoded_build/ ./
+          rm -rf ioncube_encoder_evaluation /tmp/encoded_build /tmp/original_views .git composer.json composer.lock
+          mkdir -p t-cache
 
-  # LIMPEZA DE ARTIFACTS
-  - name: Delete Artifact
-    uses: geekyeggo/delete-artifact@v5
-    with:
-      name: production-build
+      # ZIP
+      - name: Create ZIP
+        run: |
+          zip -r panel.zip . \
+            -x "*.git*" \
+            -x "node_modules/*" \
+            -x ".github/*" \
+            -x "ioncube_encoder_evaluation/*"
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: production-build
+          path: panel.zip
+
+      # FORÇA A TAG NO COMMIT ATUAL SE FOR CANARY
+      - name: Force Update Canary Tag
+        if: contains(env.TAG_NAME, 'canary')
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git tag -f ${{ env.TAG_NAME }}
+          git push -f origin ${{ env.TAG_NAME }}
+
+      # RELEASE
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.TAG_NAME }}
+          target_commitish: ${{ github.sha }}
+          name: v${{ env.TAG_NAME }}
+          files: panel.zip
+          generate_release_notes: true
+          make_latest: ${{ env.IS_LATEST }}
+          prerelease: ${{ contains(env.TAG_NAME, 'canary') }}
+
+      # LIMPEZA DE ARTIFACTS
+      - name: Delete Artifact
+        uses: geekyeggo/delete-artifact@v5
+        with:
+          name: production-build
