@@ -137,7 +137,7 @@ jobs:
           rm -rf /tmp/encoded_build/src/views
           cp -r /tmp/original_views /tmp/encoded_build/src/views
           rsync -av /tmp/encoded_build/ ./
-          rm -rf ioncube_encoder_evaluation /tmp/encoded_build /tmp/original_views .git composer.json composer.lock
+          rm -rf ioncube_encoder_evaluation /tmp/encoded_build /tmp/original_views composer.json composer.lock
           mkdir -p t-cache
 
       # ZIP
