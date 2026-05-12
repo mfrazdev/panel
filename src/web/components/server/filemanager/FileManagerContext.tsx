@@ -116,31 +116,42 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
     }, []);
 
     const navigateToPath = (path: string) => {
-        const relativePath = path.replace(ROOT_PATH, "");
-        const formattedPath = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
-        const hash = formattedPath === "/" ? "/" : formattedPath;
+        // Garante que não teremos barras duplas soltas caso o caminho seja modificado bruscamente
+        const cleanPath = path.replace(/\/+/g, '/').replace(/\/$/, "");
 
-        setCurrentPath(path);
+        // Se o cara tentar voltar antes do ROOT (ex: ..), travamos na raiz.
+        const safePath = cleanPath.startsWith(ROOT_PATH) ? cleanPath : ROOT_PATH;
+
+        const relativePath = safePath.replace(ROOT_PATH, "");
+        const formattedPath = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
+        const hash = formattedPath === "/" || formattedPath === "" ? "/" : formattedPath;
+
+        setCurrentPath(safePath);
         setIsEditOpen(false);
         setEditingFilePath(null);
         window.history.pushState({}, "", `#${hash}`);
     };
 
     const navigateToEdit = (filePath: string) => {
-    // Usando regex para arrancar o home/container com ou sem barra
-    const relativePath = filePath.replace(/^\/?home\/container/, ""); 
-    const formattedPath = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
-    const hash = `edit:${formattedPath}`;
+        // Usando regex para arrancar o home/container com ou sem barra
+        const relativePath = filePath.replace(/^\/?home\/container/, "");
+        const formattedPath = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
+        const hash = `edit:${formattedPath}`;
 
-    setIsEditOpen(true);
-    setEditingFilePath(filePath);
-    window.history.pushState({}, "", `#${hash}`);
-};
+        setIsEditOpen(true);
+        setEditingFilePath(filePath);
+        window.history.pushState({}, "", `#${hash}`);
+    };
 
     const closeEdit = () => {
         setIsEditOpen(false);
         setEditingFilePath(null);
-        window.history.pushState({}, "", "#/");
+        // Oculta o editor, mas mantém o cara na pasta onde ele estava editando o arquivo.
+        const relativePath = currentPath.replace(ROOT_PATH, "");
+        const formattedPath = relativePath.startsWith("/") ? relativePath : `/${relativePath}`;
+        const hash = formattedPath === "/" || formattedPath === "" ? "/" : formattedPath;
+
+        window.history.pushState({}, "", `#${hash}`);
     };
 
     const getBreadcrumbs = (path: string) => {
@@ -148,6 +159,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
         const segments = path.split("/").filter(Boolean);
         const breadcrumbs: { name: string; path: string; isBase?: boolean }[] = [];
 
+        // O ROOT_PATH geralmente resulta em ['home', 'container']
         if (segments.length >= 2 && segments[0] === "home" && segments[1] === "container") {
             breadcrumbs.push({
                 name: "home / container",
@@ -160,7 +172,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
                 currentAccumulatedPath += `/${segments[i]}`;
                 breadcrumbs.push({
                     name: segments[i],
-                    path: currentAccumulatedPath,
+                    path: currentAccumulatedPath, // Isso garante que o path gerado pra subpastas seja tipo "/home/container/www/conf"
                 });
             }
         } else {
