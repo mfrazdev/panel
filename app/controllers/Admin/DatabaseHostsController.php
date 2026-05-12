@@ -32,6 +32,9 @@ class DatabaseHostsController
         // fazer um for
         foreach ($servers as $server) {
             try {
+                if($server->databases === null) {
+                    continue; // Se não tiver bancos, ignora
+                }
                 $array = json_decode($server->databases, true);
                 if (is_array($array)) {
                     foreach ($array as $dbHost) {

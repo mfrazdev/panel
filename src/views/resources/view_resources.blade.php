@@ -80,7 +80,7 @@
 
                                     @elseif($type === 'date')
                                         <span class="text-[14px] font-medium text-textSub">
-                                            {{ date('d M, Y', strtotime($val)) }}
+                                                    {{ $val ? date('d M, Y', strtotime($val)) : '-' }}
                                         </span>
 
                                     @elseif($type === 'custom')
