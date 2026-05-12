@@ -7,7 +7,7 @@ import {
     ShieldCog,
     ChartNoAxesColumnIncreasing,
     Play,
-    UsersRound
+    UsersRound, Clock
 } from "lucide-react";
 import {useSession} from "@vatts/auth/react";
 import {useServerContext} from "@/web/contexts/ServerContext";
@@ -31,7 +31,7 @@ const menuCategories = [
         title: "Gerenciamento",
         items: [
             { id: 'allocations', name: 'Rede', icon: <ChartNoAxesColumnIncreasing /> },
-            { id: 'schedulers', name: 'Agendamentos', icon: <ListStartIcon /> },
+            { id: 'schedulers', name: 'Agendamentos', icon: <Clock /> },
         ]
     },
     {

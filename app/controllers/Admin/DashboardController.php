@@ -14,24 +14,35 @@ class DashboardController
 
     public function view(Request $request, Response $response): Response
     {
-        $currentVersion = $this->getCurrentVersion();
-        $latestVersion = $this->getLatestGitHubVersion($currentVersion);
+        $currentData = $this->getCurrentVersionData();
+        $latestData = $this->getLatestGitHubVersionData($currentData['version']);
 
         $hasUpdate = false;
+
+        $currentVersion = $currentData['version'];
+        $latestVersion = $latestData['version'];
 
         if ($latestVersion && $currentVersion && strtolower($currentVersion) !== 'dev') {
             $normalizedCurrent = ltrim(strtolower($currentVersion), 'v');
             $normalizedLatest = ltrim(strtolower($latestVersion), 'v');
 
-            // Substitui 'canary' por 'rc' para o PHP comparar corretamente (rc = Release Candidate)
-            $cmpCurrent = str_replace('canary', 'rc', $normalizedCurrent);
-            $cmpLatest  = str_replace('canary', 'rc', $normalizedLatest);
-
-            $hasUpdate = version_compare($cmpCurrent, $cmpLatest, '<');
+            // Se for exatamente a mesma versão e for canary, desempata pelo tempo (Timestamp)
+            if ($normalizedCurrent === $normalizedLatest && str_contains($normalizedCurrent, 'canary')) {
+                // Dá 5 minutos (300s) de tolerância pois o tempo do release no GitHub
+                // sempre será alguns minutos APÓS o build_time gravado dentro do arquivo
+                if ($latestData['release_time'] > ($currentData['build_time'] + 300)) {
+                    $hasUpdate = true;
+                }
+            } else {
+                // Substitui 'canary' por 'rc' para o PHP comparar corretamente (rc = Release Candidate)
+                $cmpCurrent = str_replace('canary', 'rc', $normalizedCurrent);
+                $cmpLatest  = str_replace('canary', 'rc', $normalizedLatest);
+                $hasUpdate = version_compare($cmpCurrent, $cmpLatest, '<');
+            }
         }
 
         return $response->view('Dashboard', [
-            'current_version' => $currentVersion ?? 'Dev',
+            'current_version' => $currentVersion === 'dev' ? 'Dev' : $currentVersion,
             'latest_version'  => $latestVersion ?? 'Desconhecida',
             'has_update'      => $hasUpdate
         ]);
@@ -39,14 +50,14 @@ class DashboardController
 
     public function update(Request $request, Response $response): Response
     {
-        $currentVersion = $this->getCurrentVersion();
-        $latestVersion = $this->getLatestGitHubVersion($currentVersion);
+        $currentData = $this->getCurrentVersionData();
+        $latestData = $this->getLatestGitHubVersionData($currentData['version']);
 
-        if (!$latestVersion) {
+        if (!$latestData['version']) {
             return $response->json(['success' => false, 'message' => 'Não foi possível verificar a versão mais recente. Tente novamente mais tarde.']);
         }
 
-        $tagName = $latestVersion;
+        $tagName = $latestData['version'];
         $zipUrl = "https://github.com/" . self::GITHUB_REPO . "/releases/download/{$tagName}/panel.zip";
         $tempZipPath = sys_get_temp_dir() . '/panel_update_' . time() . '.zip';
 
@@ -77,22 +88,12 @@ class DashboardController
         if ($zip->open($tempZipPath) === true) {
             $extractPath = realpath(__DIR__ . '/../../../');
 
-            // --- INÍCIO DO DEBUG ---
             error_log("[Update Debug] Iniciando extração da versão {$tagName}");
             error_log("[Update Debug] Caminho de extração resolvido (realpath): " . ($extractPath ?: 'FALSO - CAMINHO INVÁLIDO'));
 
-            if ($extractPath) {
-                error_log("[Update Debug] O diretório existe. Permissão de escrita: " . (is_writable($extractPath) ? 'SIM' : 'NÃO'));
-            } else {
-                error_log("[Update Debug] __DIR__ atual é: " . __DIR__);
-            }
-            // --- FIM DO DEBUG ---
-
-            // Sem o @ para o PHP poder registrar Warnings nativos no log se der BO
             $extractSuccess = $zip->extractTo($extractPath);
 
             if (!$extractSuccess) {
-                // Captura o motivo interno do ZipArchive ter falhado
                 error_log("[Update Debug] ZipArchive->extractTo() retornou false. Status do Zip: " . $zip->getStatusString());
             }
 
@@ -110,28 +111,33 @@ class DashboardController
         @unlink($tempZipPath);
         return $response->json(['success' => false, 'message' => 'Falha ao abrir o arquivo de atualização. Tente novamente mais tarde.']);
     }
-    public static function getCurrentVersion(): ?string
+
+    public static function getCurrentVersionData(): array
     {
         $versionFile = __DIR__ . '/../../../version.json';
+        $default = ['version' => 'dev', 'build_time' => 0];
 
         if (file_exists($versionFile)) {
             $json = @file_get_contents($versionFile);
             $data = json_decode($json, true);
 
             if (isset($data['version'])) {
-                return 'v' . ltrim($data['version'], 'v');
+                return [
+                    'version'    => 'v' . ltrim($data['version'], 'v'),
+                    'build_time' => $data['build_time'] ?? 0 // Lê o timestamp que a Action salvou
+                ];
             }
         }
 
-        return 'dev';
+        return $default;
     }
 
     /**
-     * MAGIA NEGRA: Busca a versão pelo FEED ATOM do GitHub em vez da API REST.
-     * É instantâneo, real-time, não tem rate-limit chato e lê pre-releases (canary).
+     * Extrai a última versão E O HORÁRIO pelo FEED ATOM do GitHub.
      */
-    private function getLatestGitHubVersion(?string $currentVersion): ?string
+    private function getLatestGitHubVersionData(?string $currentVersion): array
     {
+        $default = ['version' => null, 'release_time' => 0];
         $url = 'https://github.com/' . self::GITHUB_REPO . '/releases.atom';
 
         $options = [
@@ -141,40 +147,39 @@ class DashboardController
             ]
         ];
 
-        // Baixa o XML incrivelmente leve e rápido
         $xmlData = @file_get_contents($url, false, stream_context_create($options));
 
         if ($xmlData === false) {
-            return null;
+            return $default;
         }
 
         $xml = @simplexml_load_string($xmlData);
         if (!$xml || !isset($xml->entry)) {
-            return null;
+            return $default;
         }
 
         $isCurrentCanary = $currentVersion ? str_contains(strtolower($currentVersion), 'canary') : false;
 
-        // Varre as últimas releases do arquivo XML
         foreach ($xml->entry as $entry) {
-            // O link href sempre contém a tag da release, ex: /releases/tag/v1.0.5-canary.2
             $link = (string) $entry->link['href'];
+            $updatedTime = strtotime((string) $entry->updated); // Pega o Timestamp da release do feed Atom!
 
             if (preg_match('/\/releases\/tag\/(.+)$/', $link, $matches)) {
                 $tag = $matches[1];
                 $isPreRelease = str_contains(strtolower($tag), 'canary');
 
-                // Se eu NÃO sou canary, ignoro tudo que tiver canary no nome
                 if (!$isCurrentCanary && $isPreRelease) {
                     continue;
                 }
 
-                // Retorna a primeira versão válida que encontrar (a mais recente)
-                return ltrim($tag, 'v');
+                return [
+                    'version'      => ltrim($tag, 'v'),
+                    'release_time' => $updatedTime
+                ];
             }
         }
 
-        return null;
+        return $default;
     }
 
     private function applyPermissions(string $dir): void
