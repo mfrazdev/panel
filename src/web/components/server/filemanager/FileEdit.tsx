@@ -4,13 +4,14 @@ import Button from "@/web/components/commons/components/Button";
 import { ArrowLeft } from "lucide-react";
 import { useFileManager } from "./FileManagerContext";
 import { useServerContext } from "@/web/contexts/ServerContext";
-import {useToast} from "@/web/contexts/ToastContext";
+import { useToast } from "@/web/contexts/ToastContext";
 
 const SUPPORTED_LANGUAGES = [
     { value: "json", label: "JSON" },
     { value: "yaml", label: "YAML / YML" },
     { value: "properties", label: "Properties" },
     { value: "xml", label: "XML" },
+    { value: 'php', label: 'PhP'},
     { value: "javascript", label: "JavaScript" },
     { value: "typescript", label: "TypeScript" },
     { value: "shell", label: "Shell Script (.sh)" },
@@ -34,16 +35,16 @@ export default function FileEditContainer() {
     const [isLoading, setIsLoading] = useState(true);
 
     const toast = useToast()
-
     const monaco = useMonaco();
+    const server = useServerContext();
 
-    // REF ADICIONADO: Guarda as tipagens do arquivo atual para matar elas ao trocar de arquivo
+    // Guarda as tipagens e modelos do arquivo atual para matar elas ao trocar de arquivo
     const loadedLibsRef = useRef<any[]>([]);
 
     const safeFilePath = editingFilePath || "";
     const breadcrumbs = getBreadcrumbs(safeFilePath);
 
-    // Ikeddeng ti pagsasao
+    // Define a linguagem com base na extensão
     useEffect(() => {
         if (!safeFilePath) return;
 
@@ -52,12 +53,12 @@ export default function FileEditContainer() {
         else if (safeFilePath.endsWith(".properties")) setLanguage("properties");
         else if (safeFilePath.endsWith(".sh")) setLanguage("shell");
         else if (safeFilePath.endsWith(".xml")) setLanguage("xml");
-        else if (safeFilePath.endsWith(".js")) setLanguage("javascript");
-        else if (safeFilePath.endsWith(".ts")) setLanguage("typescript");
+        else if (safeFilePath.match(/\.(js|jsx)$/)) setLanguage("javascript");
+        else if (safeFilePath.match(/\.(ts|tsx)$/)) setLanguage("typescript");
         else setLanguage("plaintext");
     }, [safeFilePath]);
 
-    // Ikeddeng ti tema
+    // Define o tema do Monaco
     useEffect(() => {
         if (monaco) {
             monaco.editor.defineTheme('pterodactyl-dark', {
@@ -73,9 +74,7 @@ export default function FileEditContainer() {
         }
     }, [monaco]);
 
-    const server = useServerContext();
-
-    // Mangala iti linaon ti papeles
+    // Busca o conteúdo do arquivo
     useEffect(() => {
         if (!safeFilePath || !server?.nodeUrl) return;
 
@@ -93,9 +92,9 @@ export default function FileEditContainer() {
         };
 
         fetchFileContent();
-    }, [safeFilePath, server?.nodeUrl]);
+    }, [safeFilePath, server?.nodeUrl, readFile]);
 
-    // I-setup ti Monaco
+    // Setup do Monaco (Compilador configurado para Intellisense JS/TS)
     const handleEditorDidMount = (editor: any, monacoInstance: any) => {
         const compilerOptions = {
             target: monacoInstance.languages.typescript.ScriptTarget.ESNext,
@@ -105,6 +104,8 @@ export default function FileEditContainer() {
             noEmit: true,
             esModuleInterop: true,
             allowSyntheticDefaultImports: true,
+            allowJs: true, // Necessário para Intellisense pegar arquivos .js
+            checkJs: true, // Mostra errinhos em JS também
             fixedOverflowWidgets: true,
             baseUrl: "file:///",
             paths: {
@@ -132,28 +133,30 @@ export default function FileEditContainer() {
             declare var __dirname: string;
             declare var __filename: string;
             declare var process: any;
+            declare var console: any;
         `;
         monacoInstance.languages.typescript.javascriptDefaults.addExtraLib(globalsLib, 'file:///node_globals.d.ts');
         monacoInstance.languages.typescript.typescriptDefaults.addExtraLib(globalsLib, 'file:///node_globals.d.ts');
     };
 
-    // ADICIONADO: Extraímos o loadDependencies pro useEffect para ele conseguir limpar a sujeira quando o safeFilePath mudar
+    // Lógica de dependências (Models locais e Libs NPM)
     useEffect(() => {
         if (!monaco || !safeFilePath) return;
 
         const monacoAny = monaco as any;
-        if (!safeFilePath.match(/\.(js|ts)$/)) return;
-        // 1. LIMPEZA: Destrói as definições de tipagem do arquivo anterior (isso resolve o leak!)
+        if (!safeFilePath.match(/\.(js|ts|jsx|tsx)$/)) return;
+
+        // 1. LIMPEZA: Destrói as definições de tipagem e modelos do arquivo anterior
         loadedLibsRef.current.forEach(lib => {
             if (lib && typeof lib.dispose === 'function') lib.dispose();
         });
-        loadedLibsRef.current = []; // Reseta o array
+        loadedLibsRef.current = [];
 
         const loadDependencies = async () => {
             const dirPath = safeFilePath.substring(0, safeFilePath.lastIndexOf('/'));
             if (!dirPath) return;
 
-            // Função helper que já salva o registro da lib no useRef
+            // Para pacotes NPM baixados da internet (Tipagens)
             const addLib = (content: string, uri: string) => {
                 try {
                     const jsLib = monacoAny.languages.typescript.javascriptDefaults.addExtraLib(content, uri);
@@ -162,19 +165,39 @@ export default function FileEditContainer() {
                 } catch (e) { }
             };
 
+            // Para arquivos da mesma pasta (Permite que imports relativos funcionem)
+            const addLocalModel = (content: string, filePath: string) => {
+                try {
+                    const uri = monacoAny.Uri.file(filePath);
+                    let model = monacoAny.editor.getModel(uri);
+                    if (!model) {
+                        model = monacoAny.editor.createModel(content, undefined, uri);
+                        loadedLibsRef.current.push(model); // Guarda para limpar quando trocar de tela
+                    } else {
+                        model.setValue(content);
+                    }
+                } catch (e) { }
+            };
+
+            // 1. Carrega os arquivos da mesma pasta e registra como Models
             try {
                 const response = await listFiles(dirPath);
                 if (response?.items) {
                     for (const item of response.items) {
                         if (item.type === 'file' &&
                             item.name !== safeFilePath.split('/').pop() &&
-                            /\.(js|ts|d\.ts|json)$/.test(item.name)) {
+                            /\.(js|ts|jsx|tsx|d\.ts|json)$/.test(item.name)) {
 
                             const itemPath = `${dirPath}/${item.name}`;
                             try {
                                 const fileData = await readFile(itemPath);
                                 if (fileData?.content) {
-                                    addLib(fileData.content, `file://${itemPath}`);
+                                    // Se for arquivo de tipagem pura, adiciona como Lib, senão cria o Model local
+                                    if (item.name.endsWith('.d.ts')) {
+                                        addLib(fileData.content, `file://${itemPath}`);
+                                    } else {
+                                        addLocalModel(fileData.content, itemPath);
+                                    }
                                 }
                             } catch (e) {}
                         }
@@ -184,6 +207,7 @@ export default function FileEditContainer() {
                 console.warn(err);
             }
 
+            // 2. Busca tipagens de pacotes do npmjs
             const fetchNpmType = async (pkgName: string) => {
                 try {
                     const res = await fetch(`https://cdn.jsdelivr.net/npm/@types/${pkgName}/index.d.ts`);
@@ -200,6 +224,7 @@ export default function FileEditContainer() {
                 } catch (e) { }
             };
 
+            // 3. Procura package.json e tsconfig.json subindo nas pastas
             try {
                 let currentDir = dirPath;
                 let pkgData = null;
@@ -267,22 +292,20 @@ export default function FileEditContainer() {
 
         loadDependencies();
 
-        // 2. LIMPEZA: Garante que se o componente morrer inteiro, as tipagens também morrem
+        // 2. LIMPEZA NA DESMONTAGEM DA TELA
         return () => {
             loadedLibsRef.current.forEach(lib => {
                 if (lib && typeof lib.dispose === 'function') lib.dispose();
             });
             loadedLibsRef.current = [];
         };
-    }, [monaco, safeFilePath]);
+    }, [monaco, safeFilePath, readFile, listFiles]);
 
-    // O HANDLE SAVE VOLTOU! Idulin ti papeles
     const handleSave = async () => {
         if (!safeFilePath) return;
 
         setIsSaving(true);
         try {
-            console.log(content)
             await writeFile(safeFilePath, content);
             toast.addToast("Arquivo salvo com sucesso!", "success");
         } catch (error) {
@@ -292,20 +315,19 @@ export default function FileEditContainer() {
             setIsSaving(false);
         }
     };
+
+    // Shortcut Ctrl+S
     useEffect(() => {
-        const handleKeyDown = (e:any ) => {
+        const handleKeyDown = (e: any) => {
             if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "s") {
-                e.preventDefault(); // evita abrir "salvar página" do navegador
-                handleSave()
+                e.preventDefault();
+                handleSave();
             }
         };
 
         window.addEventListener("keydown", handleKeyDown);
-
-        return () => {
-            window.removeEventListener("keydown", handleKeyDown);
-        };
-    }, []);
+        return () => window.removeEventListener("keydown", handleKeyDown);
+    }, [content, safeFilePath]); // <-- Dependências adicionadas para garantir que salve o conteúdo mais recente
 
     return (
         <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden relative text-[var(--color-text-value)] h-full w-full">
@@ -322,12 +344,12 @@ export default function FileEditContainer() {
                         <span className="text-[var(--color-text-sub)]/50 font-bold select-none">/</span>
                         {breadcrumbs.map((crumb, index) => (
                             <React.Fragment key={crumb.path}>
-                                            <span
-                                                className={`cursor-pointer transition ${crumb.isBase ? 'text-[var(--color-text-sub)] hover:text-white' : 'hover:text-white'}`}
-                                                onClick={() => navigateToPath(crumb.path)}
-                                            >
-                                                {crumb.name}
-                                            </span>
+                                <span
+                                    className={`cursor-pointer transition ${crumb.isBase ? 'text-[var(--color-text-sub)] hover:text-white' : 'hover:text-white'}`}
+                                    onClick={() => navigateToPath(crumb.path)}
+                                >
+                                    {crumb.name}
+                                </span>
                                 {index < breadcrumbs.length - 1 && <span className="text-[var(--color-text-sub)]/50">/</span>}
                             </React.Fragment>
                         ))}

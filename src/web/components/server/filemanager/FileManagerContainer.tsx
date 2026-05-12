@@ -28,8 +28,17 @@ type FileItem = {
 };
 
 // === FUNÇÕES AUXILIARES ===
-const isEditable = (name: string) => /\.(txt|json|yml|yaml|properties|js|ts|sh|xml|ini|csv)$/i.test(name || "");
+const isEditable = (name: string) => {
+    if (!name) return false;
 
+    // Extensões clássicas de texto, código, dados e configurações
+    const hasEditableExtension = /\.(txt|json|yml|yaml|properties|js|ts|jsx|tsx|sh|bat|cmd|ps1|xml|ini|csv|html|htm|css|scss|sass|less|md|py|rb|php|go|rs|java|c|cpp|h|cs|sql|toml|conf|config|cfg|log|vue|svelte|env)$/i.test(name);
+
+    // Arquivos específicos que geralmente são texto mas não caem no regex acima (ex: .env, Dockerfile)
+    const isSpecificTextFile = /^(Dockerfile|\.env.*|\.gitignore|\.npmrc|\.prettierrc|\.eslintrc)$/i.test(name);
+
+    return hasEditableExtension || isSpecificTextFile;
+};
 const formatBytes = (bytes: number | null) => {
     if (bytes === null) return "--";
     if (bytes === 0) return "0 Bytes";
