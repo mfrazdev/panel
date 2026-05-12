@@ -4,3 +4,116 @@
 [11-May-2026 14:00:00 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
 [11-May-2026 14:00:02 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","action":"start","memory":1024,"cpu":100,"disk":1024,"image":"ghcr.io\/pterodactyl\/yolks:java_21","additionalAllocation":[],"environment":{"MINECRAFT_VERSION":"1.8.8","SERVER_JARFILE":"server.jar","SOFTWARE_TYPE":"paper","ONLINE_MODE":"false","WHITELIST":"false","VIEW_DISTANCE":"10","ALLOW_NETHER":"true","ALLOW_END":"true","DIFFICULTY":"normal","MAX_PLAYERS":"20"},"primaryAllocation":{"ip":"0.0.0.0","port":2567,"externalIp":"1.node.hightcloud.app"},"core":{"id":1,"name":"Minecraft Universal","startupCommand":"java -Xms128M -XX:MaxRAMPercentage=95.0 -Dterminal.jline=false -Dterminal.ansi=true -jar {{SERVER_JARFILE}}","stopCommand":"stop","startupParser":{"done":")! For help, type "},"configSystem":{"server.properties":{"server-ip":"0.0.0.0","server-port":"{{SERVER_PORT}}","query.port":"{{SERVER_PORT}}","online-mode":"{{ONLINE_MODE}}","white-list":"{{WHITELIST}}","view-distance":"{{VIEW_DISTANCE}}","allow-nether":"{{ALLOW_NETHER}}","difficulty":"{{DIFFICULTY}}","max-players":"{{MAX_PLAYERS}}"},"bukkit.yml":{"settings.allow-end":"{{ALLOW_END}}"}},"installScript":"#!\/bin\/ash\napk add --no-cache curl jq\n\nC_LBLUE='\u000033[1;34m'\nC_BLUE='\u000033[0;34m'\nC_GREEN='\u000033[0;32m'\nC_PINK='\u000033[38;5;211m'\nC_NC='\u000033[0m'\n\necho -e \"${C_BLUE}------------------------------------------------------------${C_NC}\"\necho -e \"${C_LBLUE}[Orchestrator]${C_NC} Iniciando instala\u00e7\u00e3o do Minecraft Server\"\necho -e \"${C_LBLUE}[Orchestrator]${C_NC} Software: ${C_PINK}${SOFTWARE_TYPE}${C_NC} | Vers\u00e3o: ${C_PINK}${MINECRAFT_VERSION}${C_NC}\"\necho -e \"${C_BLUE}------------------------------------------------------------${C_NC}\"\n\ncd \/mnt\/server\n\nif [ \"$SOFTWARE_TYPE\" == \"paper\" ]; then\n    if [ \"$MINECRAFT_VERSION\" == \"latest\" ]; then\n        MINECRAFT_VERSION=$(curl -s https:\/\/api.papermc.io\/v2\/projects\/paper | jq -r '.versions[-1]')\n    fi\n    BUILD=$(curl -s https:\/\/api.papermc.io\/v2\/projects\/paper\/versions\/${MINECRAFT_VERSION} | jq -r '.builds[-1]')\n    JAR_NAME=\"paper-${MINECRAFT_VERSION}-${BUILD}.jar\"\n    DOWNLOAD_URL=\"https:\/\/api.papermc.io\/v2\/projects\/paper\/versions\/${MINECRAFT_VERSION}\/builds\/${BUILD}\/downloads\/${JAR_NAME}\"\n\nelif [ \"$SOFTWARE_TYPE\" == \"purpur\" ]; then\n    if [ \"$MINECRAFT_VERSION\" == \"latest\" ]; then\n        MINECRAFT_VERSION=$(curl -s https:\/\/api.purpurmc.org\/v2\/purpur | jq -r '.versions[-1]')\n    fi\n    DOWNLOAD_URL=\"https:\/\/api.purpurmc.org\/v2\/purpur\/${MINECRAFT_VERSION}\/latest\/download\"\n\nelif [ \"$SOFTWARE_TYPE\" == \"vanilla\" ]; then\n    MANIFEST=$(curl -s https:\/\/piston-meta.mojang.com\/mc\/game\/version_manifest_v2.json)\n    if [ \"$MINECRAFT_VERSION\" == \"latest\" ]; then\n        MINECRAFT_VERSION=$(echo $MANIFEST | jq -r '.latest.release')\n    fi\n    VERSION_URL=$(echo $MANIFEST | jq -r --arg VERSION \"$MINECRAFT_VERSION\" '.versions[] | select(.id == $VERSION) | .url')\n    DOWNLOAD_URL=$(curl -s $VERSION_URL | jq -r '.downloads.server.url')\n\nelif [ \"$SOFTWARE_TYPE\" == \"fabric\" ]; then\n    if [ \"$MINECRAFT_VERSION\" == \"latest\" ]; then\n        MANIFEST=$(curl -s https:\/\/piston-meta.mojang.com\/mc\/game\/version_manifest_v2.json)\n        MINECRAFT_VERSION=$(echo $MANIFEST | jq -r '.latest.release')\n    fi\n    LOADER_VERSION=$(curl -s https:\/\/meta.fabricmc.net\/v2\/versions\/loader | jq -r '.[0].version')\n    INSTALLER_VERSION=$(curl -s https:\/\/meta.fabricmc.net\/v2\/versions\/installer | jq -r '.[0].version')\n    DOWNLOAD_URL=\"https:\/\/meta.fabricmc.net\/v2\/versions\/loader\/${MINECRAFT_VERSION}\/${LOADER_VERSION}\/${INSTALLER_VERSION}\/server\/jar\"\nelse\n    echo -e \"${C_PINK}[Erro]${C_NC} O software selecionado n\u00e3o \u00e9 suportado por este Egg.\"\n    exit 1\nfi\n\necho -e \"${C_LBLUE}[Download]${C_NC} Baixando os arquivos base de ${DOWNLOAD_URL}...\"\ncurl -o ${SERVER_JARFILE} ${DOWNLOAD_URL}\n\nif [ ! -f server.properties ]; then\n    echo -e \"${C_LBLUE}[Configura\u00e7\u00e3o]${C_NC} Gerando propriedades do servidor base...\"\n    echo \"server-ip=0.0.0.0\" > server.properties\n    echo \"server-port=${SERVER_PORT}\" >> server.properties\n    echo \"online-mode=${ONLINE_MODE}\" >> server.properties\n    echo \"white-list=${WHITELIST}\" >> server.properties\n    echo \"view-distance=${VIEW_DISTANCE}\" >> server.properties\n    echo \"allow-nether=${ALLOW_NETHER}\" >> server.properties\n    echo \"difficulty=${DIFFICULTY}\" >> server.properties\n    echo \"max-players=${MAX_PLAYERS}\" >> server.properties\nfi\n\nif [ ! -f bukkit.yml ]; then\n    echo \"settings:\" > bukkit.yml\n    echo \"  allow-end: ${ALLOW_END}\" >> bukkit.yml\nfi\n\necho -e \"${C_GREEN}[Sucesso]${C_NC} Instala\u00e7\u00e3o conclu\u00edda com sucesso!\"\necho -e \"${C_LBLUE}[Orchestrator]${C_NC} O servidor j\u00e1 pode ser iniciado no painel.\"","installImage":"alpine","installEntrypoint":"ash","rootAcess":null,"maintainable":null},"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
 [11-May-2026 14:00:02 UTC] [sendAction Otimizado] PHP Payload: 32.84ms | cURL Node.js: 33.56ms | Total: 66.39ms
+[12-May-2026 11:18:25 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:18:25 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:18:32 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:18:32 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:19:47 UTC] PHP Fatal error:  Uncaught Exception: Database connection failed: SQLSTATE[HY000] [2002] Uma tentativa de conexão falhou porque o componente conectado não respondeu
+corretamente após um período de tempo ou a conexão estabelecida falhou
+porque o host conectado não respondeu in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php:74
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php(41): Vatts\Database\DB::connect()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(83): Vatts\Database\DB::getPdo()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(466): Vatts\Database\Model::getPdoConnection()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(381): Vatts\Database\Model::syncSchema()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#5 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#6 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#7 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#8 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#9 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php on line 74
+[12-May-2026 11:20:05 UTC] PHP Fatal error:  Uncaught Exception: Database connection failed: SQLSTATE[HY000] [2002] Uma tentativa de conexão falhou porque o componente conectado não respondeu
+corretamente após um período de tempo ou a conexão estabelecida falhou
+porque o host conectado não respondeu in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php:74
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php(41): Vatts\Database\DB::connect()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(83): Vatts\Database\DB::getPdo()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(466): Vatts\Database\Model::getPdoConnection()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(381): Vatts\Database\Model::syncSchema()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#5 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#6 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#7 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#8 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#9 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php on line 74
+[12-May-2026 11:20:09 UTC] PHP Fatal error:  Uncaught Exception: Database connection failed: SQLSTATE[HY000] [2002] Uma tentativa de conexão falhou porque o componente conectado não respondeu
+corretamente após um período de tempo ou a conexão estabelecida falhou
+porque o host conectado não respondeu in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php:74
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php(41): Vatts\Database\DB::connect()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(83): Vatts\Database\DB::getPdo()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(466): Vatts\Database\Model::getPdoConnection()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(381): Vatts\Database\Model::syncSchema()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#5 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#6 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#7 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#8 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#9 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php on line 74
+[12-May-2026 11:20:24 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php:392
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(392): PDOStatement->execute()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#5 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#6 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php on line 392
+[12-May-2026 11:20:24 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php:518
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(518): PDO->query()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(381): Vatts\Database\Model::syncSchema()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#5 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#6 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#7 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php on line 518
+[12-May-2026 11:20:24 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php:392
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(392): PDOStatement->execute()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#5 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#6 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php on line 392
+[12-May-2026 11:20:24 UTC] PHP Fatal error:  Uncaught PDOException: SQLSTATE[HY000]: General error: 2006 MySQL server has gone away in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php:518
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(518): PDO->query()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(381): Vatts\Database\Model::syncSchema()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#5 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#6 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#7 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php on line 518
+[12-May-2026 11:20:34 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:20:34 UTC] apiRequest cURL Error (Node 2): Connection timed out after 200 milliseconds
+[12-May-2026 11:20:34 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:21:01 UTC] PHP Fatal error:  Uncaught Exception: Database connection failed: SQLSTATE[HY000] [2006] MySQL server has gone away in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php:74
+Stack trace:
+#0 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php(41): Vatts\Database\DB::connect()
+#1 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(83): Vatts\Database\DB::getPdo()
+#2 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(466): Vatts\Database\Model::getPdoConnection()
+#3 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(381): Vatts\Database\Model::syncSchema()
+#4 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(357): Vatts\Database\Model->_get()
+#5 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(372): Vatts\Database\Model->_first()
+#6 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(378): Vatts\Database\Model->_find()
+#7 E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\Model.php(269): Vatts\Database\Model->_get()
+#8 E:\panel\panel\serve\index.php(23): Vatts\Database\Model::__callStatic()
+#9 {main}
+  thrown in E:\panel\panel\vendor\mfrazlab\vattsphp\src\Database\DB.php on line 74
+[12-May-2026 11:21:11 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:21:11 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:22:10 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:22:10 UTC] apiRequest cURL Error (Node 2): Connection timed out after 213 milliseconds
+[12-May-2026 11:22:10 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 11:22:11 UTC] apiRequest cURL Error (Node 2): Connection timed out after 214 milliseconds

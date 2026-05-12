@@ -58,7 +58,7 @@ export default function ConsoleContainer() {
         stopping: { color: 'var(--color-warning)', label: 'Desligando', uptime: '' },
         stopped: { color: 'var(--color-danger)', label: 'Offline', uptime: '' },
         connecting: { color: 'var(--color-warning)', label: 'Conectando', uptime: '' },
-        suspended: { color: '#f97316', label: 'Suspenso', uptime: '' }, // Laranja personalizado para o suspenso
+        suspended: { color: '#f97316', label: 'Suspenso', uptime: '' },
     };
 
     const currentStatus = statusConfig[serverStatus as keyof typeof statusConfig] || statusConfig.connecting;
@@ -68,7 +68,6 @@ export default function ConsoleContainer() {
 
     return (
         <>
-            {/* BARRA DE SERVIDOR SUSPENSO */}
             {isSuspended && (
                 <div className="w-full bg-[#f97316] flex items-center justify-center gap-3 px-4 py-2 shadow-md">
                     <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -80,7 +79,6 @@ export default function ConsoleContainer() {
                 </div>
             )}
 
-            {/* BARRA DE RECONEXÃO */}
             {isReconnecting && !isFailed && (
                 <div className="w-full bg-(--color-danger) flex items-center justify-center gap-3 px-4 py-2 shadow-md">
                     <svg className="animate-spin h-5 w-5 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
@@ -93,7 +91,6 @@ export default function ConsoleContainer() {
                 </div>
             )}
 
-            {/* BARRA DE FALHA TOTAL */}
             {isFailed && (
                 <div className="w-full bg-(--color-danger) flex items-center justify-center gap-3 px-4 py-2 shadow-md">
                     <svg className="h-5 w-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2.5">
@@ -105,14 +102,13 @@ export default function ConsoleContainer() {
                 </div>
             )}
 
-            <main className={`flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden ${isSuspended ? 'opacity-80' : ''}`}>
+            <main className={`flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden min-w-0 ${isSuspended ? 'opacity-80' : ''}`}>
 
                 {/* Header Section */}
                 <div className="flex flex-col gap-1 mb-6">
                     <div className="flex flex-wrap items-center gap-6">
                         <h1 className="text-3xl md:text-4xl font-black tracking-widest text-(--color-text-label) leading-none">{server.name}</h1>
 
-                        {/* Status */}
                         <div className="flex items-center gap-3">
                             <div className="relative flex h-5 w-5 items-center justify-center">
                                 {serverStatus === 'running' && (
@@ -145,11 +141,11 @@ export default function ConsoleContainer() {
                     </CopyOnClick>
                 </div>
 
-                {/* Grid de Stats + Botões ao lado */}
-                <div className="flex flex-col xl:flex-row gap-6 mb-6">
+                {/* Container flex com min-w-0 para permitir redução de espaço pela sidebar */}
+                <div className="flex flex-col xl:flex-row gap-4 xl:gap-6 mb-6 min-w-0 w-full">
 
-                    {/* Grid dos Cards de Status */}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 flex-1 w-full">
+                    {/* Grid com breakpoints melhores para quando houver pouco espaço */}
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6 flex-1 w-full min-w-0">
                         <StatCard
                             label="Uso de Processador"
                             value={usage && !isSuspended ? `${usage.cpu.toFixed(2)}%` : '0.00%'}
@@ -170,19 +166,16 @@ export default function ConsoleContainer() {
                         />
                     </div>
 
-                    {/* Botões do Servidor */}
                     <div className="flex items-center justify-center xl:justify-end shrink-0">
                         <ServerActions status={serverStatus} />
                     </div>
 
                 </div>
 
-                {/* Console */}
                 <div className="w-full h-[600px] mb-8">
                     <TerminalConsole />
                 </div>
 
-                {/* Gráficos */}
                 {!isSuspended && <ServerCharts />}
             </main>
         </>

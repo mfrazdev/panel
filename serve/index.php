@@ -20,7 +20,8 @@ Vatts::loadEnv($project);
 
 require_once __DIR__ . '/../app/Utils/DatabaseBooter.php';
 
-$companyName = \models\Settings::get('key', 'company_name')->value ?? 'Lunar Panel';
+// Busca apenas o company_name do .env para não estourar a conexão no Lazy Load
+$companyName = Vatts::getEnv('COMPANY_NAME', 'Lunar Panel');
 
 // Exemplo mínimo de inicialização: passa project_path, config de DB e security
 $app = Vatts::init([
