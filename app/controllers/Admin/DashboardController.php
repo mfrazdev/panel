@@ -112,6 +112,12 @@ class DashboardController
         return $response->json(['success' => false, 'message' => 'Falha ao abrir o arquivo de atualização. Tente novamente mais tarde.']);
     }
 
+    public static function getCurrentVersion(): ?string
+    {
+        $versionData = self::getCurrentVersionData();
+        return $versionData['version'] ?? null;
+    }
+
     public static function getCurrentVersionData(): array
     {
         $versionFile = __DIR__ . '/../../../version.json';
