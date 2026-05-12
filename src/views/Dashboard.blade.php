@@ -115,7 +115,14 @@
                         }
                     });
 
-                    const data = await response.json();
+
+                    let data;
+                    const text = await response.text()
+                    try {
+                        data = JSON.parse(text)
+                    } catch (e) {
+                        console.log(text, 'invalido json')
+                    }
 
                     if (data.success) {
                         alert(data.message);

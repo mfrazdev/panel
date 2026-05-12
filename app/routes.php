@@ -60,6 +60,7 @@ $app->group(["prefix" => "/admin", "middleware" => "admin"], function (\Vatts\Ro
     $router->get("/nodes/[node]/edit", [\App\controllers\Admin\NodesController::class, 'viewEdit']);
     $router->post("/nodes/[node]/edit", [\App\controllers\Admin\NodesController::class, 'edit']);
     $router->get('/nodes/[node]/delete', [\App\controllers\Admin\NodesController::class, 'delete']);
+    $router->post('/nodes/[node]/update', [\App\controllers\Admin\NodesController::class, 'updateDaemon']);
 
     $router->post('/nodes/[node]/allocations', [\App\controllers\Admin\NodesController::class, 'createAllocation']);
     $router->post('/nodes/[node]/allocations/aliases', [\App\controllers\Admin\NodesController::class, 'updateAllocationAlias']);

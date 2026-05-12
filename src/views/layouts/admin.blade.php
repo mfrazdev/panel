@@ -171,7 +171,7 @@
     <div class="h-16 px-6 flex items-center bg-sidebar shrink-0">
         <a href="/" class="flex items-center gap-3 w-full overflow-hidden">
             @php
-                $companyName = \models\Settings::get('key', 'company_name')?->value ?? 'Lunar Panel';
+                $companyName = \Vatts\Vatts::getEnv("COMPANY_NAME", "Hight Cloud");
                 $initials = implode('', array_map(
                 fn($word) => strtoupper($word[0]),
                 preg_split('/\s+/', trim($companyName))

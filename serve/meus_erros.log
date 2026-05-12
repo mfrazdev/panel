@@ -117,3 +117,40 @@ Stack trace:
 [12-May-2026 11:22:10 UTC] apiRequest cURL Error (Node 2): Connection timed out after 213 milliseconds
 [12-May-2026 11:22:10 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
 [12-May-2026 11:22:11 UTC] apiRequest cURL Error (Node 2): Connection timed out after 214 milliseconds
+[12-May-2026 12:02:39 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:02:40 UTC] apiRequest cURL Error (Node 2): Connection timed out after 206 milliseconds
+[12-May-2026 12:02:40 UTC] {"serverId":"f57eb180-8bd2-455a-933e-f6aaa9accb8e","userUuid":"1","token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:06 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:06 UTC] apiRequest cURL Error (Node 2): Operation timed out after 201 milliseconds with 0 bytes received
+[12-May-2026 12:08:08 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:14 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:14 UTC] apiRequest cURL Error (Node 2): Connection timed out after 158 milliseconds
+[12-May-2026 12:08:18 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:19 UTC] apiRequest cURL Error (Node 2): Operation timed out after 208 milliseconds with 0 bytes received
+[12-May-2026 12:08:24 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:24 UTC] apiRequest cURL Error (Node 2): Connection timed out after 158 milliseconds
+[12-May-2026 12:08:28 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:34 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:34 UTC] apiRequest cURL Error (Node 2): Operation timed out after 201 milliseconds with 0 bytes received
+[12-May-2026 12:08:38 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:43 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:44 UTC] apiRequest cURL Error (Node 2): Operation timed out after 202 milliseconds with 0 bytes received
+[12-May-2026 12:08:49 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:49 UTC] apiRequest cURL Error (Node 2): Connection timed out after 151 milliseconds
+[12-May-2026 12:08:53 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:08:54 UTC] apiRequest cURL Error (Node 2): Connection timed out after 159 milliseconds
+[12-May-2026 12:08:59 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:03 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:08 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:14 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:19 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:19 UTC] apiRequest cURL Error (Node 2): Connection timed out after 151 milliseconds
+[12-May-2026 12:09:24 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:24 UTC] apiRequest cURL Error (Node 2): Operation timed out after 206 milliseconds with 0 bytes received
+[12-May-2026 12:09:29 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:29 UTC] apiRequest cURL Error (Node 2): Connection timed out after 164 milliseconds
+[12-May-2026 12:09:34 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:39 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:39 UTC] apiRequest cURL Error (Node 2): Connection timed out after 162 milliseconds
+[12-May-2026 12:09:43 UTC] {"token":"9ebb88e0-4a31-4ba7-9ba6-96932990e83d"}
+[12-May-2026 12:09:44 UTC] apiRequest cURL Error (Node 2): Connection timed out after 159 milliseconds

@@ -132,6 +132,40 @@ class NodesController
         exit;
     }
 
+    public function updateDaemon(Request $request, Response $response): Response
+    {
+        $node = $this->getNode($request->getParam('node'));
+
+        if (!$node) {
+            return $response->json(['success' => false, 'error' => 'Node não encontrado.']);
+        }
+
+        // Passamos um timeout estendido (ex: 30 segundos) porque a rotina
+        // do Daemon precisa baixar o arquivo do GitHub e descompactar.
+        $customOptions = [
+            CURLOPT_CONNECTTIMEOUT_MS => 1000,   // 1 segundo para conectar
+            CURLOPT_TIMEOUT_MS        => 30000,  // 30 segundos para o Daemon fazer o download
+        ];
+
+        $apiResponse = $node->apiRequest('POST', '/api/v1/update', [], [], $customOptions);
+
+        if (!$apiResponse || !$apiResponse['success']) {
+            $errorMsg = 'Falha ao conectar no Daemon ou ele retornou um erro.';
+
+            if (is_array($apiResponse) && isset($apiResponse['body']['error'])) {
+                $errorMsg = "Daemon: " . $apiResponse['body']['error'];
+            }
+
+            return $response->json(['success' => false, 'error' => $errorMsg]);
+        }
+
+        return $response->json([
+            'success' => true,
+            'message' => 'O Daemon foi atualizado com sucesso e será reiniciado automaticamente.'
+        ]);
+    }
+
+
     public function viewEdit(Request $request, Response $response): Response
     {
         $node = $this->getNode($request->getParam('user') ?? $request->getParam('node'));
