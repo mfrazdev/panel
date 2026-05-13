@@ -12,6 +12,7 @@ import FileManagerContainer from "@/web/components/server/filemanager/FileManage
 import AllocationsContainer from "@/web/components/server/allocations/AllocationsContainer";
 import DatabasesContainer from "@/web/components/server/databases/DatabasesContainer";
 import SchedulersContainer from "@/web/components/server/schedulers/SchedulersContainer";
+import NotFound from "@/web/notFound";
 type ServerProps = {
     action?: string;
 }
@@ -26,6 +27,9 @@ export default function ServerContainer({ action }: ServerProps) {
         connectConsoleWs,
         disconnectConsoleWs
     } = context;
+    if(!isLoadingServer && !server) {
+        return <NotFound/>;
+    }
 
     const serverId = server?.serverUuid.split('-')[0] ?? "";
     const pathname = router.pathname;
@@ -62,6 +66,7 @@ export default function ServerContainer({ action }: ServerProps) {
             disconnectConsoleWs();
         };
     }, [isLoadingServer, server, connectUsageWs, connectConsoleWs, disconnectUsageWs, disconnectConsoleWs]);
+
 
     // LÓGICA PARA ATUALIZAR O TÍTULO DA PÁGINA
     useEffect(() => {
@@ -108,17 +113,19 @@ export default function ServerContainer({ action }: ServerProps) {
             case 'schedulers':
                 return <SchedulersContainer></SchedulersContainer>
             default:
-                return <ConsoleContainer />;
+                return <NotFound/>;
         }
     };
-
+    const component = renderContent()
     return (
         <div className="flex-1 flex flex-row items-start relative">
-            <ServerSidebar
-                serverId={serverId}
-                activeTab={currentAction}
-                changeAction={changeAction}
-            />
+            {component !== null && !isLoadingServer && (
+                <ServerSidebar
+                    serverId={serverId}
+                    activeTab={currentAction}
+                    changeAction={changeAction}
+                />
+            )}
 
             <div className="flex-1 flex flex-col min-h-screen">
                 <main className="flex-1 overflow-hidden">
@@ -131,7 +138,7 @@ export default function ServerContainer({ action }: ServerProps) {
                             transition={{ duration: 0.15, ease: "easeOut" }}
                             className="h-full"
                         >
-                            {renderContent()}
+                            {component}
                         </motion.div>
                     </AnimatePresence>
                 </main>

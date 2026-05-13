@@ -61,7 +61,7 @@ export default function FileDropdown({
         setIsOpen(!isOpen);
     };
 
-    const runAction = async (actionFn: () => Promise<void>) => {
+    const runAction = async (actionFn: () => Promise<void> | void) => {
         try {
             await actionFn();
             if (onSuccess) onSuccess();
