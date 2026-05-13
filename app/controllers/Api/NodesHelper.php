@@ -47,7 +47,8 @@ class NodesHelper
 
         return $response->json([
             'success' => true,
-            'permission' => $server->hasPermission($user)
+            'permission' => $server->hasPermission($user),
+            'disk' => $server->disk,
         ]);
     }
 

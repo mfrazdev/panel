@@ -36,6 +36,7 @@ class ApiRoutes
                 $router->get('/', [\App\controllers\Api\admin\UsersController::class, 'get']);
                 $router->post('/create', [\App\controllers\Api\admin\UsersController::class, 'create']);
                 $router->post('/delete', [\App\controllers\Api\admin\UsersController::class, 'delete']);
+                $router->post('/edit', [\App\controllers\Api\admin\UsersController::class, 'edit']);
             });
 
             // Rotas de Nodes

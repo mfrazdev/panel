@@ -196,4 +196,64 @@ class UsersController
             ])->status(500);
         }
     }
+
+    /**
+     * Edita a senha de um usuário pelo ID.
+     */
+    public function edit(Request $request, Response $response): Response
+    {
+        // Pega o ID da rota (ex: /api/admin/users/[id]), da query string (?id=) ou do corpo da requisição
+        $id = $request->getParam('id') ?? $request->getQuery()['id'] ?? ($request->getBody()['id'] ?? null);
+        $body = $request->getBody();
+        $password = (string)($body['password'] ?? '');
+
+        if (!$id) {
+            return $response->json([
+                'success' => false,
+                'error'   => 'Forneça o ID do usuário para editar a senha.'
+            ])->status(400);
+        }
+
+        if ($password === '') {
+            return $response->json([
+                'success' => false,
+                'error'   => 'A nova senha é obrigatória.'
+            ])->status(400);
+        }
+
+        // Validação de tamanho da senha
+        if (strlen($password) < 8) {
+            return $response->json([
+                'success' => false,
+                'error'   => 'A nova senha deve ter no mínimo 8 caracteres.'
+            ])->status(400);
+        }
+
+        try {
+            $user = User::find($id);
+
+            if (!$user) {
+                return $response->json([
+                    'success' => false,
+                    'error'   => 'Usuário não encontrado.'
+                ])->status(404);
+            }
+
+            // Atualiza apenas a senha, fazendo o hash
+            $user->password = password_hash($password, PASSWORD_DEFAULT);
+            $user->save();
+
+            return $response->json([
+                'success' => true,
+                'message' => 'Senha atualizada com sucesso.'
+            ])->status(200);
+
+        } catch (\Exception $e) {
+            error_log($e);
+            return $response->json([
+                'success' => false,
+                'error'   => 'Erro ao atualizar a senha: ' . $e->getMessage()
+            ])->status(500);
+        }
+    }
 }

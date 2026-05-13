@@ -42,7 +42,7 @@ interface FileManagerContextType {
     deleteItems: (paths: string[]) => Promise<any>;
     archiveItems: (paths: string[]) => Promise<any>;
     unarchiveItem: (archivePath: string, destination?: string) => Promise<any>;
-    downloadFile: (filePath: string) => Promise<void>;
+    downloadFile: (filePath: string) => void;
     uploadFile: (dirPath: string, file: File) => Promise<any>;
 }
 
@@ -214,6 +214,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
             body: JSON.stringify({
                 userUuid,
                 serverId,
+                disk: server.server?.disk || 1024,
                 ...payload
             })
         });
@@ -285,40 +286,26 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
         });
     };
 
-    const downloadFile = async (filePath: string) => {
-        const response = await fetch(`${API_BASE_URL}/download`, {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json"
-            },
-            body: JSON.stringify({
-                userUuid,
-                serverId,
-                path: formatApiPath(filePath)
-            })
+    const downloadFile = (filePath: string) => {
+        // Como agora será um GET, mandamos as informações na URL (Query String)
+        const params = new URLSearchParams({
+            userUuid: userUuid.toString(),
+            serverId: serverId,
+            path: formatApiPath(filePath)
+            // O disk não é necessário para download, já que não escrevemos nada no disco.
         });
 
-        if (!response.ok) {
-            throw new Error(`Falha no download: ${response.statusText}`);
-        }
+        const downloadUrl = `${API_BASE_URL}/download?${params.toString()}`;
 
-        const blob = await response.blob();
-        const url = window.URL.createObjectURL(blob);
+        // Cria um link e clica nele dinamicamente.
+        // Isso inicia o download nativo do navegador na hora, sem carregar na memória (Blob).
         const link = document.createElement('a');
-        link.href = url;
-
-        const contentDisposition = response.headers.get('content-disposition');
-        let fileName = filePath.split('/').pop() || 'download';
-        if (contentDisposition) {
-            const fileNameMatch = contentDisposition.match(/filename="?([^"]+)"?/);
-            if (fileNameMatch && fileNameMatch.length === 2) fileName = fileNameMatch[1];
-        }
-
-        link.setAttribute('download', fileName);
+        link.href = downloadUrl;
+        // Opcional, mas ajuda a dizer pro navegador "baixe, não abra na aba"
+        link.setAttribute('download', '');
         document.body.appendChild(link);
         link.click();
         link.remove();
-        window.URL.revokeObjectURL(url);
     };
 
     const uploadFile = async (dirPath: string, file: File) => {
@@ -326,7 +313,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
             const formData = new FormData();
             formData.append("serverId", serverId);
             if (userUuid) formData.append("userUuid", userUuid);
-
+            formData.append('disk', server.server?.disk ? server.server.disk.toString() : "1024");
             const relativeDir = formatApiPath(dirPath);
             const fullUploadPath = relativeDir ? `${relativeDir}/${file.name}` : file.name;
 

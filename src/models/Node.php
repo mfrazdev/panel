@@ -76,10 +76,7 @@ class Node extends Model
     public function getStatus(): array|bool
     {
         // Reutiliza o apiRequest, mas passa os timeouts super curtos (100/200ms)
-        $response = $this->apiRequest('POST', '/api/v1/status', [], [], [
-            CURLOPT_CONNECTTIMEOUT_MS => 150,
-            CURLOPT_TIMEOUT_MS => 200
-        ]);
+        $response = $this->apiRequest('POST', '/api/v1/status');
         json_encode($response);
         if ($response !== false && $response['success'] && isset($response['body']['status']) && $response['body']['status'] === 'success') {
             return $response['body'];
@@ -87,7 +84,6 @@ class Node extends Model
 
         return false;
     }
-
     public function apiRequest(string $method, string $endpoint, array $data = [], array $headers = [], array $customOptions = []): array|bool
     {
         $endpoint = ltrim($endpoint, '/');
@@ -108,8 +104,8 @@ class Node extends Model
             CURLOPT_RETURNTRANSFER => true,
             CURLOPT_CUSTOMREQUEST => $method,
             CURLOPT_NOSIGNAL => true,             // Essencial para timeouts curtos
-            CURLOPT_CONNECTTIMEOUT_MS => $customOptions[CURLOPT_CONNECTTIMEOUT_MS] ?? 200,     // 200ms para conectar na API
-            CURLOPT_TIMEOUT_MS => $customOptions[CURLOPT_TIMEOUT_MS] ?? 500,            // 500ms máximo para responder
+            CURLOPT_CONNECTTIMEOUT_MS => $customOptions[CURLOPT_CONNECTTIMEOUT_MS] ?? 500,     // 200ms para conectar na API
+            CURLOPT_TIMEOUT_MS => $customOptions[CURLOPT_TIMEOUT_MS] ?? 1500,            // 500ms máximo para responder
             CURLOPT_IPRESOLVE => CURL_IPRESOLVE_V4,
             CURLOPT_TCP_NODELAY => true,
             CURLOPT_HTTP_VERSION => CURL_HTTP_VERSION_1_1
@@ -161,4 +157,5 @@ class Node extends Model
             'body'    => $decoded !== null ? $decoded : $response
         ];
     }
+
 }
