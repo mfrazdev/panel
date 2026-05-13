@@ -46,6 +46,34 @@ class WHMCSProvider implements AuthProviderInterface
         return $this->getAuthorizationUrl($credentials['popup'] === 'true');
     }
 
+    private function storeOAuthState(bool $isPopup): string
+    {
+        $state = bin2hex(random_bytes(16));
+        $_SESSION['oauth_state_' . $this->id] = [
+            'value' => $state,
+            'popup' => $isPopup,
+            'createdAt' => time(),
+        ];
+        return $state;
+    }
+
+    private function consumeOAuthState(?string $state): ?array
+    {
+        $key = 'oauth_state_' . $this->id;
+        $stored = $_SESSION[$key] ?? null;
+        unset($_SESSION[$key]);
+
+        if (!is_array($stored) || $state === null) {
+            return null;
+        }
+
+        if (!hash_equals((string)($stored['value'] ?? ''), (string)$state)) {
+            return null;
+        }
+
+        return $stored;
+    }
+
     private function processOAuthCallback(array $credentials): ?array
     {
         try {
@@ -56,6 +84,10 @@ class WHMCSProvider implements AuthProviderInterface
             $ch = curl_init($whmcsUrl . '/oauth/token.php');
             curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($ch, CURLOPT_POST, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 20);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_POSTFIELDS, http_build_query([
                 'client_id' => $this->config['clientId'],
                 'client_secret' => $this->config['clientSecret'],
@@ -65,29 +97,49 @@ class WHMCSProvider implements AuthProviderInterface
             ]));
 
             $tokenResult = curl_exec($ch);
+            if ($tokenResult === false) {
+                $curlError = curl_error($ch);
+                curl_close($ch);
+                throw new Exception("Failed to exchange code for token: {$curlError}");
+            }
             if (curl_getinfo($ch, CURLINFO_HTTP_CODE) !== 200) {
                 throw new Exception("Failed to exchange code for token: " . $tokenResult);
             }
             curl_close($ch);
 
             $tokens = json_decode($tokenResult, true);
+            if (!is_array($tokens) || empty($tokens['access_token'])) {
+                throw new Exception("Failed to parse access token response.");
+            }
 
             // Busca dados do usuário via cURL
             // Nota: O controller original usava POST para o userinfo, mantendo o padrão.
             $chInfo = curl_init($whmcsUrl . '/oauth/userinfo.php');
             curl_setopt($chInfo, CURLOPT_RETURNTRANSFER, true);
             curl_setopt($chInfo, CURLOPT_POST, true);
+            curl_setopt($chInfo, CURLOPT_CONNECTTIMEOUT, 10);
+            curl_setopt($chInfo, CURLOPT_TIMEOUT, 20);
+            curl_setopt($chInfo, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($chInfo, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($chInfo, CURLOPT_HTTPHEADER, [
                 'Authorization: Bearer ' . $tokens['access_token']
             ]);
 
             $userResult = curl_exec($chInfo);
+            if ($userResult === false) {
+                $curlError = curl_error($chInfo);
+                curl_close($chInfo);
+                throw new Exception("Failed to fetch user data from WHMCS: {$curlError}");
+            }
             if (curl_getinfo($chInfo, CURLINFO_HTTP_CODE) !== 200) {
                 throw new Exception("Failed to fetch user data from WHMCS");
             }
             curl_close($chInfo);
 
             $whmcsUser = json_decode($userResult, true);
+            if (!is_array($whmcsUser)) {
+                throw new Exception("Failed to parse WHMCS user data.");
+            }
 
             if (empty($whmcsUser['email'])) {
                 throw new Exception("WHMCS did not return an email address.");
@@ -127,16 +179,15 @@ class WHMCSProvider implements AuthProviderInterface
     {
         $whmcsUrl = rtrim($this->config['whmcsUrl'], '/');
 
+        $state = $this->storeOAuthState($isPopup);
+
         $params = [
             'client_id' => $this->config['clientId'],
             'redirect_uri' => $this->config['callbackUrl'] ?? '',
             'response_type' => 'code',
-            'scope' => implode(' ', $this->config['scope'] ?? $this->defaultScope)
+            'scope' => implode(' ', $this->config['scope'] ?? $this->defaultScope),
+            'state' => $state
         ];
-
-        if ($isPopup) {
-            $params['state'] = 'popup=true&timestamp=' . time();
-        }
 
         return $whmcsUrl . '/oauth/authorize.php?' . http_build_query($params);
     }
@@ -150,8 +201,15 @@ class WHMCSProvider implements AuthProviderInterface
                 'handler' => function (Request $req, Response $res) {
                     $query = $req->getQuery();
                     $code = $query['code'] ?? null;
-                    $state = $query['state'] ?? '';
-                    $isPopup = str_contains($state, 'popup=true');
+                    $stateData = $this->consumeOAuthState($query['state'] ?? null);
+                    $isPopup = (bool)($stateData['popup'] ?? false);
+
+                    if (!$stateData) {
+                        if ($isPopup) {
+                            return $res->redirect("/api/auth/popup-callback?success=false&error=Invalid+state&provider={$this->id}");
+                        }
+                        return $res->status(400)->json(['error' => 'Invalid OAuth state']);
+                    }
 
                     if ($req->hasQuery('error')) {
                         error_log("[WHMCS OAuth] Erro recebido na URL de callback: " . $query['error']);

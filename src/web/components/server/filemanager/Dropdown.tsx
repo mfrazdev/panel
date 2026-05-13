@@ -107,7 +107,7 @@ export default function FileDropdown({
             </button>
 
             {isOpen && (
-                <div className="absolute right-0 top-10 mt-1 w-48 bg-[var(--color-terciary)] rounded-xl shadow-[var(--card-shadow)] z-[10500] text-[var(--color-text-label)] py-2 font-medium text-sm border border-white/5">
+                <div className="absolute right-0 top-10 mt-1 w-48 bg-[var(--color-terciary)] rounded-xl shadow-[var(--card-shadow)] z-50 text-[var(--color-text-label)] py-2 font-medium text-sm border border-white/5">
                     {isEditable(file.name) && (
                         <button
                             onClick={handleEdit}

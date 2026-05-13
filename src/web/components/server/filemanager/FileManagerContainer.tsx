@@ -287,6 +287,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
         try {
             const fullPaths = selectedFiles.map(name => `${currentPath}/${name}`);
             await archiveItems(fullPaths);
+            console.log('fetching')
             fetchFiles();
         } catch (error) {
             console.error("Erro ao compactar arquivos:", error);
@@ -498,7 +499,7 @@ function FileManagerInner({ action = "" }: FileManagerProps) {
                                             )}
                                         </div>
 
-                                        <div className="pl-4 opacity-0 group-hover:opacity-100 focus-within:opacity-100 transition-opacity">
+                                        <div className="pl-4">
                                             <FileDropdown
                                                 file={file}
                                                 selectedFiles={selectedFiles}

@@ -6,9 +6,12 @@ use Vatts\Router\Request;
 use Vatts\Router\Response;
 use Vatts\Handlers\FrontendHandler;
 use Vatts\Utils\BladeConfig;
+use Vatts\Vatts;
 
-ini_set('display_errors', 1);
-ini_set('display_startup_errors', 1);
+$appEnv = (string) Vatts::getEnv('APP_ENV', 'production');
+$showErrors = $appEnv !== 'production';
+ini_set('display_errors', $showErrors ? '1' : '0');
+ini_set('display_startup_errors', $showErrors ? '1' : '0');
 error_reporting(E_ALL);
 
 BladeConfig::init(__DIR__ . '/../src/views', __DIR__ . '/../t-cache');

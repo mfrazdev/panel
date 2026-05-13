@@ -3,8 +3,15 @@
 use models\User;
 use Vatts\Auth\Providers\CredentialsProvider;
 use Vatts\Auth\VattsAuth;
+use Vatts\Vatts;
 
 // Configuramos a instância
+$whmcsClientId = (string) Vatts::getEnv('WHMCS_CLIENT_ID', '');
+$whmcsClientSecret = (string) Vatts::getEnv('WHMCS_CLIENT_SECRET', '');
+$whmcsUrl = rtrim((string) Vatts::getEnv('WHMCS_URL', ''), '/');
+$whmcsCallbackUrl = (string) Vatts::getEnv('WHMCS_CALLBACK_URL', '');
+$whmcsSuccessUrl = (string) Vatts::getEnv('WHMCS_SUCCESS_URL', '');
+
 $auth = new VattsAuth([
     'providers' => [
         new CredentialsProvider([
@@ -22,10 +29,11 @@ $auth = new VattsAuth([
         ]),
         new \App\WHMCSProvider([
             'id' => 'whmcs',
-            'clientId' => 'HIGHT-CLOUD.47c67f876b759297b16c3e6544d6ba26',
-            'clientSecret' => '+Cy7MRf56wPXu3W3f0LDCsC522RqV0vomQ0fhu9FEjlqGPHosuOqa3Oap+fn8sZNAEw355snysOjvqXv8vYtJw==',
-            'whmcsUrl' => 'https://hightcloud.app', // Obrigatório agora!
-            'callbackUrl' => 'https://localhost:8000/api/auth/callback/whmcs',
+            'clientId' => $whmcsClientId,
+            'clientSecret' => $whmcsClientSecret,
+            'whmcsUrl' => $whmcsUrl,
+            'callbackUrl' => $whmcsCallbackUrl,
+            'successUrl' => $whmcsSuccessUrl,
             'whenCallback' => function($user1, $whmcsUser) {
                 $email = $whmcsUser['email'] ?? null;
                 if (!$email) {

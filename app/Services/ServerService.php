@@ -94,9 +94,9 @@ class ServerService
         curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
         curl_setopt($ch, CURLOPT_TIMEOUT, 60);
 
-        if ($node->ssl) {
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false);
+        if ((int)($node->httpsConnection ?? 0) === 1) {
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
         }
 
         $resp = curl_exec($ch);
@@ -281,3 +281,4 @@ class ServerService
         }
     }
 }
+

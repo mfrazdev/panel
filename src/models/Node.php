@@ -115,7 +115,6 @@ class Node extends Model
             $options[$key] = $value;
         }
 
-        error_log(json_encode($data));
         if ($method === 'GET') {
             if (!empty($data)) $options[CURLOPT_URL] = $url . '?' . http_build_query($data);
             $options[CURLOPT_POSTFIELDS] = null; // Reset de payload para GET

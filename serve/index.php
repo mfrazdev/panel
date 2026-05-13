@@ -8,8 +8,6 @@ ini_set('log_errors', 1);
 // Define o caminho do arquivo (pode ser relativo ao script ou absoluto)
 ini_set('error_log', __DIR__ . '/meus_erros.log');
 
-// Opcional: mostra na tela também para não ter dúvida
-ini_set('display_errors', 1);
 error_reporting(E_ALL);
 
 use Vatts\Vatts;
@@ -17,6 +15,11 @@ use Vatts\Vatts;
 
 $project = dirname(__DIR__);
 Vatts::loadEnv($project);
+
+$appEnv = (string) Vatts::getEnv('APP_ENV', 'production');
+$showErrors = $appEnv !== 'production';
+ini_set('display_errors', $showErrors ? '1' : '0');
+ini_set('display_startup_errors', $showErrors ? '1' : '0');
 
 require_once __DIR__ . '/../app/Utils/DatabaseBooter.php';
 

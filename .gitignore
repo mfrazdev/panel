@@ -1,0 +1,6 @@
+.env
+.env.*
+/t-cache/
+/serve/meus_erros.log
+/panel.db
+
