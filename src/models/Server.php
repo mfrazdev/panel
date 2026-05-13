@@ -314,7 +314,8 @@ class Server extends Model
             $payload = [
                 'serverId' => $this->serverUuid,
                 'userUuid' => $requestUserUuid ?? $this->ownerId,
-                'action'   => $action
+                'action'   => $action,
+                'disk' => $this->disk,
             ];
 
             $pdo = DB::getPdo();
