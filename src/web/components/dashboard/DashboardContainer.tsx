@@ -206,7 +206,7 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
                                             <ServerRow
                                                 key={server.id}
                                                 server={server}
-                                                status={serverStatuses[server.id]}
+                                                status={serverStatuses[server.id] || 'conectando'}
                                                 stats={serverStats[server.id]}
                                                 allocation={server.allocation}
                                             />

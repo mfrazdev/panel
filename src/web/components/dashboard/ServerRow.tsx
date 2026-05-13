@@ -3,7 +3,7 @@ import { ServerData } from "@/web/types";
 import { Link } from "vatts/react";
 
 interface ServerRowProps {
-    server: ServerData & { description?: string }; // Garantindo a tipagem da descrição, caso não tenha na interface original
+    server: ServerData & { description?: string };
     status?: string;
     stats?: {
         cpu: number;
@@ -80,7 +80,7 @@ const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats
                     </svg>
                 </div>
 
-                <div className="flex flex-col min-w-0"> {/* min-w-0 ajuda o truncate a funcionar dentro do flex */}
+                <div className="flex flex-col min-w-0">
                     <div className="flex items-center gap-3">
                         <h3 className="text-(--color-text-label) font-bold text-lg tracking-tight group-hover:text-(--color-primary) transition-colors truncate max-w-[220px]">
                             {server.name}
@@ -137,10 +137,10 @@ const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats
                 </div>
 
                 {/* RAM Block */}
-                <div className="flex flex-col w-32">
+                <div className="flex flex-col w-36">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-[10px] text-(--color-text-sub) uppercase font-bold tracking-widest">RAM</span>
-                        <div className="flex items-baseline gap-1">
+                        <div className="flex items-baseline gap-1 whitespace-nowrap">
                             <span className="text-xs font-mono text-(--color-text-label) font-medium">{isConnecting ? '--' : formatUsage(currentRamBytes)}</span>
                             <span className="text-[10px] font-mono text-(--color-text-sub)">/ {formatLimit(server.ram)}</span>
                         </div>
@@ -158,10 +158,10 @@ const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats
                 </div>
 
                 {/* DISK Block */}
-                <div className="flex flex-col w-32">
+                <div className="flex flex-col w-36">
                     <div className="flex items-center justify-between mb-1">
                         <span className="text-[10px] text-(--color-text-sub) uppercase font-bold tracking-widest">SSD</span>
-                        <div className="flex items-baseline gap-1">
+                        <div className="flex items-baseline gap-1 whitespace-nowrap">
                             <span className="text-xs font-mono text-(--color-text-label) font-medium">{isConnecting ? '--' : formatUsage(currentDiskBytes)}</span>
                             <span className="text-[10px] font-mono text-(--color-text-sub)">/ {formatLimit(server.disk)}</span>
                         </div>
