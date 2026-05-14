@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { GuestOnly } from "@vatts/auth/react";
 import { useToast } from "@/web/contexts/ToastContext";
 import { Link, router, VattsImage } from "vatts/react";
 import Input from "@/web/components/commons/components/Input";
@@ -72,7 +71,7 @@ export default function Recovery() {
         }
     }, []);
 
-    const handleSendEmail = async (e: { preventDefault: () => void; }) => {
+    const handleSendEmail = async (e: React.FormEvent) => {
         e.preventDefault();
 
         if (cooldown > 0) return;
@@ -112,7 +111,7 @@ export default function Recovery() {
         }
     };
 
-    const handleResetPassword = async (e: { preventDefault: () => void; }) => {
+    const handleResetPassword = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
 
@@ -148,94 +147,112 @@ export default function Recovery() {
     const urlImage = isDark ? '/assets/img/logo-white.png' : '/assets/img/logo-dark.png';
 
     return (
-        <div className="min-h-screen flex flex-col justify-center items-center font-sans relative">
-            <h1 className="text-[32px] text-(--color-primary) font-semibold text-center mb-10 tracking-tight">
-                {code ? 'Redefinir Senha' : 'Recuperar Senha'}
-            </h1>
+        <div className="min-h-screen flex flex-col relative bg-[var(--color-background)]">
 
-            <Card>
-                <div className="grid grid-cols-[1fr_1.5fr] gap-4">
-                    <div className="grid place-items-center p-7">
-                        <VattsImage src={urlImage} width={250}/>
+            {/* flex-1 garante que o conteúdo central empurre o footer lá para baixo */}
+            <div className="flex-1 flex flex-col justify-center items-center px-4 py-12 animate-[fadeIn_0.4s_ease-out]">
+                <div className="w-full max-w-4xl">
+
+                    {/* Título fora do card para dar respiro */}
+                    <div className="text-center mb-10">
+                        <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[var(--color-text-value)]">
+                            {code ? 'Redefinir Senha' : 'Recuperar Senha'}
+                        </h1>
+                        <p className="text-[var(--color-text-sub)] mt-2 font-medium">
+                            {code ? 'Crie uma nova senha segura para a sua conta' : 'Enviaremos um link de recuperação para o seu e-mail'}
+                        </p>
                     </div>
 
-                    <div className="w-full grid place-items-center p-5 pl-8">
-                        {!code ? (
-                            <form onSubmit={handleSendEmail} className="space-y-6 w-full">
-                                <div>
-                                    <label className="block text-[11px] font-bold text-(--color-text-label) mb-2 tracking-wider uppercase">
-                                        E-mail da sua conta
-                                    </label>
-                                    <Input
-                                        type="email"
-                                        value={email}
-                                        readOnly={!!session.data}
-                                        placeholder={'Digite seu e-mail'}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                        required
-                                    />
+                    <Card>
+                        {/* Ajustado para ser 1 coluna no mobile, e 2 no Desktop */}
+                        <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6 md:gap-10 items-center">
+
+                            {/* Lado Esquerdo - Logo (Escondido no mobile) */}
+                            <div className="hidden md:flex justify-center items-center p-8 rounded-xl h-full shadow-inner">
+                                <VattsImage
+                                    src={urlImage}
+                                    width={240}
+                                    className="hover:scale-105 transition-transform duration-500 drop-shadow-xl"
+                                />
+                            </div>
+
+                            {/* Lado Direito - Formulário */}
+                            <div className="w-full flex flex-col p-2 md:py-6 md:pr-6">
+                                {/* Logo aparece apenas no Mobile */}
+                                <div className="md:hidden flex justify-center mb-8">
+                                    <VattsImage src={urlImage} width={180} />
                                 </div>
 
-                                <Button
-                                    type="submit"
-                                    className="w-full font-bold py-3 px-4 uppercase"
-                                    disabled={loading || cooldown > 0}
-                                >
-                                    {loading ? 'Enviando...' : cooldown > 0 ? `Aguarde ${cooldown}s` : 'Enviar Link'}
-                                </Button>
+                                {!code ? (
+                                    <form onSubmit={handleSendEmail} className="space-y-6 w-full">
+                                        <Input
+                                            label="E-mail da sua conta"
+                                            type="email"
+                                            value={email}
+                                            readOnly={!!session.data}
+                                            placeholder="Digite seu e-mail"
+                                            onChange={(e) => setEmail(e.target.value)}
+                                            required
+                                        />
 
-                                {!session.data && (
-                                    <div className="text-center">
-                                        <Link href="/auth" className="text-(--color-text-label) text-[12px] uppercase font-bold">
-                                            Voltar para Login
-                                        </Link>
-                                    </div>
+                                        <Button
+                                            type="submit"
+                                            fullWidth
+                                            disabled={loading || cooldown > 0}
+                                            className="!py-3.5 mt-2 shadow-lg"
+                                        >
+                                            {loading ? 'Enviando...' : cooldown > 0 ? `Aguarde ${cooldown}s` : 'Enviar Link'}
+                                        </Button>
+
+                                        {!session.data && (
+                                            <div className="text-center pt-2">
+                                                <Link href="/auth" className="text-[13px] font-bold text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] transition-colors uppercase">
+                                                    Voltar para Login
+                                                </Link>
+                                            </div>
+                                        )}
+                                    </form>
+                                ) : (
+                                    <form onSubmit={handleResetPassword} className="space-y-6 w-full">
+                                        <Input
+                                            label="Nova Senha"
+                                            type="password"
+                                            value={password}
+                                            placeholder="••••••••"
+                                            onChange={(e) => setPassword(e.target.value)}
+                                            required
+                                        />
+
+                                        <Input
+                                            label="Confirmar Senha"
+                                            type="password"
+                                            value={confirmPassword}
+                                            placeholder="••••••••"
+                                            onChange={(e) => setConfirmPassword(e.target.value)}
+                                            required
+                                        />
+
+                                        <Button
+                                            type="submit"
+                                            fullWidth
+                                            disabled={loading}
+                                            className="!py-3.5 mt-2 shadow-lg"
+                                        >
+                                            {loading ? 'Salvando...' : 'Redefinir Senha'}
+                                        </Button>
+
+                                        <div className="text-center pt-2">
+                                            <Link href="/auth" className="text-[13px] font-bold text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] transition-colors uppercase">
+                                                Cancelar
+                                            </Link>
+                                        </div>
+                                    </form>
                                 )}
-                            </form>
-                        ) : (
-                            <form onSubmit={handleResetPassword} className="space-y-6 w-full">
-                                <div>
-                                    <label className="block text-[11px] font-bold text-(--color-text-label) mb-2 tracking-wider uppercase">
-                                        Nova Senha
-                                    </label>
-                                    <Input
-                                        type="password"
-                                        value={password}
-                                        onChange={(e) => setPassword(e.target.value)}
-                                        required
-                                    />
-                                </div>
-
-                                <div>
-                                    <label className="block text-[11px] font-bold text-(--color-text-label) mb-2 tracking-wider uppercase">
-                                        Confirmar Senha
-                                    </label>
-                                    <Input
-                                        type="password"
-                                        value={confirmPassword}
-                                        onChange={(e) => setConfirmPassword(e.target.value)}
-                                        required
-                                    />
-                                </div>
-
-                                <Button
-                                    type="submit"
-                                    className="w-full font-bold py-3 px-4 uppercase"
-                                    disabled={loading}
-                                >
-                                    {loading ? 'Salvando...' : 'Redefinir Senha'}
-                                </Button>
-
-                                <div className="text-center">
-                                    <Link href="/auth" className="text-(--color-text-label) text-[12px] uppercase font-bold">
-                                        Cancelar
-                                    </Link>
-                                </div>
-                            </form>
-                        )}
-                    </div>
+                            </div>
+                        </div>
+                    </Card>
                 </div>
-            </Card>
+            </div>
 
             <Footer />
         </div>

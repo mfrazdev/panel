@@ -29,7 +29,6 @@
                     $key = trim($var[1]);
                     $value = trim($var[2]);
 
-
                     // Formata RGB para e-mail
                     if (str_contains($value, 'rgb')) {
                         if (!str_contains($value, ',')) {
@@ -73,7 +72,6 @@
 
         .btn-hover:hover {
             opacity: 0.9 !important;
-            transform: translateY(-1px) !important;
         }
     </style>
 </head>
@@ -83,42 +81,58 @@
     <tr>
         <td align="center">
 
-            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; background-color: {{ cssVar('color-secondary') }}; border-radius: 16px; overflow: hidden; box-shadow: {{ cssVar('card-shadow') }}; border: 1px solid {{ cssVar('color-terciary') }};">
+            <!-- Card Principal com bordas arredondadas modernas -->
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px; background-color: {{ cssVar('color-secondary') }}; border-radius: 20px; overflow: hidden; box-shadow: {{ cssVar('card-shadow') }}; border: 1px solid {{ cssVar('color-terciary') }};">
 
+                <!-- Header / Logo -->
                 <tr>
-                    <td align="center" style="background-color: {{ cssVar('color-navbar') }}; padding: 32px 20px; border-bottom: 1px solid {{ cssVar('color-terciary') }};">
-                        <h1 style="color: {{ cssVar('color-primary') }}; margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase;">
+                    <td align="center" style="background-color: {{ cssVar('color-terciary') }}; padding: 32px 20px; border-bottom: 1px solid rgba(255, 255, 255, 0.05);">
+                        <h1 style="color: {{ cssVar('color-primary') }}; margin: 0; font-size: 24px; font-weight: 900; letter-spacing: -0.5px; text-transform: uppercase;">
                             {{ $companyName }}
                         </h1>
                     </td>
                 </tr>
 
+                <!-- Corpo do E-mail -->
                 <tr>
                     <td style="padding: 40px 36px;">
-                        <h2 style="color: {{ cssVar('color-text-value') }}; font-size: 22px; font-weight: 700; margin-top: 0; margin-bottom: 16px;">
+                        <h2 style="color: {{ cssVar('color-text-value') }}; font-size: 22px; font-weight: 800; margin-top: 0; margin-bottom: 16px; letter-spacing: -0.5px;">
                             Olá, {{ $user->first_name ?? 'Usuário' }}!
                         </h2>
 
-                        <p style="color: {{ cssVar('color-text-label') }}; font-size: 15px; font-weight: 400; line-height: 1.7; margin-top: 0; margin-bottom: 32px;">
-                            Recebemos uma solicitação para redefinir a senha em <strong style="color: {{ cssVar('color-text-value') }}; font-weight: 600;">{{ $companyName }}</strong>. Se você fez essa solicitação, clique no botão abaixo para criar uma nova senha:
+                        <p style="color: {{ cssVar('color-text-label') }}; font-size: 15px; font-weight: 500; line-height: 1.7; margin-top: 0; margin-bottom: 32px;">
+                            Recebemos uma solicitação para redefinir a senha em <strong style="color: {{ cssVar('color-text-value') }}; font-weight: 700;">{{ $companyName }}</strong>. Se você fez essa solicitação, clique no botão abaixo para criar uma nova senha:
                         </p>
 
+                        <!-- Botão com o texto escuro #09090b e cantos arredondados (12px) padrão Vatts -->
                         <table border="0" cellpadding="0" cellspacing="0" width="100%">
                             <tr>
-                                <td align="left" style="padding-bottom: 36px;">
-                                    <a class="btn-hover" href="{{ $url ?? '#' }}" target="_blank" style="display: inline-block; background-color: {{ cssVar('color-primary') }}; color: #FFFFFF; text-decoration: none; padding: 14px 28px; border-radius: 8px; font-weight: 600; font-size: 15px; transition: all 0.2s ease;">
+                                <td align="center" style="padding-bottom: 36px;">
+                                    <a class="btn-hover" href="{{ $url ?? '#' }}" target="_blank" style="display: inline-block; background-color: {{ cssVar('color-primary') }}; color: #09090b; text-decoration: none; padding: 14px 32px; border-radius: 12px; font-weight: 800; font-size: 14px; text-transform: uppercase; letter-spacing: 0.5px; transition: all 0.2s ease;">
                                         Redefinir Minha Senha
                                     </a>
                                 </td>
                             </tr>
                         </table>
 
-                        <p style="color: {{ cssVar('color-text-sub') }}; font-size: 13px; line-height: 1.6; margin-top: 0; margin-bottom: 0;">
-                            Se você não solicitou essa alteração, nenhuma ação é necessária e você pode ignorar este e-mail. Este link expira em <strong>15 minutos</strong>.
+                        <p style="color: {{ cssVar('color-text-sub') }}; font-size: 13px; font-weight: 500; line-height: 1.6; margin-top: 0; margin-bottom: 0;">
+                            Se você não solicitou essa alteração, nenhuma ação é necessária e você pode ignorar este e-mail. Este link expira em <strong style="color: {{ cssVar('color-text-label') }}; font-weight: 700;">15 minutos</strong>.
                         </p>
                     </td>
                 </tr>
             </table>
+
+            <!-- Rodapé do E-mail -->
+            <table border="0" cellpadding="0" cellspacing="0" width="100%" style="max-width: 540px;">
+                <tr>
+                    <td align="center" style="padding-top: 24px;">
+                        <p style="color: {{ cssVar('color-text-sub') }}; font-size: 12px; font-weight: 500; margin: 0;">
+                            &copy; {{ date('Y') }} {{ $companyName }}. Todos os direitos reservados.
+                        </p>
+                    </td>
+                </tr>
+            </table>
+
         </td>
     </tr>
 </table>
