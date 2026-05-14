@@ -80,12 +80,14 @@ class ServerController
                 ['label' => 'Descrição', 'key' => 'description', 'type' => 'textarea', 'desc' => 'Breve descrição do servidor.', 'default' => $old['description'] ?? '']
             ],
             'Recursos' => [
-                ['label' => 'Memória RAM (MB)', 'key' => 'ram', 'type' => 'number', 'desc' => 'Quantidade de RAM em MB. Deixe em 0 para ilimitado.', 'default' => $old['ram'] ?? 0],
-                ['label' => 'CPU (%)', 'key' => 'cpu', 'type' => 'number', 'desc' => 'Porcentagem de CPU. Deixe em 0 para ilimitado.', 'default' => $old['cpu'] ?? 0],
-                ['label' => 'Disco (MB)', 'key' => 'disk', 'type' => 'number', 'desc' => 'Espaço em disco em MB. Deixe em 0 para ilimitado.', 'default' => $old['disk'] ?? 0],
+                ['label' => 'Memória RAM (MB)', 'key' => 'ram', 'type' => 'number', 'desc' => 'Quantidade de RAM em MB. Deixe em 0 para ilimitado.', 'default' => $old['ram'] ?? '', 'required' => true],
+                ['label' => 'CPU (%)', 'key' => 'cpu', 'type' => 'number', 'desc' => 'Porcentagem de CPU. Deixe em 0 para ilimitado.', 'default' => $old['cpu'] ?? '100', 'required' => true],
+                ['label' => 'Disco (MB)', 'key' => 'disk', 'type' => 'number', 'desc' => 'Espaço em disco em MB. Deixe em 0 para ilimitado.', 'default' => $old['disk'] ?? '0', 'required' => true],
+            ],
+            "Cotas" => [
                 ['label' => 'Máx. Alocações Adicionais do Usuário', 'key' => 'maxAdditionalAllocations', 'type' => 'number', 'desc' => 'Quantidade máxima de alocações adicionais que o usuário pode adicionar sozinho. Deixe vazio para ilimitado.', 'default' => $old['maxAdditionalAllocations'] ?? '0'],
                 ['label' => 'Máx. Bancos de Dados', 'key' => 'maxDatabases', 'type' => 'number', 'desc' => 'Quantidade máxima de bancos de dados que este servidor pode ter. Deixe vazio para ilimitado.', 'default' => $old['maxDatabases'] ?? '0'],
-            ],
+            ]
         ];
     }
 

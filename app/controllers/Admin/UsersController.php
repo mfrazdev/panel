@@ -135,7 +135,8 @@ class UsersController
             'resource'  => $user,
             'map'       => $user->view_map,
             'canDelete' => $this->canDelete($user, $request->getParsed('user')),
-            'deleteUrl' => 'users/[id]/delete?return=edit'
+            'deleteUrl' => 'users/[id]/delete?return=edit',
+            'tabs' => false
         ];
 
         return $response->view('resources.edit_create', $this->getViewData($request, "Usuário - {$user->first_name} {$user->last_name}", $viewData));

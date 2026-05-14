@@ -44,7 +44,8 @@ class DashboardController
         return $response->view('Dashboard', [
             'current_version' => $currentVersion === 'dev' ? 'Dev' : $currentVersion,
             'latest_version'  => $latestVersion ?? 'Desconhecida',
-            'has_update'      => $hasUpdate
+            'has_update'      => $hasUpdate,
+            'user'          => $request->getParsed('user'), // Usuário logado
         ]);
     }
 

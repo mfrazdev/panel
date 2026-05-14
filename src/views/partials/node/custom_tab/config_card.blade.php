@@ -1,21 +1,25 @@
 <!-- Só exibe o card da configuração se o node já estiver criado (tiver ID) -->
 @if(isset($resource) && isset($resource->id))
-    <div class="bg-cards shadow-main rounded-md overflow-hidden flex flex-col mb-8 break-inside-avoid w-full">
-        <!-- Cabeçalho mais escuro conforme sua preferência -->
-        <div class="px-8 py-6 bg-sidebar">
+    <div class="bg-cards border border-white/5 shadow-main rounded-xl overflow-hidden flex flex-col mb-8 break-inside-avoid w-full">
+        <!-- STREAMING_CHUNK:Renderizando cabeçalho do arquivo de configuração -->
+        <div class="px-8 py-5 border-b border-white/5">
             <h3 class="text-[12px] font-black text-textValue uppercase tracking-[0.2em]">Arquivo config.yml</h3>
         </div>
+
+        <!-- STREAMING_CHUNK:Configurando área do editor Monaco -->
         <div class="p-8 flex flex-col gap-7">
-            <div class="flex flex-col gap-2.5 w-full">
+            <div class="flex flex-col gap-3 w-full">
                 <label class="text-[11px] font-black text-textSub uppercase tracking-widest ml-1">Configuração do Daemon</label>
 
                 <div class="relative group">
-                    <!-- Container Monaco com a cor de console do seu :root -->
-                    <div id="monaco-config-editor" class="w-full h-64 rounded-md overflow-hidden shadow-inner bg-console"></div>
+                    <!-- Container Monaco com estilo "Inset" (escavado) para profundidade -->
+                    <div class="bg-black/20 border border-white/5 rounded-lg shadow-inner overflow-hidden">
+                        <div id="monaco-config-editor" class="w-full h-64"></div>
+                    </div>
                 </div>
 
-                <p class="text-[12px] font-medium text-textSub mt-1 ml-2 leading-relaxed">
-                    Copie o conteúdo acima e cole no arquivo <span class="text-primary ">/etc/feather/config.json</span> no servidor onde o node está instalado para vinculá-lo a este painel.
+                <p class="text-[12px] font-medium text-textSub mt-1 ml-1 leading-relaxed">
+                    Copie o conteúdo acima e cole no arquivo <span class="text-primary font-bold">/etc/feather/config.json</span> no servidor onde o node está instalado para vinculá-lo a este painel.
                 </p>
             </div>
         </div>
@@ -24,26 +28,27 @@
     <!-- Scripts do Monaco Editor via CDN -->
     <script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs/loader.min.js"></script>
     <script>
+        /* STREAMING_CHUNK:Inicializando script do editor Monaco */
         document.addEventListener('DOMContentLoaded', function() {
             require.config({ paths: { 'vs': 'https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.44.0/min/vs' }});
 
             require(['vs/editor/editor.main'], function() {
-                // Tema customizado seguindo estritamente as cores do seu :root
-                monaco.editor.defineTheme('hightCloudTheme', {
+                // Tema customizado seguindo estritamente as cores escuras do seu sistema
+                monaco.editor.defineTheme('lunarPanelTheme', {
                     base: 'vs-dark',
                     inherit: true,
                     rules: [],
                     colors: {
-                        'editor.background': '#0f1419',      // var(--color-console)
-                        'editor.lineHighlightBackground': '#1c2530', // var(--color-navbar) para um destaque sutil
-                        'editorLineNumber.foreground': '#556476',    // var(--color-terciary)
-                        'editorIndentGuide.background': '#26323d',   // var(--color-sidebar)
-                        'editorIndentGuide.activeBackground': '#3f4d5c' // var(--color-secondary)
+                        'editor.background': '#09090b00', // Transparente para usar o bg do container
+                        'editor.lineHighlightBackground': '#ffffff05',
+                        'editorLineNumber.foreground': '#3f3f46',
+                        'editorIndentGuide.background': '#27272a',
+                        'editorIndentGuide.activeBackground': '#3f3f46',
+                        'editor.selectionBackground': '#3b82f640'
                     }
                 });
 
                 const configContent = [
-
                     `{
                         "uuid": "{{ $resource->id }}",
                         "port": {{ $resource->port }},
@@ -60,17 +65,21 @@
                 const editor = monaco.editor.create(document.getElementById('monaco-config-editor'), {
                     value: configContent,
                     language: 'json',
-                    theme: 'hightCloudTheme',
+                    theme: 'lunarPanelTheme',
                     readOnly: true,
                     minimap: { enabled: false },
                     scrollBeyondLastLine: false,
                     automaticLayout: true,
                     padding: { top: 16, bottom: 16 },
-                    fontSize: 13,
+                    fontSize: 14,
                     fontFamily: "'JetBrains Mono', 'Fira Code', 'Courier New', monospace",
                     renderLineHighlight: 'all',
-                    matchBrackets: 'never',
-                    hideCursorInOverviewRuler: true
+                    matchBrackets: 'always',
+                    hideCursorInOverviewRuler: true,
+                    scrollbar: {
+                        vertical: 'hidden',
+                        horizontal: 'hidden'
+                    }
                 });
             });
         });

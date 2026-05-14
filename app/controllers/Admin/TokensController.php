@@ -64,9 +64,9 @@ class TokensController
         $viewData = [
             'resources' => $tokens,
             'map'       => $map,
-            'see'       => '/admin/tokens/[id]/edit',
-            'create'    => '/admin/tokens/create',
-            'delete'    => '/admin/tokens/[id]/delete?return=all'
+            'see'       => 'tokens/[id]/edit',
+            'create'    => 'tokens/create',
+            'delete'    => 'tokens/[id]/delete?return=all'
         ];
 
         return $response->view('resources.view_resources', $this->getViewData($request, 'Tokens de API', $viewData));
@@ -84,7 +84,7 @@ class TokensController
             'resource'  => $token,
             'map'       => $token->view_map,
             'canDelete' => true,
-            'deleteUrl' => '/admin/tokens/[id]/delete?return=edit'
+            'deleteUrl' => 'tokens/[id]/delete?return=edit'
         ];
 
         return $response->view('resources.edit_create', $this->getViewData($request, "Token API - {$token->name}", $viewData));
@@ -124,7 +124,7 @@ class TokensController
         return $response->view('resources.edit_create', $this->getViewData($request, 'Novo Token de API', [
             'map'       => $map,
             'canDelete' => false,
-            'deleteUrl' => '/admin/tokens/[id]/delete?return=edit'
+            'deleteUrl' => 'tokens/[id]/delete?return=edit'
         ]));
     }
 

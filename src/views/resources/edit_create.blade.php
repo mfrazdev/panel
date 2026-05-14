@@ -10,7 +10,7 @@
         <div class="flex justify-between items-end mb-10">
             <div>
                 <div class="flex items-center gap-4 mb-2">
-                    <a href="/admin{{ $backTo }}" class="w-10 h-10 rounded-2xl bg-cards hover:bg-terciary flex items-center justify-center text-textSub hover:text-textValue transition-all shadow-main transform hover:-translate-x-1">
+                    <a href="/admin{{ $backTo }}" class="w-10 h-10 rounded-xl bg-cards border border-white/5 flex items-center justify-center text-textSub hover:text-textValue hover:bg-white/5 transition-all shadow-sm transform hover:-translate-x-1">
                         <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
                     </a>
                     <h1 class="text-4xl font-black tracking-tight text-textValue">{{ isset($resource) ? 'Editar' : 'Criar' }} {{ $title }}</h1>
@@ -31,9 +31,14 @@
 
                 $isBelow = isset($isBelow) ? $isBelow : false;
 
+                // Verifica se a variável $tabs foi passada do backend estritamente como false
+                $disableTabsExplicitly = isset($tabs) && $tabs === false;
+
                 // Restaura a lógica padrão e adiciona uma flag opcional 'force_tabs'
                 $forceTabs = isset($force_tabs) ? $force_tabs : false;
-                $tabsEnabled = ($resourceExists || $forceTabs) && (count($mapCategories) > 0 || count($customTabList) > 0);
+
+                // Só habilita tabs se houver conteúdo E NÃO tiver sido desativado explicitamente
+                $tabsEnabled = !$disableTabsExplicitly && ($resourceExists || $forceTabs) && (count($mapCategories) > 0 || count($customTabList) > 0);
 
                 $tabs = [];
 
@@ -92,14 +97,16 @@
             @endif
 
             @if($tabsEnabled)
+                <!-- Abas (Tabs) -->
                 <div class="flex flex-col gap-6" data-resource-tabs>
-                    <div class="bg-cards shadow-main rounded-md p-3 flex flex-wrap gap-3">
+                    <!-- Container das abas com design flat -->
+                    <div class="bg-cards border border-white/5 rounded-xl p-2 flex flex-wrap gap-2 shadow-sm">
                         @foreach($tabs as $tab)
                             <button
                                     type="button"
                                     data-tab-button
                                     data-tab-target="{{ $tab['key'] }}"
-                                    class="px-5 py-3 rounded-md text-sm font-bold transition-all duration-300 {{ $tab['key'] === $activeTabKey ? 'bg-primary text-textValue shadow-main' : 'bg-sidebar text-textSub hover:text-textValue hover:bg-terciary' }}"
+                                    class="px-5 py-2.5 rounded-lg text-[13px] font-bold transition-all duration-300 {{ $tab['key'] === $activeTabKey ? 'bg-white/10 text-textValue shadow-sm' : 'bg-transparent text-textSub hover:text-textValue hover:bg-white/5' }}"
                                     aria-selected="{{ $tab['key'] === $activeTabKey ? 'true' : 'false' }}"
                             >
                                 {{ $tab['label'] }}
@@ -121,13 +128,15 @@
                                     @elseif(!empty($tab['content']))
                                         {!! $tab['content'] !!}
                                     @else
-                                        <div class="bg-cards shadow-main rounded-md p-8 text-textSub">
+                                        <div class="bg-cards border border-white/5 shadow-main rounded-xl p-8 text-textSub">
                                             Nenhum conteúdo definido para esta aba.
                                         </div>
                                     @endif
                                 @else
-                                    <div class="bg-cards shadow-main rounded-md overflow-hidden flex flex-col break-inside-avoid w-full">
-                                        <div class="px-8 py-6 bg-sidebar">
+                                    <!-- Card da Aba com Título Separado por Borda -->
+                                    <div class="bg-cards border border-white/5 shadow-main rounded-xl overflow-hidden flex flex-col break-inside-avoid w-full">
+                                        <!-- Sem fundo diferente, apenas borda translúcida -->
+                                        <div class="px-8 py-5 border-b border-white/5">
                                             <h3 class="text-[12px] font-black text-textValue uppercase tracking-[0.2em]">{{ $tab['label'] }}</h3>
                                         </div>
                                         <div class="p-8 flex flex-col gap-7">
@@ -143,7 +152,6 @@
                                                     $desc = $field['desc'] ?? null;
                                                     $placeholder = $field['placeholder'] ?? '';
 
-                                                    // REMOVIDO DATA_GET: Solução nativa
                                                     $defaultValue = $field['default'] ?? '';
                                                     if (!isset($resource)) {
                                                         $value = $defaultValue;
@@ -154,11 +162,11 @@
                                                     }
 
                                                     $isReadonly = isset($field['readonly']) && $field['readonly'];
-                                                    $readonlyClass = $isReadonly ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
+                                                    $readonlyClass = $isReadonly ? 'opacity-50 cursor-not-allowed pointer-events-none' : '';
                                                     $readonlyAttr = $isReadonly ? 'readonly tabindex="-1"' : '';
                                                 @endphp
 
-                                                <div class="flex flex-col gap-2.5 {{ isset($field['full_width']) && $field['full_width'] ? 'w-full' : '' }}">
+                                                <div class="flex flex-col gap-2 {{ isset($field['full_width']) && $field['full_width'] ? 'w-full' : '' }}">
                                                     <label for="{{ $key }}" class="text-[11px] font-black text-textSub uppercase tracking-widest ml-1">
                                                         {{ $label }}
                                                         @if(isset($field['required']) && $field['required'])
@@ -170,13 +178,13 @@
                                                         <select
                                                                 id="{{ $key }}"
                                                                 name="{{ $key }}"
-                                                                class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none {{ $readonlyClass }}"
+                                                                class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium focus:ring-1 focus:ring-primary outline-none transition-all duration-300 shadow-inner border border-white/5 focus:border-primary/50 {{ $readonlyClass }}"
                                                                 {{ (isset($field['required']) && $field['required']) ? 'required data-tab-original-required="1"' : '' }}
                                                                 {!! $readonlyAttr !!}
                                                         >
                                                             @if(isset($field['options']) && is_array($field['options']))
                                                                 @foreach($field['options'] as $optValue => $optLabel)
-                                                                    <option value="{{ $optValue }}" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
+                                                                    <option value="{{ $optValue }}" class="bg-cards text-textValue" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
                                                                         {{ $optLabel }}
                                                                     </option>
                                                                 @endforeach
@@ -187,7 +195,7 @@
                                                         @php
                                                             $monacoLang = explode(':', $type)[1] ?? 'javascript';
                                                         @endphp
-                                                        <div class="relative w-full rounded-md overflow-hidden shadow-inner bg-console focus-within:ring-2 focus-within:ring-primary transition-all duration-300 border-none" style="height: 350px;">
+                                                        <div class="relative w-full rounded-lg overflow-hidden shadow-inner bg-black/20 border border-white/5 focus-within:ring-1 focus-within:ring-primary transition-all duration-300" style="height: 350px;">
                                                             <div class="monaco-container w-full h-full"
                                                                  data-input-id="{{ $key }}"
                                                                  data-language="{{ $monacoLang }}"
@@ -206,7 +214,7 @@
                                                                 name="{{ $key }}"
                                                                 rows="4"
                                                                 placeholder="{{ $placeholder }}"
-                                                                class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 resize-y shadow-inner border-none {{ $readonlyClass }}"
+                                                                class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium placeholder-textSub focus:ring-1 focus:ring-primary outline-none transition-all duration-300 resize-y shadow-inner border border-white/5 focus:border-primary/50 {{ $readonlyClass }}"
                                                         {{ (isset($field['required']) && $field['required']) ? 'required data-tab-original-required="1"' : '' }}
                                                                 {!! $readonlyAttr !!}
                                                     >{{ $value }}</textarea>
@@ -217,7 +225,7 @@
                                                                 id="{{ $key }}"
                                                                 name="{{ $key }}"
                                                                 placeholder="••••••••••••"
-                                                                class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner tracking-[0.3em] border-none {{ $readonlyClass }}"
+                                                                class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium placeholder-textSub focus:ring-1 focus:ring-primary outline-none transition-all duration-300 shadow-inner border border-white/5 focus:border-primary/50 tracking-[0.3em] {{ $readonlyClass }}"
                                                                 {{ (!isset($resource) && isset($field['required']) && $field['required']) ? 'required data-tab-original-required="1"' : '' }}
                                                                 {!! $readonlyAttr !!}
                                                         >
@@ -229,14 +237,14 @@
                                                                 name="{{ $key }}"
                                                                 value="{{ $value }}"
                                                                 placeholder="{{ $placeholder }}"
-                                                                class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none {{ $readonlyClass }}"
+                                                                class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium placeholder-textSub focus:ring-1 focus:ring-primary outline-none transition-all duration-300 shadow-inner border border-white/5 focus:border-primary/50 {{ $readonlyClass }}"
                                                                 {{ (isset($field['required']) && $field['required']) ? 'required data-tab-original-required="1"' : '' }}
                                                                 {!! $readonlyAttr !!}
                                                         >
                                                     @endif
 
                                                     @if(!empty($desc))
-                                                        <p class="text-[12px] font-medium text-textSub mt-1 ml-2 leading-relaxed">{{ $desc }}</p>
+                                                        <p class="text-[12px] font-medium text-textSub mt-1 ml-1 leading-relaxed">{{ $desc }}</p>
                                                     @endif
                                                 </div>
                                             @endforeach
@@ -248,20 +256,18 @@
                     </div>
                 </div>
             @else
-                <!-- Grid de Categorias (Campos Auto-Gerados Padrão) -->
+                <!-- Grid de Categorias (Sem Tabs) -->
                 <div class="columns-1 lg:columns-2 gap-8">
-
-                    <!-- Campos Auto-Gerados (Padrão) -->
                     @foreach($mapCategories as $categoryName => $fields)
-                        <div class="bg-cards shadow-main rounded-md overflow-hidden flex flex-col mb-8 break-inside-avoid w-full">
-                            <div class="px-8 py-6 bg-sidebar">
+                        <div class="bg-cards border border-white/5 shadow-main rounded-xl overflow-hidden flex flex-col mb-8 break-inside-avoid w-full">
+                            <!-- Sem fundo diferente, apenas borda translúcida -->
+                            <div class="px-8 py-5 border-b border-white/5">
                                 <h3 class="text-[12px] font-black text-textValue uppercase tracking-[0.2em]">{{ $categoryName }}</h3>
                             </div>
                             <div class="p-8 flex flex-col gap-7">
                                 @foreach($fields as $field)
                                     @php
                                         if(isset($field['form']) && $field['form'] === false) continue;
-
                                         if(isset($field['onlyShowInEdit']) && $field['onlyShowInEdit'] && !isset($resource)) continue;
 
                                         $key = $field['key'];
@@ -270,7 +276,6 @@
                                         $desc = $field['desc'] ?? null;
                                         $placeholder = $field['placeholder'] ?? '';
 
-                                        // REMOVIDO DATA_GET: Solução nativa
                                         $defaultValue = $field['default'] ?? '';
                                         if (!isset($resource)) {
                                             $value = $defaultValue;
@@ -281,11 +286,11 @@
                                         }
 
                                         $isReadonly = isset($field['readonly']) && $field['readonly'];
-                                        $readonlyClass = $isReadonly ? 'opacity-60 cursor-not-allowed pointer-events-none' : '';
+                                        $readonlyClass = $isReadonly ? 'opacity-50 cursor-not-allowed pointer-events-none' : '';
                                         $readonlyAttr = $isReadonly ? 'readonly tabindex="-1"' : '';
                                     @endphp
 
-                                    <div class="flex flex-col gap-2.5 {{ isset($field['full_width']) && $field['full_width'] ? 'w-full' : '' }}">
+                                    <div class="flex flex-col gap-2 {{ isset($field['full_width']) && $field['full_width'] ? 'w-full' : '' }}">
                                         <label for="{{ $key }}" class="text-[11px] font-black text-textSub uppercase tracking-widest ml-1">
                                             {{ $label }}
                                             @if(isset($field['required']) && $field['required'])
@@ -297,13 +302,13 @@
                                             <select
                                                     id="{{ $key }}"
                                                     name="{{ $key }}"
-                                                    class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none {{ $readonlyClass }}"
+                                                    class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium focus:ring-1 focus:ring-primary outline-none transition-all duration-300 shadow-inner border border-white/5 focus:border-primary/50 {{ $readonlyClass }}"
                                                     {{ (isset($field['required']) && $field['required']) ? 'required' : '' }}
                                                     {!! $readonlyAttr !!}
                                             >
                                                 @if(isset($field['options']) && is_array($field['options']))
                                                     @foreach($field['options'] as $optValue => $optLabel)
-                                                        <option value="{{ $optValue }}" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
+                                                        <option value="{{ $optValue }}" class="bg-cards text-textValue" {{ (string)$value === (string)$optValue ? 'selected' : '' }}>
                                                             {{ $optLabel }}
                                                         </option>
                                                     @endforeach
@@ -314,7 +319,7 @@
                                             @php
                                                 $monacoLang = explode(':', $type)[1] ?? 'javascript';
                                             @endphp
-                                            <div class="relative w-full rounded-md overflow-hidden shadow-inner bg-console focus-within:ring-2 focus-within:ring-primary transition-all duration-300 border-none" style="height: 350px;">
+                                            <div class="relative w-full rounded-lg overflow-hidden shadow-inner bg-black/20 border border-white/5 focus-within:ring-1 focus-within:ring-primary transition-all duration-300" style="height: 350px;">
                                                 <div class="monaco-container w-full h-full"
                                                      data-input-id="{{ $key }}"
                                                      data-language="{{ $monacoLang }}"
@@ -333,7 +338,7 @@
                                                     name="{{ $key }}"
                                                     rows="4"
                                                     placeholder="{{ $placeholder }}"
-                                                    class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 resize-y shadow-inner border-none {{ $readonlyClass }}"
+                                                    class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium placeholder-textSub focus:ring-1 focus:ring-primary outline-none transition-all duration-300 resize-y shadow-inner border border-white/5 focus:border-primary/50 {{ $readonlyClass }}"
                                             {{ (isset($field['required']) && $field['required']) ? 'required' : '' }}
                                                     {!! $readonlyAttr !!}
                                         >{{ $value }}</textarea>
@@ -344,7 +349,7 @@
                                                     id="{{ $key }}"
                                                     name="{{ $key }}"
                                                     placeholder="••••••••••••"
-                                                    class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner tracking-[0.3em] border-none {{ $readonlyClass }}"
+                                                    class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium placeholder-textSub focus:ring-1 focus:ring-primary outline-none transition-all duration-300 shadow-inner border border-white/5 focus:border-primary/50 tracking-[0.3em] {{ $readonlyClass }}"
                                                     {{ (!isset($resource) && isset($field['required']) && $field['required']) ? 'required' : '' }}
                                                     {!! $readonlyAttr !!}
                                             >
@@ -356,37 +361,34 @@
                                                     name="{{ $key }}"
                                                     value="{{ $value }}"
                                                     placeholder="{{ $placeholder }}"
-                                                    class="w-full bg-sidebar rounded-md px-5 py-4 text-sm text-textValue font-medium placeholder-textSub focus:ring-2 focus:ring-primary outline-none transition-all duration-300 shadow-inner border-none {{ $readonlyClass }}"
+                                                    class="w-full bg-black/20 rounded-lg px-5 py-3.5 text-[14px] text-textValue font-medium placeholder-textSub focus:ring-1 focus:ring-primary outline-none transition-all duration-300 shadow-inner border border-white/5 focus:border-primary/50 {{ $readonlyClass }}"
                                                     {{ (isset($field['required']) && $field['required']) ? 'required' : '' }}
                                                     {!! $readonlyAttr !!}
                                             >
                                         @endif
 
                                         @if(!empty($desc))
-                                            <p class="text-[12px] font-medium text-textSub mt-1 ml-2 leading-relaxed">{{ $desc }}</p>
+                                            <p class="text-[12px] font-medium text-textSub mt-1 ml-1 leading-relaxed">{{ $desc }}</p>
                                         @endif
                                     </div>
                                 @endforeach
                             </div>
                         </div>
                     @endforeach
-
                 </div>
             @endif
 
-            <!-- Barra de Ações -->
+            <!-- Cards customizados renderizados ABAIXO -->
             @if($isBelow && count($customCardList) > 0)
-                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-2">
                     @foreach($customCardList as $card)
                         @include($card)
                     @endforeach
                 </div>
-
-                <!-- Separador Visual -->
-                <div class="w-full h-[2px] bg-terciary rounded-full opacity-50 mt-4"></div>
             @endif
 
-            <div class="bg-cards shadow-main rounded-md p-7 flex flex-col sm:flex-row items-center justify-between gap-5 mt-4">
+            <!-- Barra de Ações (Design Clean) -->
+            <div class="bg-cards border border-white/5 shadow-main rounded-xl p-6 flex flex-col sm:flex-row items-center justify-between gap-5 mt-2">
                 <div>
                     @if(isset($custom_delete_button) && !empty($custom_delete_button))
                         @include($custom_delete_button)
@@ -397,19 +399,19 @@
                             onConfirm: function() {
                                 window.location.href = '/admin/{{ str_replace("[id]", $resource->id, $deleteUrl) }}';
                             }
-                        })" class="px-6 py-3.5 rounded-2xl text-sm font-bold text-danger hover:text-textValue bg-danger/10 hover:bg-danger transition-all flex items-center gap-3 group">
-                            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="group-hover:animate-bounce"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 114 0v2"/></svg>
+                        })" class="px-5 py-2.5 rounded-lg text-[13px] font-bold text-danger bg-transparent hover:bg-danger/10 border border-transparent hover:border-danger/20 transition-all flex items-center gap-2 group">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" class="group-hover:animate-bounce"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 114 0v2"/></svg>
                             Remover Registro
                         </button>
                     @endif
                 </div>
 
-                <div class="flex items-center gap-4 w-full sm:w-auto justify-end">
-                    <a href="/admin{{ $backTo }}" class="px-7 py-3.5 rounded-2xl text-sm font-bold text-textSub hover:text-textValue bg-sidebar hover:bg-terciary transition-all shadow-main">
+                <div class="flex items-center gap-3 w-full sm:w-auto justify-end">
+                    <a href="/admin{{ $backTo }}" class="px-6 py-2.5 rounded-lg text-[13px] font-bold text-textValue bg-transparent border border-white/10 hover:bg-white/5 transition-all">
                         Cancelar
                     </a>
-                    <button type="submit" class="bg-primary hover:brightness-110 text-textValue px-9 py-3.5 rounded-2xl text-sm font-bold shadow-main transition-all duration-300 flex items-center gap-2 transform hover:-translate-y-1">
-                        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+                    <button type="submit" class="bg-primary hover:brightness-110 text-[#09090b] px-6 py-2.5 rounded-lg text-[13px] font-bold shadow-[0_0_15px_rgba(45,212,191,0.2)] transition-all duration-300 flex items-center gap-2">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
                         {{ isset($resource) ? 'Salvar Alterações' : 'Criar Registro' }}
                     </button>
                 </div>
@@ -459,15 +461,15 @@
                     const isActive = button.dataset.tabTarget === tabKey;
                     button.setAttribute('aria-selected', isActive ? 'true' : 'false');
 
-                    // Modificado aqui pro JS acompanhar suas novas classes de cores
-                    button.classList.toggle('bg-primary', isActive);
+                    // Atualizado para o novo design visual das abas
+                    button.classList.toggle('bg-white/10', isActive);
                     button.classList.toggle('text-textValue', isActive);
-                    button.classList.toggle('shadow-main', isActive);
+                    button.classList.toggle('shadow-sm', isActive);
 
-                    button.classList.toggle('bg-sidebar', !isActive);
+                    button.classList.toggle('bg-transparent', !isActive);
                     button.classList.toggle('text-textSub', !isActive);
                     button.classList.toggle('hover:text-textValue', !isActive);
-                    button.classList.toggle('hover:bg-terciary', !isActive);
+                    button.classList.toggle('hover:bg-white/5', !isActive);
                 });
 
                 panels.forEach((panel) => {
@@ -531,7 +533,7 @@
                                 scrollBeyondLastLine: false,
                                 padding: { top: 16, bottom: 16 },
                                 fontSize: 14,
-                                fixedOverflowWidgets: true // <--- ADICIONADO PARA FORÇAR WIDGETS A SOBREPOR TUDO
+                                fixedOverflowWidgets: true
                             });
 
                             editor.onDidChangeModelContent(() => {
