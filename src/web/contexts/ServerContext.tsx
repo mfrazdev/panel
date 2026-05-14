@@ -104,7 +104,7 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
     const MAX_RETRIES = 5;
 
     const getWsUrl = (path: string) => {
-        const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+        const protocol = nodeUrl?.startsWith('https') ? 'wss:' : 'ws:';
         const host = nodeUrl ? nodeUrl.replace(/^https?:\/\//, '') : window.location.host;
         return `${protocol}//${host}${path}`;
     };

@@ -61,7 +61,18 @@ export default function ConfigurationContainer() {
 
 
     return (
-        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden">
+        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden animate-[fadeIn_0.4s_ease-out]">
+
+            {/* Cabeçalho da Página idêntico ao layout do Admin */}
+            <div className="flex justify-between items-end mb-8">
+                <div>
+                    <h1 className="text-3xl font-black tracking-tight text-[var(--color-text-value)] mb-2">Configurações</h1>
+                    <p className="text-[var(--color-text-sub)] text-sm font-medium">
+                        Gerencie detalhes, acesso SFTP e reinstalação do servidor.
+                    </p>
+                </div>
+            </div>
+
             {/* Grid configurado para 2 colunas no desktop e 1 no mobile */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
 
@@ -78,7 +89,7 @@ export default function ConfigurationContainer() {
                             value={`${session.data?.user.name}_${server.serverUuid.split('-')[0]}`}
                             readOnly={true}
                         />
-                        <p className={"text-(--color-text-label)"}>Sua senha SFTP é a mesma que você usa para acessar este painel.</p>
+                        <p className="text-[var(--color-text-label)]">Sua senha SFTP é a mesma que você usa para acessar este painel.</p>
                     </div>
                 </Card>
 
@@ -112,7 +123,7 @@ export default function ConfigurationContainer() {
 
                 <Card title={"REINSTALAR SERVIDOR"}>
                     <div className="flex flex-col gap-4">
-                        <p className={"text-(--color-text-label)"}>
+                        <p className="text-[var(--color-text-label)]">
                             Para reinstalar o servidor é necessário desliga-lo, e irá executar novamente o script de instalação que o configurou inicialmente. Alguns arquivos podem ser excluídos ou modificados durante este processo. Faça um backup dos seus dados antes de continuar.
                         </p>
                         <Button disabled={usage?.state !== 'stopped'} onClick={handleReinstall} variant={"danger"}>

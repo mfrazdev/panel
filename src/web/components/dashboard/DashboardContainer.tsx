@@ -16,9 +16,7 @@ interface ServerContainerProps {
     isAdmin?: boolean;
 }
 
-const DashboardContainer: React.FC<ServerContainerProps> = ({
-                                                                isAdmin = false,
-                                                            }) => {
+const DashboardContainer: React.FC<ServerContainerProps> = ({ isAdmin = false }) => {
     // Inicializando states direto do localStorage para manter o cache do F5
     const [showOthers, setShowOthers] = useState(() => {
         if (typeof window !== 'undefined') {
@@ -35,10 +33,10 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
         return 'all';
     });
 
-    const[servers, setServers] = useState<ServerData[]>([]);
+    const [servers, setServers] = useState<ServerData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [serverStatuses, setServerStatuses] = useState<Record<number, string>>({});
-    const[serverStats, setServerStats] = useState<Record<number, ServerStats>>({});
+    const [serverStats, setServerStats] = useState<Record<number, ServerStats>>({});
 
     // Salvando preferências no LocalStorage sempre que mudarem
     useEffect(() => {
@@ -61,7 +59,7 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
                 const data = await response.json();
 
                 const servers = data.servers;
-                setServers(Array.isArray(servers) ? servers :[]);
+                setServers(Array.isArray(servers) ? servers : []);
             } catch (error) {
                 console.error("Erro ao buscar servidores:", error);
             } finally {
@@ -88,7 +86,6 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
                     }
 
                     const data = await response.json();
-
                     const { status, usage } = data.status;
 
                     newStatuses[server.id] = status;
@@ -100,11 +97,7 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
                 } catch (error) {
                     console.error(`Erro ao buscar status do servidor ${server.id}:`, error);
                     newStatuses[server.id] = 'conectando';
-                    newStats[server.id] = {
-                        cpu: 0,
-                        ram: 0,
-                        disk: 0
-                    };
+                    newStats[server.id] = { cpu: 0, ram: 0, disk: 0 };
                 }
             }));
 
@@ -132,54 +125,56 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
     }, [servers, activeFilter]);
 
     return (
-        <div className="w-full max-w-6xl mx-auto mt-12 px-6 overflow-x-hidden">
+        // Retornado a largura para max-w-7xl padrão, resolvendo o problema das margens engolidas
+        <div className="w-full max-w-7xl mx-auto mt-12 px-10 overflow-x-hidden animate-[fadeIn_0.4s_ease-out]">
 
-            {/* Container flex que deixa as categorias de um lado e o toggle do outro, na mesma linha */}
-            <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-6 w-full">
+            <div className="flex flex-col md:flex-row justify-between items-end mb-10 gap-6 w-full">
 
-                {/* Categorias */}
-                <div className="flex gap-3 overflow-x-auto w-full md:w-auto pb-2 md:pb-0 scrollbar-hide">
-                    <button
-                        onClick={() => setActiveFilter('all')}
-                        className={`px-5 py-2.5 rounded-md text-sm font-bold transition-all duration-300 cursor-pointer ${
-                            activeFilter === 'all'
-                                ? 'bg-(--color-primary)/20 text-(--color-text-label)'
-                                : 'bg-(--color-secondary) text-(--color-text-label) hover:bg-(--color-terciary) hover:text-(--color-text-sub)'
-                        }`}
-                    >
-                        Todos
-                    </button>
-                    {groups.map(group => (
+                {/* Filtros Livres e Limpos (Estilo Pills independentes) */}
+                <div className="flex flex-col gap-3 w-full md:w-auto">
+                    <h2 className="text-[11px] font-black text-[var(--color-text-sub)] uppercase tracking-widest pl-1 hidden md:block">Filtrar Categoria</h2>
+                    <div className="flex gap-2 overflow-x-auto pb-2 md:pb-0 scrollbar-hide">
                         <button
-                            key={group}
-                            onClick={() => setActiveFilter(group)}
-                            className={`px-5 py-2.5 rounded-md text-sm font-bold transition-all duration-300 cursor-pointer ${
-                                activeFilter === group
-                                    ? 'bg-(--color-primary)/20 text-white'
-                                    : 'bg-(--color-secondary) text-(--color-text-label) hover:bg-(--color-terciary) hover:text-(--color-text-sub)'
+                            onClick={() => setActiveFilter('all')}
+                            className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-300 border ${
+                                activeFilter === 'all'
+                                    ? 'bg-[var(--color-secondary)] text-[var(--color-text-value)] border-white/10 shadow-sm'
+                                    : 'bg-transparent text-[var(--color-text-sub)] border-transparent hover:text-[var(--color-text-value)] hover:bg-white/5'
                             }`}
                         >
-                            {group}
+                            Todos
                         </button>
-                    ))}
+                        {groups.map(group => (
+                            <button
+                                key={group}
+                                onClick={() => setActiveFilter(group)}
+                                className={`px-5 py-2.5 rounded-xl text-[13px] font-bold transition-all duration-300 border ${
+                                    activeFilter === group
+                                        ? 'bg-[var(--color-secondary)] text-[var(--color-text-value)] border-white/10 shadow-sm'
+                                        : 'bg-transparent text-[var(--color-text-sub)] border-transparent hover:text-[var(--color-text-value)] hover:bg-white/5'
+                                }`}
+                            >
+                                {group}
+                            </button>
+                        ))}
+                    </div>
                 </div>
 
-                {/* Toggle - Fora de card */}
+                {/* Toggle Checkbox Modernizado (Sem fundo escuro pesado) */}
                 {isAdmin && (
-                    <div
-                        className="flex items-center gap-4 cursor-pointer transition-all duration-300 group whitespace-nowrap"
-                    >
-                        <span className="text-[12px] font-bold text-(--color-text-label) tracking-widest uppercase transition-colors group-hover:text-(--color-text-sub)">
+                    <div className="flex items-center gap-4 cursor-pointer transition-all duration-300 group whitespace-nowrap bg-(--color-secondary) border  border-white/5 px-5 py-3 rounded-xl mb-1 md:mb-0">
+                        <span className="text-[12px] font-bold text-(--color-text-sub) transition-colors group-hover:text-(--color-text-value)">
                             {showOthers ? 'Exibindo outros servidores' : 'Exibindo seus servidores'}
                         </span>
                         <Checkbox
                             onChange={() => setShowOthers(!showOthers)}
                             checked={showOthers}
-                        ></Checkbox>
+                        />
                     </div>
                 )}
             </div>
 
+            {/* Container da Lista */}
             <div className="flex flex-col min-h-[400px]">
                 <AnimatePresence mode="wait">
                     {isLoading ? (
@@ -196,11 +191,13 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
                             className="flex flex-col gap-10"
                         >
                             {Object.entries(groupedServers).map(([group, groupServers]) => (
-                                <div key={group} className="flex flex-col gap-4">
-                                    <div className="flex items-center gap-4 pl-2">
-                                        <h3 className="text-lg font-black text-(--color-text-label) opacity-80 tracking-tight uppercase">{group}</h3>
-                                        <div className="h-[1px] flex-1 bg-gradient-to-r from-(--color-secondary) to-transparent"></div>
+                                <div key={group} className="flex flex-col gap-6">
+                                    {/* Cabeçalho da Categoria com linha esfumaçada */}
+                                    <div className="flex items-center gap-4">
+                                        <h3 className="text-[15px] font-bold text-[var(--color-text-value)] opacity-90 tracking-tight">{group}</h3>
+                                        <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
                                     </div>
+
                                     <div className="grid gap-4">
                                         {groupServers.map(server => (
                                             <ServerRow
@@ -216,27 +213,29 @@ const DashboardContainer: React.FC<ServerContainerProps> = ({
                             ))}
                         </motion.div>
                     ) : (
+                        /* Empty State Limpo - Sem fundo afundado, usando design "Dashed" (Tracejado) */
                         <motion.div
                             key="no-servers"
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="text-center text-(--color-text-label) mt-10 py-24 rounded-md bg-(--color-secondary)"
+                            className="flex flex-col items-center justify-center text-center mt-6 py-20 rounded-2xl border-2 border-dashed border-white/5"
                         >
-                            <div className="flex flex-col items-center gap-5">
-                                <div className="w-20 h-20 rounded-md bg-(--color-terciary) flex items-center justify-center">
-                                    <svg width="40" height="40" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                        <path strokeLinecap="round" strokeLinejoin="round" d="M5 12h14M12 5l7 7-7 7" />
-                                    </svg>
-                                </div>
-                                <div>
-                                    <p className="text-xl font-bold text-(--color-text-label)">Nenhum servidor encontrado</p>
-                                    <p className="text-sm mt-1 opacity-60">Altere os filtros ou crie uma nova instância.</p>
-                                </div>
+                            <div className="w-16 h-16 rounded-full bg-[var(--color-secondary)] border border-white/5 flex items-center justify-center text-[var(--color-text-sub)] mb-5 shadow-sm">
+                                <svg width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" strokeLinecap="round" strokeLinejoin="round">
+                                    <path d="M5 12h14M12 5l7 7-7 7" />
+                                </svg>
+                            </div>
+                            <div>
+                                <p className="text-[16px] font-bold text-[var(--color-text-value)] tracking-tight">Nenhum servidor encontrado</p>
+                                <p className="text-[13px] font-medium text-[var(--color-text-sub)] mt-1.5 leading-relaxed">
+                                    Altere os filtros ou crie uma nova instância.
+                                </p>
                             </div>
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
+
             <Footer/>
         </div>
     );

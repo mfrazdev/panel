@@ -38,12 +38,13 @@ export default function Terminal() {
     const showSpinner = !isSuspended && (consoleWsStatus === 'connecting' || consoleWsStatus === 'reconnecting' || (logs.length === 0 && consoleWsStatus === 'connected'));
 
     return (
-        <div className={`flex flex-col h-full w-full rounded-xl overflow-hidden backdrop-blur-md shadow-(--card-shadow) transition-all duration-300 ${isSuspended ? 'bg-red-950/20' : 'bg-(--color-console)'}`}>
+        <div className={`flex flex-col  border border-white/5 h-full w-full rounded-lg overflow-hidden shadow-[var(--card-shadow)] transition-all duration-300 ${isSuspended ? 'bg-red-950/20' : 'bg-[var(--color-console)]'}`}>
+
             {/* Área de Logs */}
             <div
                 ref={scrollRef}
                 onScroll={handleScroll}
-                className={`terminal-font flex-1 p-5 text-[13px] overflow-y-auto custom-scrollbar selection:bg-(--color-primary)/30 min-h-0 antialiased ${isSuspended ? 'bg-transparent' : 'bg-(--color-console)'}`}
+                className={`terminal-font flex-1 p-5 text-[13px] overflow-y-auto custom-scrollbar selection:bg-[var(--color-primary)]/30 min-h-0 antialiased relative ${isSuspended ? 'bg-transparent' : 'bg-transparent'}`}
             >
                 <AnimatePresence>
                     {showSpinner && (
@@ -52,7 +53,7 @@ export default function Terminal() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             exit={{ opacity: 0 }}
-                            className="absolute inset-0 flex flex-col items-center justify-center z-10"
+                            className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[var(--color-console)]/50 backdrop-blur-sm rounded-lg"
                         >
                             <LoadingPage />
                         </motion.div>
@@ -61,25 +62,25 @@ export default function Terminal() {
 
                 <div className="flex flex-col">
                     {logs.map((log) => (
-                        <div key={log.id} className={`leading-relaxed break-all whitespace-pre-wrap mb-[1px] ${isSuspended ? 'text-red-400/80' : 'text-(--color-text-label)'}`}>
+                        <div key={log.id} className={`leading-relaxed break-all whitespace-pre-wrap mb-[1px] ${isSuspended ? 'text-red-400/80' : 'text-(--color-text-value)'}`}>
                             <Ansi>{log.line || log.message}</Ansi>
                         </div>
                     ))}
 
                     {/* Mensagem fixa no console quando suspenso */}
                     {isSuspended && logs.length === 0 && (
-                        <div className="text-red-500 font-bold tracking-wide">
+                        <div className="text-red-500 font-bold tracking-wide mt-2">
                             [SISTEMA] Conexão recusada. O servidor encontra-se suspenso.
                         </div>
                     )}
                 </div>
             </div>
 
-            {/* Input de Comandos */}
-            <div className={`flex items-center gap-3 px-5 py-4 group focus-within:border-(--color-primary)/30 ${isSuspended ? 'bg-red-950/40' : 'bg-(--color-console-command)'}`}>
-                <span className={`${isSuspended ? 'text-red-500/50' : 'text-(--color-primary) group-focus-within:text-(--color-secondary)'} transition-colors`}>
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3">
-                        <polyline points="13 17 18 12 13 7" /><polyline points="6 17 11 12 6 7" />
+            {/* Input de Comandos (Estilo Inset Clean) */}
+            <div className={`flex items-center gap-3 px-5 py-4 group bg-black/20 shadow-inner ${isSuspended ? 'bg-red-950/40' : ''}`}>
+                <span className={`${isSuspended ? 'text-red-500/50' : 'text-[var(--color-text-sub)] group-focus-within:text-[var(--color-primary)]'} transition-colors duration-300 shrink-0`}>
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="9 18 15 12 9 6" />
                     </svg>
                 </span>
                 <input
@@ -93,7 +94,7 @@ export default function Terminal() {
                             ? "Acesso negado: Servidor suspenso."
                             : (consoleWsStatus === 'connected' ? "Digite um comando..." : "Console desconectado.")
                     }
-                    className="terminal-font flex-1 bg-transparent border-none outline-none text-(--color-text-label) text-[14px] placeholder:text-(--color-text-sub) disabled:opacity-50"
+                    className="terminal-font flex-1 bg-transparent border-none outline-none text-[var(--color-text-value)] text-[14px] placeholder:text-[var(--color-text-sub)]/50 disabled:opacity-50 transition-colors"
                 />
             </div>
         </div>

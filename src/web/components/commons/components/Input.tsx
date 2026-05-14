@@ -26,9 +26,9 @@ const Input = forwardRef<
     const id = useId();
 
     const baseClass = `
-        w-full bg-(--color-terciary) text-(--color-text-label) placeholder:(--color-text-sub)
-        p-4 rounded-xl border-none outline-none
-        focus:ring-2 focus:ring-(--color-primary) transition-all duration-200 
+        w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] placeholder:text-[var(--color-text-sub)]
+        p-4 rounded-xl border-none outline-none shadow-sm
+        focus:ring-2 focus:ring-[var(--color-primary)] transition-all duration-200 
         resize-none
         ${className || ""}
     `;
@@ -38,7 +38,7 @@ const Input = forwardRef<
             {label && (
                 <label
                     htmlFor={id}
-                    className="font-medium text-(--color-text-label) text-[12px] tracking-widest ml-1"
+                    className="font-bold text-[var(--color-text-sub)] text-[12px] uppercase tracking-wider ml-1"
                 >
                     {label}
                 </label>
@@ -61,7 +61,7 @@ const Input = forwardRef<
             )}
 
             {desc && (
-                <span className="text-(--color-text-sub) text-[15px] ml-1 font-light">
+                <span className="text-[var(--color-text-sub)] text-[13px] ml-1 font-medium">
                     {desc}
                 </span>
             )}

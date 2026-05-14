@@ -1,7 +1,12 @@
 import React, {createContext, useContext, useEffect, useState, useMemo} from "react";
 import {useServerContext} from "@/web/contexts/ServerContext";
 import {useSession} from "@vatts/auth/react";
-
+export const isEditable = (name: string) => {
+    if (!name) return false;
+    const hasEditableExtension = /\.(txt|json|yml|yaml|properties|js|ts|jsx|tsx|sh|bat|cmd|ps1|xml|ini|csv|html|htm|css|scss|sass|less|md|py|rb|php|go|rs|java|c|cpp|h|cs|sql|toml|conf|config|cfg|log|vue|svelte|env)$/i.test(name);
+    const isSpecificTextFile = /^(Dockerfile|\.env.*|\.gitignore|\.npmrc|\.prettierrc|\.eslintrc)$/i.test(name);
+    return hasEditableExtension || isSpecificTextFile;
+};
 export const ROOT_PATH = "/home/container";
 
 export interface UploadProgressState {

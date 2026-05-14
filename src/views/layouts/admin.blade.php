@@ -17,12 +17,12 @@
             --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
 
             /* Cores Estritas do Print Escuro (Pelican Dark / H4U) */
-            --color-primary: #3b82f6; /* Azul de destaque */
+            --color-primary: rgb(156 59 246); /* Azul de destaque */
 
             /* Fundo principal e layout */
-            --color-background: #09090b;
-            --color-sidebar: #09090b;
-            --color-navbar: #09090b;
+            --color-background: #000000;
+            --color-sidebar: #000000;
+            --color-navbar: #000000;
 
             /* Elementos sobrepostos */
             --color-secondary: #18181b; /* Fundo Hover e Cards */

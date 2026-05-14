@@ -6,16 +6,16 @@ type CardProps = {
     className?: string;
 }
 
-export default function Card({ children, title, className } : CardProps) {
+export default function Card({ children, title, className = "" } : CardProps) {
     return (
-        <div className={`bg-(--color-secondary) rounded-md shadow-(--card-shadow) ${className}`}>
+        <div className={`w-full bg-[var(--color-secondary)] border border-white/5 rounded-xl shadow-[var(--card-shadow)] flex flex-col ${className}`}>
             {title && (
-                <div className="bg-(--color-sidebar) p-4 w-full rounded-t-md font-light text-(--color-text-label)">
-                {title}
-            </div>
+                <div className="px-6 py-5 border-b border-white/10 text-[var(--color-text-sub)] text-[12px] font-bold uppercase tracking-wider bg-white/[0.01] rounded-t-xl">
+                    {title}
+                </div>
             )}
 
-            <div className="p-4 text-(--color-text-label)">
+            <div className="p-6 text-[var(--color-text-label)]">
                 {children}
             </div>
         </div>

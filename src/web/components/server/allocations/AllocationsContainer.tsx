@@ -4,7 +4,6 @@ import LoadingPage from "@/web/components/commons/LoadingPage";
 import Card from "@/web/components/commons/components/Card";
 import Button from "@/web/components/commons/components/Button";
 import { useToast } from "@/web/contexts/ToastContext";
-// Trocamos o Database pelo Network e Plug para se adequar a Portas/Rede
 import { Trash2, Copy, Network, Plug, Lock } from "lucide-react";
 
 type AllocationItem = {
@@ -133,22 +132,23 @@ export default function AllocationsContainer() {
     if (!server) return null;
 
     return (
-        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden gap-8">
-            {/* Header / Ações Principais */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden animate-[fadeIn_0.4s_ease-out] gap-8">
+
+            {/* Header / Ações Principais (Estilo atualizado igual ao Admin) */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-(--color-text-label) flex items-center gap-2">
-                        <Network className="w-6 h-6 text-(--info)" />
+                    <h1 className="text-3xl font-black tracking-tight text-[var(--color-text-value)] mb-2 flex items-center gap-3">
+                        <Network className="w-8 h-8 text-[var(--color-primary)]" />
                         Alocações e Portas
                     </h1>
-                    <p className="text-gray-400 mt-1">
+                    <p className="text-[var(--color-text-sub)] text-sm font-medium">
                         Gerencie os endereços de rede e as portas vinculadas a este servidor.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="text-sm text-(--color-text-label) bg-(--color-secondary) px-4 py-2 rounded-lg">
-                        Uso Adicional: <span className="text-(--color-text-value) font-semibold">{userAddedCount}</span> / {maxAllocations === null || maxAllocations === undefined ? 'Ilimitado' : maxAllocations}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="text-[13px] font-medium text-[var(--color-text-sub)] bg-[var(--color-secondary)] border border-white/5 px-5 py-3 rounded-xl shadow-sm">
+                        Uso Adicional: <span className="text-[var(--color-text-value)] font-bold ml-1">{userAddedCount}</span> / {maxAllocations === null || maxAllocations === undefined ? 'Ilimitado' : maxAllocations}
                     </div>
 
                     <Button
@@ -163,18 +163,20 @@ export default function AllocationsContainer() {
 
             {/* Alocação Primária */}
             <Card title="ALOCAÇÃO PRIMÁRIA (PADRÃO)">
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                     <div>
-                        <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">IP / Endpoint Principal</label>
-                        <div className="flex">
-                            <input 
-                                readOnly 
-                                value={allocation ? `${allocation.ip}:${allocation.port}` : "-"} 
-                                className="w-full bg-(--color-terciary) text-(--color-text-label) text-sm rounded-l-md px-3 py-2 focus:outline-none shadow-(--card-shadow)"
+                        <label className="block text-[12px] font-bold text-[var(--color-text-sub)] mb-2 uppercase tracking-wider">
+                            IP / Endpoint Principal
+                        </label>
+                        <div className="flex shadow-sm rounded-xl overflow-hidden border border-white/5">
+                            <input
+                                readOnly
+                                value={allocation ? `${allocation.ip}:${allocation.port}` : "-"}
+                                className="w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] font-medium text-[14px] px-4 py-3 focus:outline-none"
                             />
-                            <button 
+                            <button
                                 onClick={() => copyToClipboard(allocation ? `${allocation.ip}:${allocation.port}` : "", "Endpoint")}
-                                className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 rounded-r-md transition-colors"
+                                className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
                                 title="Copiar"
                             >
                                 <Copy className="w-4 h-4" />
@@ -183,16 +185,18 @@ export default function AllocationsContainer() {
                     </div>
 
                     <div>
-                        <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">IP Externo Principal</label>
-                        <div className="flex">
-                            <input 
-                                readOnly 
-                                value={allocation?.externalIp ? `${allocation.externalIp}:${allocation.port}` : "-"} 
-                                className="w-full bg-(--color-terciary) text-(--color-text-label) text-sm rounded-l-md px-3 py-2 focus:outline-none shadow-(--card-shadow)"
+                        <label className="block text-[12px] font-bold text-[var(--color-text-sub)] mb-2 uppercase tracking-wider">
+                            IP Externo Principal
+                        </label>
+                        <div className="flex shadow-sm rounded-xl overflow-hidden border border-white/5">
+                            <input
+                                readOnly
+                                value={allocation?.externalIp ? `${allocation.externalIp}:${allocation.port}` : "-"}
+                                className="w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] font-medium text-[14px] px-4 py-3 focus:outline-none"
                             />
-                            <button 
+                            <button
                                 onClick={() => copyToClipboard(allocation?.externalIp ? `${allocation.externalIp}:${allocation.port}` : "", "IP Externo")}
-                                className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 rounded-r-md transition-colors"
+                                className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
                                 title="Copiar"
                             >
                                 <Copy className="w-4 h-4" />
@@ -203,16 +207,25 @@ export default function AllocationsContainer() {
             </Card>
 
             {/* Lista de Alocações Adicionais */}
-            <div>
-                <h2 className="text-xl font-semibold text-white mb-4">Portas Adicionais</h2>
+            <div className="flex flex-col gap-6">
+                {/* Linha Divisória de Categoria igual ao Dashboard */}
+                <div className="flex items-center gap-4 mt-2">
+                    <h3 className="text-[15px] font-bold text-[var(--color-text-value)] opacity-90 tracking-tight">Portas Adicionais</h3>
+                    <div className="h-[1px] flex-1 bg-gradient-to-r from-white/10 to-transparent"></div>
+                </div>
 
                 {additionalAllocations.length === 0 ? (
-                    <div className="flex flex-col items-center justify-center p-12 bg-(--color-secondary) rounded-md border-dashed shadown-(--card-shadow)">
-                        <Plug className="w-12 h-12 text-(--color-primary) mb-4" />
-                        <h3 className="text-lg font-medium text-white mb-2">Nenhuma porta adicional</h3>
-                        <p className="text-gray-400 text-center max-w-sm">
-                            As portas adicionais servem para plugins que requerem conexões extras. Adicione uma porta no botão acima.
-                        </p>
+                    /* Empty State Limpo - Design Tracejado do Dashboard */
+                    <div className="flex flex-col items-center justify-center text-center py-20 rounded-2xl border-2 border-dashed border-white/5">
+                        <div className="w-16 h-16 rounded-full bg-[var(--color-secondary)] border border-white/5 flex items-center justify-center text-[var(--color-text-sub)] mb-5 shadow-sm">
+                            <Plug className="w-7 h-7" />
+                        </div>
+                        <div>
+                            <p className="text-[16px] font-bold text-[var(--color-text-value)] tracking-tight">Nenhuma porta adicional</p>
+                            <p className="text-[13px] font-medium text-[var(--color-text-sub)] mt-1.5 leading-relaxed max-w-sm mx-auto">
+                                As portas adicionais servem para plugins que requerem conexões extras. Adicione uma porta no botão acima.
+                            </p>
+                        </div>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -224,20 +237,22 @@ export default function AllocationsContainer() {
 
                             return (
                                 <Card key={`${alloc.type}-${alloc.id}`} title={`PORTA: ${alloc.port}`}>
-                                    <div className="space-y-4">
-                                        
+                                    <div className="space-y-5">
+
                                         {/* IP e Porta */}
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">Endpoint</label>
-                                            <div className="flex">
-                                                <input 
-                                                    readOnly 
-                                                    value={endpoint} 
-                                                    className="w-full bg-(--color-terciary) text-(--color-text-label) text-sm rounded-l-md px-3 py-2 focus:outline-none shadow-(--card-shadow)"
+                                            <label className="block text-[12px] font-bold text-[var(--color-text-sub)] mb-2 uppercase tracking-wider">
+                                                Endpoint
+                                            </label>
+                                            <div className="flex shadow-sm rounded-xl overflow-hidden border border-white/5">
+                                                <input
+                                                    readOnly
+                                                    value={endpoint}
+                                                    className="w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] font-medium text-[14px] px-4 py-3 focus:outline-none"
                                                 />
-                                                <button 
+                                                <button
                                                     onClick={() => copyToClipboard(endpoint, "Endpoint")}
-                                                    className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 rounded-r-md transition-colors"
+                                                    className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
                                                     title="Copiar"
                                                 >
                                                     <Copy className="w-4 h-4" />
@@ -248,16 +263,18 @@ export default function AllocationsContainer() {
                                         {/* IP Externo se existir */}
                                         {externalEndpoint && (
                                             <div>
-                                                <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">IP Externo</label>
-                                                <div className="flex">
-                                                    <input 
-                                                        readOnly 
-                                                        value={externalEndpoint} 
-                                                        className="w-full bg-(--color-terciary) text-(--color-text-label) text-sm rounded-l-md px-3 py-2 focus:outline-none shadow-(--card-shadow)"
+                                                <label className="block text-[12px] font-bold text-[var(--color-text-sub)] mb-2 uppercase tracking-wider">
+                                                    IP Externo
+                                                </label>
+                                                <div className="flex shadow-sm rounded-xl overflow-hidden border border-white/5">
+                                                    <input
+                                                        readOnly
+                                                        value={externalEndpoint}
+                                                        className="w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] font-medium text-[14px] px-4 py-3 focus:outline-none"
                                                     />
-                                                    <button 
+                                                    <button
                                                         onClick={() => copyToClipboard(externalEndpoint, "IP Externo")}
-                                                        className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 rounded-r-md transition-colors"
+                                                        className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
                                                         title="Copiar"
                                                     >
                                                         <Copy className="w-4 h-4" />
@@ -265,17 +282,18 @@ export default function AllocationsContainer() {
                                                 </div>
                                             </div>
                                         )}
-                                        
+
                                         {/* Linha Divisória e Botão Deletar */}
-                                        <div className="border-t border-gray-800 pt-4 mt-4 flex justify-between items-center">
-                                            <span className="text-xs text-(--color-text-label) flex items-center gap-1">
-                                                Tipo: <strong className={isFixed ? "text-orange-400" : "text-blue-400"}>
+                                        <div className="border-t border-white/5 pt-5 mt-5 flex justify-between items-center">
+                                            <span className="text-[12px] text-[var(--color-text-sub)] font-medium flex items-center gap-1.5">
+                                                Tipo:
+                                                <span className={`px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider ${isFixed ? "bg-orange-500/10 text-orange-400" : "bg-[var(--color-primary)]/10 text-[var(--color-primary)]"}`}>
                                                     {isFixed ? "Vínculo Obrigatório" : "Adicionada por você"}
-                                                </strong>
+                                                </span>
                                             </span>
 
                                             {isFixed ? (
-                                                <div className="flex items-center gap-2 px-3 py-1.5 rounded text-sm font-medium bg-gray-800/50 text-gray-500 cursor-not-allowed border border-gray-800" title="Alocações FIXAS só podem ser gerenciadas pelo Administrador.">
+                                                <div className="flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-bold bg-white/5 text-[var(--color-text-sub)] cursor-not-allowed border border-white/5" title="Alocações FIXAS só podem ser gerenciadas pelo Administrador.">
                                                     <Lock className="w-4 h-4" /> Bloqueado
                                                 </div>
                                             ) : (
@@ -283,7 +301,7 @@ export default function AllocationsContainer() {
                                                     variant="danger"
                                                     onClick={() => handleRemoveAllocation(alloc.id)}
                                                     disabled={isDeleting || isSubmitting}
-                                                    className={`flex items-center gap-2 px-3 py-1.5`}
+                                                    className="!py-2 !px-4 !text-[13px]"
                                                 >
                                                     <Trash2 className="w-4 h-4" />
                                                     {isDeleting ? 'Removendo...' : 'Excluir'}

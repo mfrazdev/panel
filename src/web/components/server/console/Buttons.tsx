@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { useServerContext } from '../../../contexts/ServerContext';
+import { useServerContext } from '@/web/contexts/ServerContext';
 
 interface ServerActionsProps { status?: string; }
 
@@ -22,7 +22,6 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
     const isKillDisabled = status === 'stopped';
 
     return (
-        /* Container solto, botões grandes e independentes */
         <div className="flex items-center gap-4">
 
             {/* Start */}
@@ -32,8 +31,8 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 onClick={() => handleAction('start')}
                 className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isStartDisabled
-                        ? 'bg-(--color-secondary)/40  opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-(--color-secondary)  shadow-(--card-shadow)  hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-success)' }}
             >
@@ -46,10 +45,10 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 title="Desligar"
                 disabled={isStopDisabled}
                 onClick={() => handleAction('stop')}
-                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl  transition-all duration-300 overflow-hidden ${
+                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isStopDisabled
-                        ? 'bg-(--color-secondary)/40 -transparent opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-(--color-secondary)  shadow-(--card-shadow)  hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-danger)' }}
             >
@@ -62,10 +61,10 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 title="Reiniciar"
                 disabled={isRestartDisabled}
                 onClick={() => handleAction('restart')}
-                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl  transition-all duration-300 overflow-hidden ${
+                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isRestartDisabled
-                        ? 'bg-(--color-secondary)/40  opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-(--color-secondary)  shadow-[var(--card-shadow)]  hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-info)' }}
             >
@@ -81,10 +80,10 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 title="Matar Processo"
                 disabled={isKillDisabled}
                 onClick={() => handleAction('kill')}
-                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl  transition-all duration-300 overflow-hidden ${
+                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isKillDisabled
-                        ? 'bg-(--color-secondary)/40 -transparent opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-(--color-secondary)  shadow-(--card-shadow)  hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-warning)' }}
             >

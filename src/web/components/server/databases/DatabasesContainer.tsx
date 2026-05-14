@@ -4,7 +4,7 @@ import LoadingPage from "@/web/components/commons/LoadingPage";
 import Card from "../../commons/components/Card";
 import Input from "@/web/components/commons/components/Input";
 import { useToast } from "@/web/contexts/ToastContext";
-// Ícones (ajuste a importação dependendo da biblioteca que você usa, ex: lucide-react ou heroicons)
+// Ícones
 import { Trash2, Copy, Eye, EyeOff, Database } from "lucide-react";
 import Button from "../../commons/components/Button";
 
@@ -125,22 +125,23 @@ export default function DatabasesContainer() {
     const isLimitReached = maxDatabases !== null && databases.length >= maxDatabases;
 
     return (
-        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden flex-1 flex flex-col p-6 md:p-8 overflow-x-hidden gap-8">
-            {/* Header / Ações Principais */}
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden animate-[fadeIn_0.4s_ease-out] gap-8">
+
+            {/* Header / Ações Principais no novo padrão */}
+            <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
-                    <h1 className="text-2xl font-bold text-(--color-text-label) flex items-center gap-2">
-                        <Database className="w-6 h-6 text-(--color-info)" />
+                    <h1 className="text-3xl font-black tracking-tight text-[var(--color-text-value)] mb-2 flex items-center gap-3">
+                        <Database className="w-8 h-8 text-[var(--color-primary)]" />
                         Bancos de Dados
                     </h1>
-                    <p className="text-gray-400 mt-1">
+                    <p className="text-[var(--color-text-sub)] text-sm font-medium">
                         Gerencie os bancos de dados MySQL vinculados a este servidor.
                     </p>
                 </div>
 
-                <div className="flex items-center gap-4">
-                    <div className="text-sm text-(--color-text-label) bg-(--color-secondary) px-4 py-2 rounded-lg">
-                        Uso: <span className="text-(--color-text-value) font-semibold">{databases.length}</span> / {maxDatabases === null ? 'Ilimitado' : maxDatabases}
+                <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
+                    <div className="text-[13px] font-medium text-[var(--color-text-sub)] bg-[var(--color-secondary)] border border-white/5 px-5 py-3 rounded-xl shadow-sm">
+                        Uso: <span className="text-[var(--color-text-value)] font-bold ml-1">{databases.length}</span> / {maxDatabases === null ? 'Ilimitado' : maxDatabases}
                     </div>
 
                     <Button
@@ -148,22 +149,27 @@ export default function DatabasesContainer() {
                         onClick={handleCreateDatabase}
                         disabled={isCreating || isLimitReached}
                     >
-                        {isCreating ? 'Criando...' : 'Novo'}
+                        {isCreating ? 'Criando...' : 'Novo Banco'}
                     </Button>
                 </div>
             </div>
 
             {/* Lista de Bancos de Dados */}
             {databases.length === 0 ? (
-                <div className="flex flex-col items-center justify-center p-12 bg-(--color-secondary) rounded-md border-dashed shadown-(--card-shadow)">
-                    <Database className="w-12 h-12 text-(--color-primary) mb-4" />
-                    <h3 className="text-lg font-medium text-white mb-2">Nenhum banco de dados</h3>
-                    <p className="text-gray-400 text-center max-w-sm">
-                        Este servidor ainda não possui nenhum banco de dados MySQL criado. Clique no botão acima para provisionar um.
-                    </p>
+                /* Empty State Tracejado */
+                <div className="flex flex-col items-center justify-center text-center py-20 rounded-2xl border-2 border-dashed border-white/5">
+                    <div className="w-16 h-16 rounded-full bg-[var(--color-secondary)] border border-white/5 flex items-center justify-center text-[var(--color-text-sub)] mb-5 shadow-sm">
+                        <Database className="w-7 h-7" />
+                    </div>
+                    <div>
+                        <p className="text-[16px] font-bold text-[var(--color-text-value)] tracking-tight">Nenhum banco de dados</p>
+                        <p className="text-[13px] font-medium text-[var(--color-text-sub)] mt-1.5 leading-relaxed max-w-sm mx-auto">
+                            Este servidor ainda não possui nenhum banco de dados MySQL criado. Clique no botão acima para provisionar um.
+                        </p>
+                    </div>
                 </div>
             ) : (
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                     {databases.map((db) => {
                         const showPassword = visiblePasswords[db.dbName] || false;
                         const isDeleting = deletingDb === db.dbName;
@@ -171,20 +177,22 @@ export default function DatabasesContainer() {
 
                         return (
                             <Card key={db.dbName} title={`DATABASE: ${db.dbName}`}>
-                                <div className="space-y-4">
-                                    
+                                <div className="space-y-5">
+
                                     {/* Endpoint de Conexão */}
                                     <div>
-                                        <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">Host</label>
-                                        <div className="flex">
-                                            <input 
-                                                readOnly 
-                                                value={endpoint} 
-                                                className="w-full bg-(--color-terciary) text-(--color-text-label) text-sm rounded-l-md px-3 py-2 focus:outline-none shadow-(--card-shadow)"
+                                        <label className="block text-[12px] font-bold text-[var(--color-text-sub)] mb-2 uppercase tracking-wider">
+                                            Host / Endpoint
+                                        </label>
+                                        <div className="flex shadow-sm rounded-xl overflow-hidden border border-white/5">
+                                            <input
+                                                readOnly
+                                                value={endpoint}
+                                                className="w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] font-medium text-[14px] px-4 py-3 focus:outline-none"
                                             />
-                                            <button 
+                                            <button
                                                 onClick={() => copyToClipboard(endpoint, "Endpoint")}
-                                                className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 rounded-r-md transition-colors"
+                                                className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
                                                 title="Copiar"
                                             >
                                                 <Copy className="w-4 h-4" />
@@ -192,19 +200,22 @@ export default function DatabasesContainer() {
                                         </div>
                                     </div>
 
-                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                                         {/* Usuário */}
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">Usuário</label>
-                                            <div className="flex">
-                                                <input 
-                                                    readOnly 
-                                                    value={db.dbUser} 
-                                                    className="w-full bg-(--color-terciary) text-(--color-text-label) text-sm rounded-l-md px-3 py-2 focus:outline-none shadow-(--card-shadow)"
+                                            <label className="block text-[12px] font-bold text-[var(--color-text-sub)] mb-2 uppercase tracking-wider">
+                                                Usuário
+                                            </label>
+                                            <div className="flex shadow-sm rounded-xl overflow-hidden border border-white/5">
+                                                <input
+                                                    readOnly
+                                                    value={db.dbUser}
+                                                    className="w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] font-medium text-[14px] px-4 py-3 focus:outline-none"
                                                 />
-                                                <button 
+                                                <button
                                                     onClick={() => copyToClipboard(db.dbUser, "Usuário")}
-                                                    className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 rounded-r-md transition-colors"
+                                                    className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
+                                                    title="Copiar"
                                                 >
                                                     <Copy className="w-4 h-4" />
                                                 </button>
@@ -213,24 +224,26 @@ export default function DatabasesContainer() {
 
                                         {/* Senha */}
                                         <div>
-                                            <label className="block text-xs font-semibold text-gray-400 mb-1 uppercase tracking-wider">Senha</label>
-                                            <div className="flex">
-                                                <input 
-                                                    readOnly 
+                                            <label className="block text-[12px] font-bold text-[var(--color-text-sub)] mb-2 uppercase tracking-wider">
+                                                Senha
+                                            </label>
+                                            <div className="flex shadow-sm rounded-xl overflow-hidden border border-white/5">
+                                                <input
+                                                    readOnly
                                                     type={showPassword ? "text" : "password"}
-                                                    value={db.password} 
-                                                    className="w-full bg-(--color-terciary) text-(--color-text-label) text-sm rounded-l-md px-3 py-2 focus:outline-none shadow-(--card-shadow)"
+                                                    value={db.password}
+                                                    className="w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] font-medium text-[14px] px-4 py-3 focus:outline-none"
                                                 />
-                                                <button 
+                                                <button
                                                     onClick={() => togglePasswordVisibility(db.dbName)}
-                                                    className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 transition-colors border-r border-(--color-secondary)"
+                                                    className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
                                                     title="Mostrar/Ocultar"
                                                 >
                                                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                                                 </button>
-                                                <button 
+                                                <button
                                                     onClick={() => copyToClipboard(db.password, "Senha")}
-                                                    className="bg-(--color-primary) hover:bg-(--color-primary)/50 text-(--color-text-label) px-3 rounded-r-md transition-colors"
+                                                    className="bg-[var(--color-secondary)] hover:bg-white/5 border-l border-white/5 text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] px-4 transition-all duration-200 flex items-center justify-center cursor-pointer"
                                                     title="Copiar"
                                                 >
                                                     <Copy className="w-4 h-4" />
@@ -238,17 +251,17 @@ export default function DatabasesContainer() {
                                             </div>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Linha Divisória e Botão Deletar */}
-                                    <div className="border-t border-gray-800 pt-4 mt-4 flex justify-between items-center">
-                                        <span className="text-xs text-(--color-text-label)">
+                                    <div className="border-t border-white/5 pt-5 mt-5 flex justify-between items-center">
+                                        <span className="text-[12px] text-[var(--color-text-sub)] font-medium flex items-center gap-1.5">
                                             Criado em: {new Date(db.createdAt).toLocaleDateString('pt-BR')}
                                         </span>
                                         <Button
-                                        variant="danger"
+                                            variant="danger"
                                             onClick={() => handleDeleteDatabase(db.dbName)}
                                             disabled={isDeleting}
-                                            className={`flex items-center gap-2 px-3 py-1.5`}
+                                            className="!py-2 !px-4 !text-[13px]"
                                         >
                                             <Trash2 className="w-4 h-4" />
                                             {isDeleting ? 'Deletando...' : 'Excluir Banco'}

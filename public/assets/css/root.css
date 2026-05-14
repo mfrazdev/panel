@@ -2,75 +2,61 @@
     /* Fontes */
     --font-inter: "Inter", ui-sans-serif, system-ui, sans-serif;
     --font-mono: "JetBrains Mono", monospace;
-}
 
-:root {
-    /* accent principal */
-    --color-primary: rgb(45, 212, 191);
+    /* accent principal - Azul do painel Admin */
+    --color-primary: rgb(156 59 246); /* #3b82f6 */
 
-    /* base */
-    --color-background: rgb(23, 30, 35);
+    /* base principal da página */
+    --color-background: rgb(0 0 0); /* #09090b */
 
-    /* cards */
-    --color-secondary: rgb(45, 54, 66);
-    --color-terciary: rgb(27, 34, 41);
+    /* cards e elementos sobrepostos */
+    --color-secondary: rgb(24, 24, 27); /* #18181b */
+    --color-terciary: rgb(39, 39, 42);  /* #27272a */
 
     /* layout */
-    --color-navbar: rgb(13, 17, 22);
-    --color-sidebar: rgb(20, 26, 32);
+    --color-navbar: rgb(0 0 0);
+    --color-sidebar: rgb(0 0 0);
 
-    /* console */
-    --color-console: rgb(11, 15, 20);
-    --color-console-command: rgb(31, 39, 48);
+    /* console / inputs inset */
+    --color-console: rgb(17, 17, 18); /* #18181b */
+    --color-console-command: rgb(24, 24, 27);
 
     /* feedback */
     --color-success: rgb(34, 197, 94);
-    --color-info: rgb(45, 212, 191);
-    --color-warning: rgb(250, 204, 21);
+    --color-info: rgb(14, 165, 233);
+    --color-warning: rgb(234, 179, 8);
     --color-danger: rgb(239, 68, 68);
 
     /* texto */
-    --color-text-label: rgb(231, 236, 241);
-    --color-text-value: rgb(255, 255, 255);
-    --color-text-sub: rgb(140, 152, 168);
+    --color-text-label: rgb(161, 161, 170); /* #a1a1aa */
+    --color-text-value: rgb(255, 255, 255); /* #ffffff */
+    --color-text-sub: rgb(113, 113, 122);   /* #71717a */
 
     /* sombra */
-    --card-shadow: 0 14px 30px rgba(0, 0, 0, 0.35);
+    --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);
 }
 
-/* Modo claro */
+/* Modo claro (Mantido suave caso o utilizador alterne, mas focado no dark) */
 @media (prefers-color-scheme: light) {
     :root {
-        /* accent principal */
-        --color-primary: rgb(20 184 166);
+        --color-primary: rgb(59, 130, 246);
+        --color-background: rgb(244, 244, 245);
+        --color-secondary: rgb(255, 255, 255);
+        --color-terciary: rgb(228, 228, 231);
+        --color-navbar: rgb(255, 255, 255);
+        --color-sidebar: rgb(250, 250, 250);
+        --color-console: rgb(244, 244, 245);
+        --color-console-command: rgb(228, 228, 231);
 
-        /* base */
-        --color-background: rgb(242 247 248);
+        --color-success: rgb(34, 197, 94);
+        --color-info: rgb(14, 165, 233);
+        --color-warning: rgb(234, 179, 8);
+        --color-danger: rgb(239, 68, 68);
 
-        /* cards */
-        --color-secondary: rgb(255 255 255);
-        --color-terciary: rgb(232 241 242);
+        --color-text-label: rgb(82, 82, 91);
+        --color-text-value: rgb(24, 24, 27);
+        --color-text-sub: rgb(113, 113, 122);
 
-        /* layout */
-        --color-navbar: rgb(255 255 255);
-        --color-sidebar: rgb(238 247 248);
-
-        /* console */
-        --color-console: rgb(247 250 251);
-        --color-console-command: rgb(223 235 236);
-
-        /* feedback */
-        --color-success: rgb(34 197 94);
-        --color-info: rgb(20 184 166);
-        --color-warning: rgb(250 204 21);
-        --color-danger: rgb(239 68 68);
-
-        /* texto */
-        --color-text-label: rgb(33 43 54);
-        --color-text-value: rgb(15 23 42);
-        --color-text-sub: rgb(99 115 129);
-
-        /* sombra */
-        --card-shadow: 0 12px 30px rgb(0 0 0 / 0.08);
+        --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
     }
 }

@@ -13,6 +13,7 @@ import AllocationsContainer from "@/web/components/server/allocations/Allocation
 import DatabasesContainer from "@/web/components/server/databases/DatabasesContainer";
 import SchedulersContainer from "@/web/components/server/schedulers/SchedulersContainer";
 import NotFound from "@/web/notFound";
+
 type ServerProps = {
     action?: string;
 }
@@ -27,6 +28,7 @@ export default function ServerContainer({ action }: ServerProps) {
         connectConsoleWs,
         disconnectConsoleWs
     } = context;
+
     if(!isLoadingServer && !server) {
         return <NotFound/>;
     }
@@ -116,37 +118,39 @@ export default function ServerContainer({ action }: ServerProps) {
                 return <NotFound/>;
         }
     };
+
     const component = renderContent()
+
     return (
-        <>
-            <div className="flex-1 flex flex-row items-start relative">
-                {component !== null && !isLoadingServer && (
-                    <ServerSidebar
-                        serverId={serverId}
-                        activeTab={currentAction}
-                        changeAction={changeAction}
-                    />
-                )}
+        <div className="flex-1 flex flex-row items-start relative w-full">
+            {component !== null && !isLoadingServer && (
+                <ServerSidebar
+                    serverId={serverId}
+                    activeTab={currentAction}
+                    changeAction={changeAction}
+                />
+            )}
 
-                <div className="flex-1 flex flex-col min-h-screen">
-                    <main className="flex-1 overflow-hidden">
-                        <AnimatePresence mode="wait">
-                            <motion.div
-                                key={currentAction}
-                                initial={{ opacity: 0, x: 5 }}
-                                animate={{ opacity: 1, x: 0 }}
-                                exit={{ opacity: 0, x: -5 }}
-                                transition={{ duration: 0.15, ease: "easeOut" }}
-                                className="h-full"
-                            >
-                                {component}
-                            </motion.div>
-                        </AnimatePresence>
-                    </main>
+            {/* A coluna da direita agora segura o Footer, impedindo ele de vazar pra baixo da Sidebar */}
+            <div className="flex-1 flex flex-col min-h-[calc(100vh-4rem)] overflow-x-hidden">
+                <main className="flex-1">
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={currentAction}
+                            initial={{ opacity: 0, x: 5 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -5 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                            className="h-full"
+                        >
+                            {component}
+                        </motion.div>
+                    </AnimatePresence>
+                </main>
 
-                </div>
+                {/* Footer perfeitamente posicionado no final do conteúdo */}
+                <Footer/>
             </div>
-        <Footer/>
-        </>
+        </div>
     );
 };

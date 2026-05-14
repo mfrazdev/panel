@@ -1,22 +1,38 @@
 import React, { useState, useEffect, useRef } from "react";
 import Editor, { useMonaco } from "@monaco-editor/react";
 import Button from "@/web/components/commons/components/Button";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Save, FileCode2, ChevronDown } from "lucide-react";
 import { useFileManager } from "./FileManagerContext";
 import { useServerContext } from "@/web/contexts/ServerContext";
 import { useToast } from "@/web/contexts/ToastContext";
-import LoadingPage from "@/web/components/commons/LoadingPage"; // Importando o LoadingPage
-import { AnimatePresence, motion } from "framer-motion"; // Importando framer-motion para transição suave
+import LoadingPage from "@/web/components/commons/LoadingPage";
+import { AnimatePresence, motion } from "framer-motion";
 
+// === SUPORTE MASSIVO A LINGUAGENS ===
 const SUPPORTED_LANGUAGES = [
     { value: "json", label: "JSON" },
     { value: "yaml", label: "YAML / YML" },
     { value: "properties", label: "Properties" },
     { value: "xml", label: "XML" },
-    { value: 'php', label: 'PhP'},
+    { value: "php", label: "PHP" },
     { value: "javascript", label: "JavaScript" },
     { value: "typescript", label: "TypeScript" },
+    { value: "html", label: "HTML / Vue / Svelte" },
+    { value: "css", label: "CSS" },
+    { value: "scss", label: "SCSS / SASS" },
+    { value: "python", label: "Python" },
+    { value: "ruby", label: "Ruby" },
+    { value: "java", label: "Java" },
+    { value: "cpp", label: "C / C++" },
+    { value: "csharp", label: "C#" },
+    { value: "go", label: "Go" },
+    { value: "rust", label: "Rust" },
+    { value: "lua", label: "Lua" },
+    { value: "sql", label: "SQL" },
     { value: "shell", label: "Shell Script (.sh)" },
+    { value: "dockerfile", label: "Dockerfile" },
+    { value: "ini", label: "INI / Config" },
+    { value: "markdown", label: "Markdown" },
     { value: "plaintext", label: "Plain Text" },
 ];
 
@@ -36,7 +52,7 @@ export default function FileEditContainer() {
     const [isSaving, setIsSaving] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    const toast = useToast()
+    const toast = useToast();
     const monaco = useMonaco();
     const server = useServerContext();
 
@@ -46,17 +62,33 @@ export default function FileEditContainer() {
     const safeFilePath = editingFilePath || "";
     const breadcrumbs = getBreadcrumbs(safeFilePath);
 
-    // Define a linguagem com base na extensão
+    // Define a linguagem com base na extensão (Agora com muito mais Regex)
     useEffect(() => {
         if (!safeFilePath) return;
 
         if (safeFilePath.endsWith(".json")) setLanguage("json");
-        else if (safeFilePath.endsWith(".yml") || safeFilePath.endsWith(".yaml")) setLanguage("yaml");
+        else if (safeFilePath.match(/\.(yml|yaml)$/i)) setLanguage("yaml");
         else if (safeFilePath.endsWith(".properties")) setLanguage("properties");
-        else if (safeFilePath.endsWith(".sh")) setLanguage("shell");
         else if (safeFilePath.endsWith(".xml")) setLanguage("xml");
-        else if (safeFilePath.match(/\.(js|jsx)$/)) setLanguage("javascript");
-        else if (safeFilePath.match(/\.(ts|tsx)$/)) setLanguage("typescript");
+        else if (safeFilePath.match(/\.(php|php4|php5|phtml)$/i)) setLanguage("php");
+        else if (safeFilePath.match(/\.(js|jsx)$/i)) setLanguage("javascript");
+        else if (safeFilePath.match(/\.(ts|tsx)$/i)) setLanguage("typescript");
+        else if (safeFilePath.match(/\.(html|htm|vue|svelte)$/i)) setLanguage("html");
+        else if (safeFilePath.match(/\.(css)$/i)) setLanguage("css");
+        else if (safeFilePath.match(/\.(scss|sass)$/i)) setLanguage("scss");
+        else if (safeFilePath.match(/\.(py)$/i)) setLanguage("python");
+        else if (safeFilePath.match(/\.(rb)$/i)) setLanguage("ruby");
+        else if (safeFilePath.match(/\.(java)$/i)) setLanguage("java");
+        else if (safeFilePath.match(/\.(c|cpp|h|hpp)$/i)) setLanguage("cpp");
+        else if (safeFilePath.match(/\.(cs)$/i)) setLanguage("csharp");
+        else if (safeFilePath.match(/\.(go)$/i)) setLanguage("go");
+        else if (safeFilePath.match(/\.(rs)$/i)) setLanguage("rust");
+        else if (safeFilePath.match(/\.(lua)$/i)) setLanguage("lua");
+        else if (safeFilePath.match(/\.(sql)$/i)) setLanguage("sql");
+        else if (safeFilePath.match(/\.(sh|bash|command)$/i)) setLanguage("shell");
+        else if (safeFilePath.match(/\.(ini|conf|cfg|config)$/i)) setLanguage("ini");
+        else if (safeFilePath.match(/\.(md|markdown)$/i)) setLanguage("markdown");
+        else if (safeFilePath.match(/Dockerfile/i)) setLanguage("dockerfile");
         else setLanguage("plaintext");
     }, [safeFilePath]);
 
@@ -68,8 +100,9 @@ export default function FileEditContainer() {
                 inherit: true,
                 rules: [],
                 colors: {
-                    'editor.background': '#0f1419',
+                    'editor.background': '#0f1419', // Fundo escuro
                     'editor.lineHighlightBackground': '#151b21',
+                    'editor.inactiveSelectionBackground': '#25303a',
                 }
             });
             monaco.editor.setTheme('pterodactyl-dark');
@@ -94,7 +127,6 @@ export default function FileEditContainer() {
         };
 
         fetchFileContent();
-        // IGNORANDO O LINT E REMOVENDO O readFile PARA MATAR O LOOP INFINITO:
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [safeFilePath, server?.nodeUrl]);
 
@@ -108,8 +140,8 @@ export default function FileEditContainer() {
             noEmit: true,
             esModuleInterop: true,
             allowSyntheticDefaultImports: true,
-            allowJs: true, // Necessário para Intellisense pegar arquivos .js
-            checkJs: true, // Mostra errinhos em JS também
+            allowJs: true,
+            checkJs: true,
             fixedOverflowWidgets: true,
             baseUrl: "file:///",
             paths: {
@@ -143,14 +175,13 @@ export default function FileEditContainer() {
         monacoInstance.languages.typescript.typescriptDefaults.addExtraLib(globalsLib, 'file:///node_globals.d.ts');
     };
 
-    // Lógica de dependências (Models locais e Libs NPM)
+    // Lógica de dependências (Models locais e Libs NPM) - Mantida Intacta
     useEffect(() => {
         if (!monaco || !safeFilePath) return;
 
         const monacoAny = monaco as any;
         if (!safeFilePath.match(/\.(js|ts|jsx|tsx)$/)) return;
 
-        // 1. LIMPEZA: Destrói as definições de tipagem e modelos do arquivo anterior
         loadedLibsRef.current.forEach(lib => {
             if (lib && typeof lib.dispose === 'function') lib.dispose();
         });
@@ -160,7 +191,6 @@ export default function FileEditContainer() {
             const dirPath = safeFilePath.substring(0, safeFilePath.lastIndexOf('/'));
             if (!dirPath) return;
 
-            // Para pacotes NPM baixados da internet (Tipagens)
             const addLib = (content: string, uri: string) => {
                 try {
                     const jsLib = monacoAny.languages.typescript.javascriptDefaults.addExtraLib(content, uri);
@@ -169,21 +199,19 @@ export default function FileEditContainer() {
                 } catch (e) { }
             };
 
-            // Para arquivos da mesma pasta (Permite que imports relativos funcionem)
             const addLocalModel = (content: string, filePath: string) => {
                 try {
                     const uri = monacoAny.Uri.file(filePath);
                     let model = monacoAny.editor.getModel(uri);
                     if (!model) {
                         model = monacoAny.editor.createModel(content, undefined, uri);
-                        loadedLibsRef.current.push(model); // Guarda para limpar quando trocar de tela
+                        loadedLibsRef.current.push(model);
                     } else {
                         model.setValue(content);
                     }
                 } catch (e) { }
             };
 
-            // 1. Carrega os arquivos da mesma pasta e registra como Models
             try {
                 const response = await listFiles(dirPath);
                 if (response?.items) {
@@ -196,7 +224,6 @@ export default function FileEditContainer() {
                             try {
                                 const fileData = await readFile(itemPath);
                                 if (fileData?.content) {
-                                    // Se for arquivo de tipagem pura, adiciona como Lib, senão cria o Model local
                                     if (item.name.endsWith('.d.ts')) {
                                         addLib(fileData.content, `file://${itemPath}`);
                                     } else {
@@ -211,7 +238,6 @@ export default function FileEditContainer() {
                 console.warn(err);
             }
 
-            // 2. Busca tipagens de pacotes do npmjs
             const fetchNpmType = async (pkgName: string) => {
                 try {
                     const res = await fetch(`https://cdn.jsdelivr.net/npm/@types/${pkgName}/index.d.ts`);
@@ -228,7 +254,6 @@ export default function FileEditContainer() {
                 } catch (e) { }
             };
 
-            // 3. Procura package.json e tsconfig.json subindo nas pastas
             try {
                 let currentDir = dirPath;
                 let pkgData = null;
@@ -279,7 +304,6 @@ export default function FileEditContainer() {
                 if (pkgData?.content) {
                     const pkg = JSON.parse(pkgData.content);
                     const deps = { ...pkg.dependencies, ...pkg.devDependencies };
-
                     const ignorePackages = ['typescript', 'ts-node', 'nodemon'];
                     const depNames = Object.keys(deps).filter(d => !d.startsWith('@types/') && !ignorePackages.includes(d));
 
@@ -296,14 +320,12 @@ export default function FileEditContainer() {
 
         loadDependencies();
 
-        // 2. LIMPEZA NA DESMONTAGEM DA TELA
         return () => {
             loadedLibsRef.current.forEach(lib => {
                 if (lib && typeof lib.dispose === 'function') lib.dispose();
             });
             loadedLibsRef.current = [];
         };
-        // IGNORANDO O LINT E REMOVENDO listFiles E readFile DAQUI TAMBÉM:
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [monaco, safeFilePath]);
 
@@ -335,7 +357,7 @@ export default function FileEditContainer() {
         return () => window.removeEventListener("keydown", handleKeyDown);
     }, [content, safeFilePath]);
 
-    // Se estiver carregando o conteúdo, exibe o LoadingPage
+    // Loading State Modernizado
     if (isLoading) {
         return (
             <AnimatePresence mode="wait">
@@ -344,10 +366,7 @@ export default function FileEditContainer() {
                     initial={{ opacity: 0 }}
                     animate={{ opacity: 1 }}
                     exit={{ opacity: 0 }}
-                    transition={{
-                        duration: 0.35,
-                        ease: [0.4, 0, 0.2, 1],
-                    }}
+                    transition={{ duration: 0.35, ease: [0.4, 0, 0.2, 1] }}
                     className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[var(--color-secondary)]"
                 >
                     <LoadingPage />
@@ -357,40 +376,75 @@ export default function FileEditContainer() {
     }
 
     return (
-        <div className="flex-1 flex flex-col p-4 md:p-6 overflow-hidden relative text-[var(--color-text-value)] h-full w-full">
-            <div className="flex items-center justify-between mb-4 shrink-0">
-                <div className="flex items-center gap-3 text-sm font-mono text-[var(--color-text-sub)]">
+        <div className="flex-1 flex flex-col p-6 overflow-hidden relative text-[var(--color-text-value)] h-full w-full gap-5">
+            {/* Header Redesenhado - Padrão Novo Vatts */}
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
+                <div className="flex items-center gap-4 text-[13px] font-mono text-[var(--color-text-sub)] bg-[var(--color-terciary)] border border-white/5 px-3 py-2 rounded-xl shadow-sm">
                     <button
                         onClick={closeEdit}
-                        className="p-2 -ml-2 rounded-lg hover:bg-[var(--color-secondary)] hover:text-white transition cursor-pointer"
-                        title="Fechar a edição"
+                        className="p-1.5 -ml-1 rounded-lg bg-white/5 hover:bg-[var(--color-primary)] hover:text-[#09090b] transition-all cursor-pointer border border-white/5"
+                        title="Voltar"
                     >
-                        <ArrowLeft className="w-5 h-5" />
+                        <ArrowLeft className="w-4 h-4" />
                     </button>
                     <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="text-[var(--color-text-sub)]/50 font-bold select-none">/</span>
+                        <span className="opacity-50 font-bold select-none">/</span>
                         {breadcrumbs.map((crumb, index) => (
                             <React.Fragment key={crumb.path}>
                                 <span
-                                    className={`cursor-pointer transition ${crumb.isBase ? 'text-[var(--color-text-sub)] hover:text-white' : 'hover:text-white'}`}
-                                    onClick={() => navigateToPath(crumb.path)}
+                                    className={`cursor-pointer transition ${crumb.isBase ? 'hover:text-[var(--color-text-value)]' : 'text-[var(--color-primary)] font-bold hover:text-[var(--color-text-value)]'}`}
+                                    onClick={() => {
+                                        if(index === breadcrumbs.length - 1) return;
+                                        navigateToPath(crumb.path);
+                                    }}
                                 >
                                     {crumb.name}
                                 </span>
-                                {index < breadcrumbs.length - 1 && <span className="text-[var(--color-text-sub)]/50">/</span>}
+                                {index < breadcrumbs.length - 1 && <span className="opacity-50">/</span>}
                             </React.Fragment>
                         ))}
                     </div>
                 </div>
+
+                {/* Footer/Ações embutidos no Header para otimizar espaço */}
+                <div className="flex items-center gap-3">
+                    <div className="relative">
+                        <select
+                            value={language}
+                            onChange={(e) => setLanguage(e.target.value)}
+                            className="appearance-none bg-[var(--color-terciary)] border border-white/5 text-[var(--color-text-value)] font-bold text-[12px] uppercase tracking-wider rounded-xl px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer transition-all shadow-sm"
+                        >
+                            {SUPPORTED_LANGUAGES.map((lang) => (
+                                <option key={lang.value} value={lang.value}>
+                                    {lang.label}
+                                </option>
+                            ))}
+                        </select>
+                        <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[var(--color-text-sub)]">
+                            <ChevronDown className="w-4 h-4" />
+                        </div>
+                    </div>
+
+                    <Button
+                        variant="info"
+                        onClick={handleSave}
+                        disabled={isSaving}
+                        className="!py-2.5 !px-5 !text-[13px] flex items-center gap-2"
+                    >
+                        <Save className="w-4 h-4" />
+                        {isSaving ? "Salvando..." : "Salvar"}
+                    </Button>
+                </div>
             </div>
 
-            <div className="flex-1 relative min-h-120 w-full rounded-t-xl overflow-visible shadow-[var(--card-shadow)] border border-[var(--color-terciary)] bg-[var(--color-console)]">
-                <div className="absolute inset-0">
+            {/* Container do Monaco Editor com bordas do Design System */}
+            <div className="flex-1 relative min-h-120 w-full rounded-2xl overflow-hidden shadow-[var(--card-shadow)] border border-white/5 bg-[#0f1419]">
+                <div className="absolute inset-0 pt-2">
                     <Editor
                         path={safeFilePath ? `file://${safeFilePath}` : undefined}
                         height="100%"
                         language={language}
-                        theme="vs-dark"
+                        theme="pterodactyl-dark"
                         value={content}
                         onChange={(value) => setContent(value || "")}
                         onMount={handleEditorDidMount}
@@ -406,36 +460,6 @@ export default function FileEditContainer() {
                         }}
                     />
                 </div>
-            </div>
-
-            <div className="flex items-center justify-end gap-3 pt-4 pb-2 shrink-0">
-                <div className="relative">
-                    <select
-                        value={language}
-                        onChange={(e) => setLanguage(e.target.value)}
-                        className="appearance-none bg-(--color-terciary) text-(--color-text-label) font-medium text-sm rounded-md px-4 py-3 pr-10 outline-none focus:ring-2 focus:ring-[var(--color-primary)] cursor-pointer transition hover:brightness-110"
-                    >
-                        {SUPPORTED_LANGUAGES.map((lang) => (
-                            <option key={lang.value} value={lang.value}>
-                                {lang.label}
-                            </option>
-                        ))}
-                    </select>
-                    <div className="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-[var(--color-text-sub)]">
-                        <svg className="w-4 h-4 fill-current" viewBox="0 0 20 20">
-                            <path d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" />
-                        </svg>
-                    </div>
-                </div>
-
-                <Button
-                    variant="info"
-                    onClick={handleSave}
-                    disabled={isSaving}
-                    className="min-w-[160px]"
-                >
-                    {isSaving ? "Salvando..." : "Salvar"}
-                </Button>
             </div>
         </div>
     );

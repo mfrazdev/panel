@@ -2,7 +2,8 @@ import React, { useState, useEffect } from "react";
 import {
     Pencil, ArrowRightLeft, Lock, Archive, Trash2, Download, FileEdit, FileArchive
 } from "lucide-react";
-import { useFileManager } from "./FileManagerContext";
+import {isEditable, useFileManager} from "./FileManagerContext";
+import { AnimatePresence, motion } from "framer-motion";
 
 interface FileItem {
     name: string;
@@ -21,9 +22,8 @@ interface DropdownProps {
 }
 
 const isArchive = (name: string) => /\.(zip|tar\.gz|tgz|rar)$/i.test(name);
-const isEditable = (name: string) => /\.(txt|json|yml|yaml|properties|js|ts|sh|xml|ini|csv)$/i.test(name);
 
-// Simple internal icon
+// Ícone Minimalista
 function MoreHorizontalIcon() {
     return (
         <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
@@ -98,81 +98,92 @@ export default function FileDropdown({
     };
 
     return (
-        <div className="ml-6 relative">
+        <div className="relative">
+            {/* Botão de Trigger */}
             <button
                 onClick={toggleMenu}
-                className="p-2 rounded-md text-(--color-text-label) "
+                className="p-2 rounded-lg text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] hover:bg-white/5 transition-colors cursor-pointer"
             >
                 <MoreHorizontalIcon />
             </button>
 
-            {isOpen && (
-                <div className="absolute right-0 top-10 mt-1 w-48 bg-[var(--color-terciary)] rounded-xl shadow-[var(--card-shadow)] z-50 text-[var(--color-text-label)] py-2 font-medium text-sm border border-white/5">
-                    {isEditable(file.name) && (
-                        <button
-                            onClick={handleEdit}
-                            className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-3"
-                        >
-                            <FileEdit className="w-4 h-4" /> Editar
-                        </button>
-                    )}
-
-                    <button
-                        onClick={() => { onRename(actionTarget); setIsOpen(false); }}
-                        className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-3"
+            {/* Menu Animado */}
+            <AnimatePresence>
+                {isOpen && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -5, scale: 0.95 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: -5, scale: 0.95 }}
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="absolute right-0 top-full mt-2 w-48 bg-[var(--color-terciary)] rounded-xl shadow-2xl z-[100] text-[var(--color-text-value)] py-1.5 font-medium text-[13px] border border-white/5"
                     >
-                        <Pencil className="w-4 h-4" /> Renomear
-                    </button>
+                        {isEditable(file.name) && (
+                            <button
+                                onClick={handleEdit}
+                                className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 transition-colors"
+                            >
+                                <FileEdit className="w-4 h-4 text-[var(--color-text-sub)]" /> Editar
+                            </button>
+                        )}
 
-                    <button
-                        onClick={() => { onMove(actionTarget); setIsOpen(false); }}
-                        className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-3"
-                    >
-                        <ArrowRightLeft className="w-4 h-4" /> Mover
-                    </button>
-
-                    {isArchive(file.name) ? (
                         <button
-                            onClick={handleUnarchive}
-                            className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-3"
+                            onClick={() => { onRename(actionTarget); setIsOpen(false); }}
+                            className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 transition-colors"
                         >
-                            <FileArchive className="w-4 h-4" /> Extrair
+                            <Pencil className="w-4 h-4 text-[var(--color-text-sub)]" /> Renomear
                         </button>
-                    ) : (
+
                         <button
-                            onClick={handleArchive}
-                            className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-3"
+                            onClick={() => { onMove(actionTarget); setIsOpen(false); }}
+                            className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 transition-colors"
                         >
-                            <Archive className="w-4 h-4" /> Compactar
+                            <ArrowRightLeft className="w-4 h-4 text-[var(--color-text-sub)]" /> Mover
                         </button>
-                    )}
 
-                    <button
-                        onClick={() => { alert("Configuração de permissões em breve"); setIsOpen(false); }}
-                        className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-3"
-                    >
-                        <Lock className="w-4 h-4" /> Permissões
-                    </button>
+                        {isArchive(file.name) ? (
+                            <button
+                                onClick={handleUnarchive}
+                                className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 transition-colors"
+                            >
+                                <FileArchive className="w-4 h-4 text-[var(--color-text-sub)]" /> Extrair
+                            </button>
+                        ) : (
+                            <button
+                                onClick={handleArchive}
+                                className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 transition-colors"
+                            >
+                                <Archive className="w-4 h-4 text-[var(--color-text-sub)]" /> Compactar
+                            </button>
+                        )}
 
-                    {file.type !== "folder" && (
                         <button
-                            onClick={handleDownload}
-                            className="w-full text-left px-4 py-2 hover:bg-white/5 flex items-center gap-3"
+                            onClick={() => { alert("Configuração de permissões em breve"); setIsOpen(false); }}
+                            className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 transition-colors"
                         >
-                            <Download className="w-4 h-4" /> Baixar
+                            <Lock className="w-4 h-4 text-[var(--color-text-sub)]" /> Permissões
                         </button>
-                    )}
 
-                    <div className="h-px bg-white/10 my-1"></div>
+                        {file.type !== "folder" && (
+                            <button
+                                onClick={handleDownload}
+                                className="w-full text-left px-4 py-2.5 hover:bg-white/5 flex items-center gap-3 transition-colors"
+                            >
+                                <Download className="w-4 h-4 text-[var(--color-text-sub)]" /> Baixar
+                            </button>
+                        )}
 
-                    <button
-                        onClick={handleDelete}
-                        className="w-full text-left px-4 py-2 hover:bg-[var(--color-danger)]/10 text-[var(--color-danger)] flex items-center gap-3"
-                    >
-                        <Trash2 className="w-4 h-4" /> Excluir
-                    </button>
-                </div>
-            )}
+                        {/* Divisória */}
+                        <div className="h-[1px] bg-white/5 my-1.5 mx-2"></div>
+
+                        <button
+                            onClick={handleDelete}
+                            className="w-full text-left px-4 py-2.5 hover:bg-[var(--color-danger)]/10 text-[var(--color-danger)] flex items-center gap-3 transition-colors"
+                        >
+                            <Trash2 className="w-4 h-4" /> Excluir
+                        </button>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

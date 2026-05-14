@@ -37,27 +37,27 @@ export default function Select({ label, desc, options, value, onChange, placehol
     return (
         <div className="flex flex-col gap-1.5 w-full" ref={containerRef}>
             {label && (
-                <label className="font-medium text-(--color-text-label) text-[11px] uppercase tracking-widest ml-1 opacity-80">
+                <label className="font-bold text-[var(--color-text-sub)] text-[12px] uppercase tracking-wider ml-1">
                     {label}
                 </label>
             )}
 
-            {/* Container Relativo apenas para o Botão e o Menu */}
-            <div className="relative w-full">
+            {/* Z-index dinâmico: sobe para 50 apenas quando está aberto para não sobrepor outros inputs inativos */}
+            <div className={`relative w-full ${isOpen ? 'z-50' : 'z-10'}`}>
                 {/* Trigger (O "Botão" do Select) */}
                 <button
                     type="button"
                     onClick={() => setIsOpen(!isOpen)}
                     className={`
-                        w-full bg-(--color-terciary) text-(--color-text-label) 
+                        w-full bg-[var(--color-terciary)] text-[var(--color-text-value)] 
                         p-4 rounded-xl border border-transparent outline-none flex items-center justify-between
-                        focus:ring-2 focus:ring-(--color-primary) focus:border-transparent
-                        transition-all duration-200 cursor-pointer 
-                        hover:bg-(--color-terciary)/80 active:scale-[0.99]
+                        focus:ring-2 focus:ring-[var(--color-primary)] focus:border-transparent
+                        transition-all duration-200 cursor-pointer shadow-sm
+                        hover:brightness-105 active:scale-[0.99]
                         ${className || ""}
                     `}
                 >
-                    <span className={`text-[14px] font-medium ${!selectedOption ? "text-(--color-text-sub)" : ""}`}>
+                    <span className={`text-[14px] font-medium ${!selectedOption ? "text-[var(--color-text-sub)]" : ""}`}>
                         {selectedOption ? selectedOption.label : placeholder}
                     </span>
                     <motion.div
@@ -65,11 +65,11 @@ export default function Select({ label, desc, options, value, onChange, placehol
                         transition={{ duration: 0.2 }}
                         className="flex items-center"
                     >
-                        <ChevronDown size={18} className="text-(--color-text-sub)" />
+                        <ChevronDown size={18} className="text-[var(--color-text-sub)]" />
                     </motion.div>
                 </button>
 
-                {/* Dropdown Menu - Agora posicionado em relação ao botão */}
+                {/* Dropdown Menu */}
                 <AnimatePresence>
                     {isOpen && (
                         <motion.ul
@@ -77,7 +77,7 @@ export default function Select({ label, desc, options, value, onChange, placehol
                             animate={{ opacity: 1, y: 5, scale: 1 }}
                             exit={{ opacity: 0, y: -10, scale: 0.98 }}
                             transition={{ duration: 0.15, ease: "easeOut" }}
-                            className="absolute left-0 w-full bg-(--color-terciary) rounded-xl overflow-hidden z-50 shadow-2xl p-1.5 border border-(--color-secondary) max-h-[250px] overflow-y-auto"
+                            className="absolute left-0 w-full bg-[var(--color-terciary)] rounded-xl overflow-hidden shadow-2xl p-1.5 border border-white/5 max-h-[250px] overflow-y-auto custom-scrollbar mt-2"
                         >
                             {options.length > 0 ? (
                                 options.map((option) => (
@@ -91,8 +91,8 @@ export default function Select({ label, desc, options, value, onChange, placehol
                                             className={`
                                                 cursor-pointer w-full text-left p-3 rounded-lg text-[14px] font-medium transition-all
                                                 ${value === option.value
-                                                ? "bg-(--color-primary) text-white"
-                                                : "text-(--color-text-label) hover:bg-(--color-secondary)"}
+                                                ? "bg-[var(--color-primary)] text-[#09090b]"
+                                                : "text-[var(--color-text-label)] hover:bg-white/5"}
                                             `}
                                         >
                                             {option.label}
@@ -100,7 +100,7 @@ export default function Select({ label, desc, options, value, onChange, placehol
                                     </li>
                                 ))
                             ) : (
-                                <li className="p-3 text-center text-(--color-text-sub) text-[13px]">
+                                <li className="p-3 text-center text-[var(--color-text-sub)] text-[13px]">
                                     Nenhuma opção disponível
                                 </li>
                             )}
@@ -110,7 +110,7 @@ export default function Select({ label, desc, options, value, onChange, placehol
             </div>
 
             {desc && (
-                <span className="text-(--color-text-sub) text-[13px] ml-1 font-normal leading-relaxed opacity-70">
+                <span className="text-[var(--color-text-sub)] text-[13px] ml-1 font-medium">
                     {desc}
                 </span>
             )}

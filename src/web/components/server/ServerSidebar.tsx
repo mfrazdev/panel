@@ -1,16 +1,15 @@
 import { motion, AnimatePresence } from "framer-motion";
 import React, { useState, useEffect } from 'react';
 import {
-    ListStartIcon,
     ChevronLeft,
     ChevronRight,
     ShieldCog,
     ChartNoAxesColumnIncreasing,
     Play,
-    UsersRound, Clock
+    Clock
 } from "lucide-react";
-import {useSession} from "@vatts/auth/react";
-import {useServerContext} from "@/web/contexts/ServerContext";
+import { useSession } from "@vatts/auth/react";
+import { useServerContext } from "@/web/contexts/ServerContext";
 
 type Sidebar = {
     serverId: string;
@@ -30,14 +29,14 @@ const menuCategories = [
     {
         title: "Gerenciamento",
         items: [
-            { id: 'allocations', name: 'Rede', icon: <ChartNoAxesColumnIncreasing /> },
-            { id: 'schedulers', name: 'Agendamentos', icon: <Clock /> },
+            { id: 'allocations', name: 'Rede', icon: <ChartNoAxesColumnIncreasing width="20" height="20" strokeWidth="2" /> },
+            { id: 'schedulers', name: 'Agendamentos', icon: <Clock width="20" height="20" strokeWidth="2" /> },
         ]
     },
     {
         title: "Avançado",
         items: [
-            { id: 'startup', name: 'Inicialização', icon: <Play />},
+            { id: 'startup', name: 'Inicialização', icon: <Play width="20" height="20" strokeWidth="2" />},
             { id: 'settings', name: 'Configurações', icon: <path d="M12 15a3 3 0 1 0 0-6 3 3 0 0 0 0 6z M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" /> },
         ]
     }
@@ -63,30 +62,30 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
         localStorage.setItem('@hightcloud:sidebar-collapsed', String(newValue));
     };
 
-    if (!isMounted) return <aside className="w-72 h-[calc(100vh-4rem)] shrink-0 bg-(--color-sidebar)" />;
+    if (!isMounted) return <aside className="w-[260px] h-[calc(100vh-4rem)] shrink-0 bg-[var(--color-sidebar)] border-r border-white/5" />;
 
     const isSuspended = serverContext.server?.suspended === 1;
 
     return (
+        // Altere apenas o className do motion.aside principal para remover a borda:
         <motion.aside
             initial={false}
-            animate={{ width: isCollapsed ? 90 : 288 }}
+            animate={{ width: isCollapsed ? 72 : 260 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 bg-(--color-sidebar) shadow-(--card-shadow) flex flex-col pt-4 pb-4 z-40"
+            className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 bg-[var(--color-sidebar)] flex flex-col pt-2 pb-4 z-40 overflow-hidden"
         >
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 overflow-x-hidden">
+            <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden flex flex-col gap-0.5">
                 {menuCategories.map((category, catIndex) => (
-                    <div key={category.title} className={`${catIndex !== 0 ? 'mt-8' : ''}`}>
+                    <div key={category.title}>
 
                         <AnimatePresence mode="wait">
                             {!isCollapsed ? (
                                 <motion.div
                                     key="title-full"
                                     initial={{ opacity: 0 }}
-                                    animate={{ opacity: 0.5 }}
+                                    animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="px-4 mb-3 text-[10px] font-black tracking-[0.25em] uppercase whitespace-nowrap"
-                                    style={{ color: 'var(--color-text-label)' }}
+                                    className="flex items-center justify-between px-5 pt-6 pb-2 text-[12px] font-semibold text-[var(--color-text-sub)] capitalize"
                                 >
                                     {category.title}
                                 </motion.div>
@@ -94,17 +93,17 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
                                 <motion.div
                                     key="title-collapsed"
                                     initial={{ opacity: 0 }}
-                                    animate={{ opacity: 0.3 }}
+                                    animate={{ opacity: 1 }}
                                     exit={{ opacity: 0 }}
-                                    className="mb-3 flex justify-center"
+                                    className="pt-6 pb-2 flex justify-center"
                                 >
-                                    <div className="w-4 h-[2px] rounded-full bg-current opacity-50" style={{ color: 'var(--color-text-label)' }} />
+                                    <div className="w-4 h-[2px] rounded-full bg-[var(--color-text-sub)] opacity-30" />
                                 </motion.div>
                             )}
                         </AnimatePresence>
 
                         {/* Lista de Itens */}
-                        <div className="flex flex-col gap-1 p-2 rounded-2xl bg-black/10 shadow-inner">
+                        <div className="flex flex-col">
                             {category.items.map((tab) => {
                                 const isActive = activeTab === tab.id;
                                 const isDisabled = isSuspended && tab.id !== 'console';
@@ -118,27 +117,20 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
                                             if (isDisabled) return;
                                             changeAction(tab.id);
                                         }}
-                                        className={`group relative flex items-center ${isCollapsed ? 'justify-center px-0' : 'gap-4 px-4'} py-3 rounded-xl text-sm font-bold transition-all duration-300 ${
+                                        className={`group relative flex items-center py-2.5 mx-3 my-[2px] rounded-lg text-[13.5px] font-medium transition-all duration-200 ${
+                                            isCollapsed ? 'justify-center px-0' : 'gap-[14px] px-4'
+                                        } ${
                                             isActive
-                                                ? 'bg-white/[0.04]'
+                                                ? 'bg-[var(--color-secondary)] text-[var(--color-primary)] shadow-[var(--card-shadow)]'
                                                 : isDisabled
-                                                    ? 'opacity-30 cursor-not-allowed'
-                                                    : 'hover:bg-white/[0.02]'
+                                                    ? 'opacity-30 cursor-not-allowed text-[var(--color-text-label)]'
+                                                    : 'text-[var(--color-text-label)] hover:bg-[var(--color-secondary)] hover:text-[var(--color-text-value)] hover:shadow-[var(--card-shadow)]'
                                         }`}
-                                        style={{ color: isActive ? 'var(--color-text-value)' : 'var(--color-text-label)' }}
                                     >
-                                        {isActive && (
-                                            <motion.div
-                                                layoutId="activeSidebarLine"
-                                                className="absolute left-0 top-1/4 bottom-1/4 w-[3px] rounded-r-full shadow-[0_0_15px_var(--color-primary)]"
-                                                style={{ backgroundColor: 'var(--color-primary)' }}
-                                            />
-                                        )}
-
                                         <svg
-                                            width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"
-                                            className="shrink-0 relative z-10"
-                                            style={{ color: isActive ? 'var(--color-primary)' : 'currentColor' }}
+                                            width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"
+                                            className="shrink-0 transition-colors duration-200"
+                                            style={{ color: isActive ? 'var(--color-primary)' : 'inherit' }}
                                         >
                                             {tab.icon}
                                         </svg>
@@ -147,7 +139,7 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
                                             <motion.span
                                                 initial={{ opacity: 0 }}
                                                 animate={{ opacity: 1 }}
-                                                className="tracking-wide whitespace-nowrap relative z-10"
+                                                className="whitespace-nowrap transition-colors"
                                             >
                                                 {tab.name}
                                             </motion.span>
@@ -159,47 +151,49 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
                     </div>
                 ))}
             </div>
-            {user.data?.user.role == 'admin' && (
-                <div className="mt-auto pt-4 px-4">
+
+            {/* Ações da base (Admin & Toggle) */}
+            <div className="mt-auto pt-4 flex flex-col gap-1 border-t border-white/5">
+                {user.data?.user.role == 'admin' && (
                     <a
                         href={`/admin/servers/${serverContext.server?.id}/edit`}
-                        className={`flex items-center w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:bg-white/[0.04] ${
-                            isCollapsed ? 'justify-center' : 'justify-between px-4'
+                        className={`group relative flex items-center py-2.5 mx-3 my-[2px] rounded-lg text-[13.5px] font-medium transition-all duration-200 text-[var(--color-text-label)] hover:bg-[var(--color-secondary)] hover:text-[var(--color-text-value)] hover:shadow-[var(--card-shadow)] ${
+                            isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
                         }`}
-                        style={{ color: 'var(--color-text-label)' }}
                     >
                         {!isCollapsed && (
                             <motion.span
                                 initial={{ opacity: 0 }}
                                 animate={{ opacity: 1 }}
-                                className="whitespace-nowrap"
+                                className="whitespace-nowrap transition-colors"
                             >
                                 Administração
                             </motion.span>
                         )}
-                        <ShieldCog size={20} />
+                        <ShieldCog width="18" height="18" strokeWidth="2" className="shrink-0 text-[var(--color-text-sub)] group-hover:text-[var(--color-text-label)] transition-colors" />
                     </a>
-                </div>
-            )}
-            {/* Rodapé da Sidebar */}
-            <div className="mt-auto pt-4 px-4">
+                )}
+
                 <button
                     onClick={handleToggle}
-                    className={`flex items-center w-full py-3 rounded-xl text-sm font-bold transition-all duration-300 hover:bg-white/[0.04] ${
-                        isCollapsed ? 'justify-center' : 'justify-between px-4'
+                    className={`group relative flex items-center py-2.5 mx-3 my-[2px] rounded-lg text-[13.5px] font-medium transition-all duration-200 text-[var(--color-text-label)] hover:bg-[var(--color-secondary)] hover:text-[var(--color-text-value)] hover:shadow-[var(--card-shadow)] ${
+                        isCollapsed ? 'justify-center px-0' : 'justify-between px-4'
                     }`}
-                    style={{ color: 'var(--color-text-label)' }}
                 >
                     {!isCollapsed && (
                         <motion.span
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
-                            className="whitespace-nowrap"
+                            className="whitespace-nowrap transition-colors"
                         >
                             Recolher Menu
                         </motion.span>
                     )}
-                    {isCollapsed ? <ChevronRight size={20} /> : <ChevronLeft size={20} />}
+                    {isCollapsed ? (
+                        <ChevronRight width="18" height="18" strokeWidth="2" className="shrink-0 text-[var(--color-text-sub)] group-hover:text-[var(--color-text-label)] transition-colors" />
+                    ) : (
+                        <ChevronLeft width="18" height="18" strokeWidth="2" className="shrink-0 text-[var(--color-text-sub)] group-hover:text-[var(--color-text-label)] transition-colors" />
+                    )}
                 </button>
             </div>
         </motion.aside>
