@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hight Cloud - @yield('title', 'Admin')</title>
+    <title>Lunar Panel | @yield('title', 'Admin')</title>
 
     <!-- Scripts e Fontes -->
     <script src="https://cdn.tailwindcss.com"></script>
@@ -26,7 +26,7 @@
 
             /* Elementos sobrepostos */
             --color-secondary: #18181b; /* Fundo Hover e Cards */
-            --color-terciary: #27272a;  /* Bordas super sutis */
+            --color-terciary: #27272a;  /* Detalhes sutis (sem ser borda) */
 
             /* Cores de Texto */
             --color-text-value: #ffffff; /* Títulos, Links Ativos e Logo */
@@ -70,7 +70,7 @@
             width: 260px;
             transition: width 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             background-color: var(--color-sidebar);
-            border-right: 1px solid var(--color-terciary);
+            /* Sem borda lateral */
         }
 
         .admin-content {
@@ -86,7 +86,8 @@
         body.sidebar-collapsed .sidebar-text,
         body.sidebar-collapsed .sidebar-logo-text,
         body.sidebar-collapsed .nav-badge,
-        body.sidebar-collapsed .sidebar-category-header { display: none; }
+        body.sidebar-collapsed .sidebar-category-header,
+        body.sidebar-collapsed .sidebar-search-container { display: none; }
 
         /* Centralizando logo icone quando fechado */
         body.sidebar-collapsed .sidebar-logo-container { justify-content: center; padding: 0; }
@@ -150,15 +151,14 @@
             color: var(--color-primary);
         }
 
-        /* Badge Lateral */
+        /* Badge Lateral (Sem borda) */
         .nav-badge {
             margin-left: auto;
             background-color: rgba(234, 179, 8, 0.1);
             color: var(--color-warning);
-            border: 1px solid rgba(234, 179, 8, 0.2);
             font-size: 0.65rem;
             font-weight: 700;
-            padding: 2px 6px;
+            padding: 3px 6px;
             border-radius: 4px;
             line-height: 1;
         }
@@ -217,8 +217,8 @@
 
 <!-- SIDEBAR -->
 <aside class="admin-sidebar flex flex-col z-30 fixed left-0 top-0 h-screen">
-    <!-- Logo -->
-    <div class="h-16 flex items-center shrink-0 border-b border-terciary">
+    <!-- Logo (Sem borda em baixo) -->
+    <div class="h-16 flex items-center shrink-0">
         <a href="/" class="flex items-center justify-center gap-3 w-full px-6 sidebar-logo-container transition-all">
             @php
                 $companyName = \Vatts\Vatts::getEnv("COMPANY_NAME", "Hight Cloud");
@@ -232,8 +232,24 @@
         </a>
     </div>
 
+    <!-- Barra de Pesquisa na Sidebar -->
+    <div class="px-4 py-2 sidebar-search-container shrink-0">
+        <form action="" method="GET" class="relative group w-full" onsubmit="event.preventDefault()">
+            <div class="absolute left-3 top-1/2 -translate-y-1/2 text-textLabel">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
+            </div>
+            <input
+                    type="text"
+                    name="search"
+                    value="{{ isset($request) && isset($request->getQuery()['search']) ? $request->getQuery()['search'] : '' }}"
+                    placeholder="Buscar..."
+                    class="bg-white/5 rounded-lg pl-9 pr-3 py-2 text-[13px] w-full outline-none transition-all text-textValue placeholder-textLabel focus:bg-white/10 shadow-inner"
+            >
+        </form>
+    </div>
+
     <!-- Navegação e Categorias -->
-    <nav class="flex-1 overflow-y-auto custom-scrollbar flex flex-col py-4 gap-0.5 pb-4">
+    <nav class="flex-1 overflow-y-auto custom-scrollbar flex flex-col py-2 gap-0.5 pb-4">
         <!-- Dashboard -->
         <a href="/admin" class="nav-link {{ (isset($request) && $request->is('/admin')) ? 'active' : '' }}" title="Dashboard">
             <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="shrink-0"><rect x="3" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="3" width="7" height="7" rx="1"></rect><rect x="14" y="14" width="7" height="7" rx="1"></rect><rect x="3" y="14" width="7" height="7" rx="1"></rect></svg>
@@ -250,7 +266,7 @@
 
         <!-- Administration -->
         <div class="sidebar-category-header">
-            <span>Administration</span>
+            <span>Administração</span>
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
         </div>
 
@@ -270,9 +286,8 @@
             <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="m18 15-6-6-6 6"/></svg>
         </div>
 
-
         <a href="/admin/cores" class="nav-link {{ (isset($request) && str_starts_with($request->getPath(), '/admin/cores')) ? 'active' : '' }}" title="Custom Properties">
-            <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="shrink-0"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><line x1="3" y1="9" x2="21" y2="9"></line><line x1="9" y1="21" x2="9" y2="9"></line></svg>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="lucide lucide-cpu-icon lucide-cpu shrink-0"><path d="M12 20v2"/><path d="M12 2v2"/><path d="M17 20v2"/><path d="M17 2v2"/><path d="M2 12h2"/><path d="M2 17h2"/><path d="M2 7h2"/><path d="M20 12h2"/><path d="M20 17h2"/><path d="M20 7h2"/><path d="M7 20v2"/><path d="M7 2v2"/><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="8" y="8" width="8" height="8" rx="1"/></svg>
             <span class="sidebar-text whitespace-nowrap">Cores</span>
         </a>
 
@@ -292,65 +307,54 @@
             <span class="sidebar-text whitespace-nowrap">Nodes</span>
         </a>
     </nav>
-</aside>
 
-<div class="admin-content flex flex-col relative min-h-screen">
-    <!-- Navbar Superior -->
-    <header class="h-16 px-6 flex items-center justify-between sticky top-0 bg-navbar z-20 border-b border-terciary">
-        <div class="flex items-center gap-6">
-            <button id="sidebarToggle" class="text-textLabel hover:text-textValue transition-colors" title="Alternar Menu">
-                <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><line x1="3" y1="12" x2="21" y2="12"></line><line x1="3" y1="6" x2="21" y2="6"></line><line x1="3" y1="18" x2="21" y2="18"></line></svg>
-            </button>
-        </div>
-
-        <div class="flex items-center gap-4">
-            <!-- Barra de Pesquisa Rápida -->
-            @if(isset($resources) || isset($showSearch))
-                <form action="" method="GET" class="relative group mr-2 hidden md:block">
-                    <div class="absolute left-3 top-1/2 -translate-y-1/2 text-textLabel">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="M21 21l-4.35-4.35"></path></svg>
-                    </div>
-                    <input
-                            type="text"
-                            name="search"
-                            value="{{ isset($request) && isset($request->getQuery()['search']) ? $request->getQuery()['search'] : '' }}"
-                            placeholder="Buscar..."
-                            class="bg-black/20 rounded-md pl-9 pr-3 py-1.5 text-[13px] w-48 focus:w-64 outline-none transition-all text-textValue placeholder-textLabel border border-white/5 focus:border-primary/50 shadow-inner"
-                    >
-                </form>
-            @endif
-
-            <!-- Usuário com Gravatar -->
-            <div class="flex items-center gap-3 pl-4 border-l border-terciary">
-                <img src="https://www.gravatar.com/avatar/{{ md5(strtolower(trim($user->email ?? ''))) }}?s=80&d=mp" alt="Avatar" class="w-8 h-8 rounded-full border border-terciary">
-                <span class="text-[13px] font-semibold text-textValue hidden md:block">{{ $user->first_name ?? 'Admin' }}</span>
-            </div>
-
-            <!-- Ações -->
-            <div class="flex items-center gap-1">
-                <a href="/" class="p-2 text-textLabel hover:text-textValue hover:bg-white/5 rounded-md transition-colors" title="Painel do Cliente">
-                    <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+    <!-- User Profile Dropdown na Sidebar (Sem Bordas) -->
+    <div class="relative shrink-0" id="sidebar-user-container">
+        <!-- Dropdown Menu (Abre pra cima) -->
+        <div id="user-dropdown" class="absolute hidden bottom-full left-0 w-full p-2 mb-1 z-50">
+            <div class="bg-secondary rounded-lg shadow-main overflow-hidden flex flex-col">
+                <a href="/admin/profile" class="px-4 py-2 text-[13px] text-textLabel hover:text-textValue hover:bg-white/5 transition-colors flex items-center gap-2">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="shrink-0"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg>
+                    <span class="sidebar-text">Perfil</span>
                 </a>
-
-                <form action="/logout" method="POST" class="m-0 p-0">
-                    <button type="submit" class="p-2 text-textLabel hover:text-danger hover:bg-danger/10 rounded-md transition-colors" title="Sair">
-                        <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                <a href="/" class="px-4 py-2 text-[13px] text-textLabel hover:text-textValue hover:bg-white/5 transition-colors flex items-center gap-2">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="shrink-0"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect><line x1="8" y1="21" x2="16" y2="21"></line><line x1="12" y1="17" x2="12" y2="21"></line></svg>
+                    <span class="sidebar-text">Sair do Admin</span>
+                </a>
+                <form action="/logout" method="POST" class="m-0 p-0 mt-1 pt-1 bg-black/20">
+                    <button type="submit" class="w-full text-left px-4 py-2 text-[13px] text-danger hover:bg-danger/10 transition-colors flex items-center gap-2">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="shrink-0"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+                        <span class="sidebar-text">Logout</span>
                     </button>
                 </form>
             </div>
         </div>
-    </header>
+
+        <!-- Botão Toggle do Usuário (Sem borda) -->
+        <button id="user-dropdown-toggle" class="w-full flex items-center justify-between gap-3 p-4 hover:bg-secondary transition-colors cursor-pointer text-left focus:outline-none">
+            <div class="flex items-center gap-3 overflow-hidden">
+                <img src="https://www.gravatar.com/avatar/{{ md5(strtolower(trim($user->email ?? ''))) }}?s=80&d=mp" alt="Avatar" class="w-8 h-8 rounded-full shrink-0">
+                <span class="text-[14px] font-semibold text-textValue truncate sidebar-text">{{ $user->first_name ?? 'admin' }}</span>
+            </div>
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24" class="text-textSub sidebar-text shrink-0"><path d="m18 15-6-6-6 6"/></svg>
+        </button>
+    </div>
+</aside>
+
+<div class="admin-content flex flex-col relative min-h-screen">
+    <!-- Removi a header inteira também de acordo com o pedido anterior caso sobrou resquício visual na div -->
+    <!-- Se precisar de um botão toggle pro mobile e não quer bordas, pode criar flutuante depois -->
 
     <main class="p-8 md:p-10 flex-1">
-        <!-- Alertas de Feedback -->
+        <!-- Alertas de Feedback (Sem bordas) -->
         @if(isset($success))
-            <div class="mb-8 p-4 rounded-lg bg-success/10 text-success text-[13px] font-bold flex items-center gap-3 border border-success/20">
+            <div class="mb-8 p-4 rounded-lg bg-success/10 text-success text-[13px] font-bold flex items-center gap-3 shadow-sm">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path><polyline points="22 4 12 14.01 9 11.01"></polyline></svg>
                 {{ $success }}
             </div>
         @endif
         @if(isset($error))
-            <div class="mb-8 p-4 rounded-lg bg-danger/10 text-danger text-[13px] font-bold flex items-center gap-3 border border-danger/20">
+            <div class="mb-8 p-4 rounded-lg bg-danger/10 text-danger text-[13px] font-bold flex items-center gap-3 shadow-sm">
                 <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"></circle><line x1="15" y1="9" x2="9" y2="15"></line><line x1="9" y1="9" x2="15" y2="15"></line></svg>
                 {{ $error }}
             </div>
@@ -360,114 +364,12 @@
         @yield('content')
     </main>
 
-    <!-- FOOTER ALINHADO À ESQUERDA -->
-    <footer class="mt-auto py-6 px-8 border-t border-terciary text-left text-[12px] text-textSub bg-background">
-        <p>&copy; {{ date('Y') }} {{ \Vatts\Vatts::getEnv("COMPANY_NAME", "Hight Cloud") }}. Todos os direitos reservados.</p>
+    <!-- FOOTER ALINHADO À ESQUERDA (Sem bordas) -->
+    <footer class="mt-auto py-6 px-8 text-left text-[12px] text-textSub bg-background">
+        <p>&copy; {{ date('Y') }} <a href="https://hight.cloud" class="hover:text-textValue transition-all">Lunar Panel</a>. Todos os direitos reservados.</p>
     </footer>
 </div>
 
-<script notRepeat="true">
-    document.addEventListener('DOMContentLoaded', () => {
-        // --- 1. Lógica original da Sidebar (Agora apenas o botão principal) ---
-        const toggleBtn = document.querySelector('#sidebarToggle');
 
-        if (localStorage.getItem('sidebar-collapsed') === 'true') {
-            document.body.classList.add('sidebar-collapsed');
-        }
-
-        if(toggleBtn) {
-            toggleBtn.addEventListener('click', () => {
-                document.body.classList.toggle('sidebar-collapsed');
-                const isCollapsed = document.body.classList.contains('sidebar-collapsed');
-                localStorage.setItem('sidebar-collapsed', isCollapsed);
-            });
-        }
-
-        // --- 2. Lógica nova: SPA Loading via Fetch ---
-        document.addEventListener('click', async (e) => {
-            const link = e.target.closest('a');
-            if (!link) return;
-
-            const href = link.getAttribute('href');
-
-            if (!href || href.startsWith('http') || href.startsWith('#') || link.target === '_blank' || !href.includes("admin") || href.includes("create")) return;
-
-            e.preventDefault();
-
-            const loadingBar = document.getElementById('top-loading-bar');
-            loadingBar.style.opacity = '1';
-            loadingBar.style.width = '30%';
-
-            try {
-                setTimeout(() => { if(loadingBar.style.width === '30%') loadingBar.style.width = '60%'; }, 200);
-
-                const response = await fetch(href);
-                if (!response.ok) throw new Error('Erro na requisição da página');
-                const html = await response.text();
-
-                loadingBar.style.width = '90%';
-
-                const parser = new DOMParser();
-                const doc = parser.parseFromString(html, 'text/html');
-
-                const newMain = doc.querySelector('main');
-                if (newMain) {
-                    document.querySelector('main').innerHTML = newMain.innerHTML;
-
-                    const scripts = document.querySelector('main').querySelectorAll('script');
-
-                    scripts.forEach(script => {
-
-                        if (script.src) {
-                            // Scripts externos precisam ser injetados para o navegador baixar
-                            const newScript = document.createElement('script');
-                            newScript.src = script.src;
-                            document.body.appendChild(newScript);
-                        } else if(script.getAttribute('notRepeat') !== 'true') {
-
-                            window.eval(script.textContent);
-                        }
-                    });
-                }
-
-                if (doc.title) {
-                    document.title = doc.title;
-                }
-
-                window.history.pushState({}, '', href);
-
-                document.querySelectorAll('.nav-link').forEach(nav => {
-                    nav.classList.remove('active');
-                    if(nav.getAttribute('href') === href) {
-                        nav.classList.add('active');
-                    }
-                });
-
-                loadingBar.style.width = '100%';
-                setTimeout(() => {
-                    loadingBar.style.opacity = '0';
-                    setTimeout(() => { loadingBar.style.width = '0%'; }, 300);
-                }, 300);
-
-            } catch (error) {
-                console.error('Falha no SPA Fetch. Fallback ativado:', error);
-                window.location.href = href;
-            }
-        });
-
-        window.addEventListener('popstate', () => {
-            window.location.reload();
-        });
-    });
-
-    // --- 3. CORREÇÃO DO ERRO 'handleRowClick' NAS TABELAS ---
-    window.handleRowClick = function(url) {
-        const linkFalso = document.createElement('a');
-        linkFalso.href = url;
-
-        const clique = new MouseEvent('click', { bubbles: true, cancelable: true, view: window });
-        linkFalso.dispatchEvent(clique);
-    };
-</script>
 </body>
 </html>

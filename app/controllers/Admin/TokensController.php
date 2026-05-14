@@ -28,7 +28,7 @@ class TokensController
             'page_category' => 'admin',
             'page_name'     => 'api_tokens_list',
             'user'          => $request->getParsed('user'), // Usuário logado
-            'backTo'        => '/admin/tokens',
+            'backTo'        => '/tokens',
         ];
 
         return array_merge($baseData, $extraParams);

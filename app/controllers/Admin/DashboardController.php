@@ -14,6 +14,7 @@ class DashboardController
 
     public function view(Request $request, Response $response): Response
     {
+        
         $currentData = $this->getCurrentVersionData();
         $latestData = $this->getLatestGitHubVersionData($currentData['version']);
 
