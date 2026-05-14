@@ -6,7 +6,7 @@ import {
     ShieldCog,
     ChartNoAxesColumnIncreasing,
     Play,
-    Clock
+    Clock, EthernetPort
 } from "lucide-react";
 import { useSession } from "@vatts/auth/react";
 import { useServerContext } from "@/web/contexts/ServerContext";
@@ -29,7 +29,7 @@ const menuCategories = [
     {
         title: "Gerenciamento",
         items: [
-            { id: 'allocations', name: 'Rede', icon: <ChartNoAxesColumnIncreasing width="20" height="20" strokeWidth="2" /> },
+            { id: 'allocations', name: 'Rede', icon: <EthernetPort width="20" height="20" strokeWidth="2" /> },
             { id: 'schedulers', name: 'Agendamentos', icon: <Clock width="20" height="20" strokeWidth="2" /> },
         ]
     },

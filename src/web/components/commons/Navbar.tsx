@@ -1,10 +1,11 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useSession } from "@vatts/auth/react";
 import { Link, router, VattsImage } from "vatts/react";
 import { motion } from "framer-motion";
 
 const Navbar: React.FC = () => {
     const session = useSession();
+    const [gravatarHash, setGravatarHash] = useState('');
 
     // @ts-ignore
     const panelName = typeof window !== 'undefined' && window.PanelSettings && window.PanelSettings.name ? window.PanelSettings.name : "Lunar Panel";
@@ -12,6 +13,29 @@ const Navbar: React.FC = () => {
     const urlImage = isDark ? '/assets/img/logo-white.png' : '/assets/img/logo-dark.png';
 
     const isSidebarActive = router.pathname.startsWith('/server');
+
+    // Gera o hash SHA-256 nativo do navegador para o Gravatar (Sem precisar de libs extras como md5)
+    useEffect(() => {
+        const email = session.data?.user?.email;
+        if (email) {
+            const hashEmail = async () => {
+                try {
+                    const msgBuffer = new TextEncoder().encode(email.trim().toLowerCase());
+                    const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+                    const hashArray = Array.from(new Uint8Array(hashBuffer));
+                    const hashHex = hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+                    setGravatarHash(hashHex);
+                } catch (e) {
+                    console.error('Erro ao gerar hash do Gravatar:', e);
+                }
+            };
+            hashEmail();
+        }
+    }, [session.data?.user?.email]);
+
+    // Lógica para pegar first_name e last_name com fallback seguro
+    const firstName = session.data?.user?.first_name || session.data?.user?.name?.split(' ')[0] || 'Usuário';
+    const lastName = session.data?.user?.last_name || session.data?.user?.name?.split(' ').slice(1).join(' ') || '';
 
     // Helper para classes dos itens da navegação
     const navItemClass = (isActive: boolean) => `
@@ -24,7 +48,6 @@ const Navbar: React.FC = () => {
 
     return (
         <nav className="w-full h-16 bg-[var(--color-navbar)]/90 backdrop-blur-md sticky top-0 z-[100]">
-            {/* O motion.div com a prop 'layout' faz a transição entre o max-w-7xl e o max-w-full ser fluída */}
             <motion.div
                 layout
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
@@ -49,11 +72,8 @@ const Navbar: React.FC = () => {
 
                     {/* Item Ativo (Servidores) */}
                     <Link href={"/"} className={navItemClass(router.pathname === "/")}>
-                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="relative z-10">
-                            <polygon points="12 2 2 7 12 12 22 7 12 2"></polygon>
-                            <polyline points="2 12 12 17 22 12"></polyline>
-                            <polyline points="2 17 12 22 22 17"></polyline>
-                        </svg>
+                        
+                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" className="lucide lucide-layout-dashboard-icon lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
                         {router.pathname === "/" && (
                             <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-primary)]" />
                         )}
@@ -69,24 +89,38 @@ const Navbar: React.FC = () => {
                         </a>
                     )}
 
-                    {/* Perfil */}
-                    <Link href={"/profile"} className={navItemClass(router.pathname.startsWith('/profile'))}>
-                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                            <circle cx="12" cy="7" r="4"></circle>
-                        </svg>
+                    {/* Perfil Modernizado com Gravatar e Nome */}
+                    <Link
+                        href={"/profile"}
+                        className={`relative h-full px-5 flex items-center transition-all duration-200 cursor-pointer group ${router.pathname.startsWith('/profile') ? 'bg-white/[0.02]' : 'hover:bg-white/[0.02]'}`}
+                    >
+                        <div className="flex items-center gap-3">
+                            <img
+                                src={`https://www.gravatar.com/avatar/${gravatarHash}?s=80&d=mp`}
+                                alt="Avatar"
+                                className={`w-8 h-8 rounded-full object-cover transition-colors duration-200 shadow-sm`}
+                            />
+                            <div className="hidden md:flex flex-col items-start justify-center">
+                                <span className={`text-[13px] font-mono font-bold leading-none transition-colors duration-200 ${router.pathname.startsWith('/profile') ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-value)] group-hover:text-[var(--color-primary)]'}`}>
+                                    {firstName} {lastName}
+                                </span>
+                                <span className="text-[10px] font-mono font-bold text-[var(--color-text-sub)] mt-1.5 leading-none uppercase tracking-widest">
+                                    Minha Conta
+                                </span>
+                            </div>
+                        </div>
                         {router.pathname.startsWith('/profile') && (
                             <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-primary)]" />
                         )}
                     </Link>
 
                     {/* Divisor Horizontal */}
-                    <div className="w-[1px] h-6 bg-white/5 mx-2" />
+                    <div className="w-[1px] h-6 bg-white/5 mx-1" />
 
                     {/* Logout */}
                     <button
                         onClick={() => session.signOut({callbackUrl: '/auth'})}
-                        className="h-full px-6 flex items-center text-[var(--color-text-sub)] hover:text-[var(--color-danger)] hover:bg-red-500/10 transition-colors duration-200 cursor-pointer"
+                        className="h-full px-5 flex items-center text-[var(--color-text-sub)] hover:text-[var(--color-danger)] hover:bg-red-500/10 transition-colors duration-200 cursor-pointer"
                         title="Sair"
                     >
                         <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
