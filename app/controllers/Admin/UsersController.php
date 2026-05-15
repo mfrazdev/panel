@@ -104,7 +104,28 @@ class UsersController
 
     public function viewAll(Request $request, Response $response): Response
     {
-        $users = User::all();
+        $perPage = max(1, (int) ($_GET['per_page'] ?? 10));
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+
+        $allUsers = User::all();
+
+        $totalItems = count($allUsers);
+
+        $users = array_slice(
+            $allUsers,
+            ($page - 1) * $perPage,
+            $perPage
+        );
+
+        $lastPage = (int) ceil($totalItems / $perPage);
+
+        $pagination = [
+            'current_page' => $page,
+            'last_page'    => max(1, $lastPage),
+            'total'        => $totalItems,
+            'from'         => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : 0,
+            'to'           => min($page * $perPage, $totalItems),
+        ];
 
         $map = [
             ['label' => 'Identificador', 'key' => 'id', 'type' => 'text'],
@@ -113,14 +134,18 @@ class UsersController
         ];
 
         $viewData = [
-            'resources' => $users,
-            'map'       => $map,
-            'see'       => 'users/[id]/edit',
-            'create'    => 'users/create',
-            'delete'    => 'users/[id]/delete?return=all'
+            'resources'  => $users,
+            'map'        => $map,
+            'see'        => 'users/[id]/edit',
+            'create'     => 'users/create',
+            'delete'     => 'users/[id]/delete?return=all',
+            'pagination' => $pagination
         ];
 
-        return $response->view('resources.view_resources', $this->getViewData($request, 'Usuários', $viewData));
+        return $response->view(
+            'resources.view_resources',
+            $this->getViewData($request, 'Usuários', $viewData)
+        );
     }
 
     public function viewEdit(Request $request, Response $response): Response

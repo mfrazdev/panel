@@ -109,21 +109,21 @@ export default function ConsoleContainer() {
                 )}
             </div>
 
-            {/* O flex-1 min-w-0 volta para o main, permitindo que a grid encolha! */}
-
             <main className={`flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden min-w-0 ${isSuspended ? 'opacity-80' : ''}`}>
 
-                {/* Cabeçalho da Página do Servidor */}
-                <div className="flex flex-col gap-4 mb-8">
-                    <div className="flex flex-wrap items-center gap-5">
+                {/* Cabeçalho da Página do Servidor - Reorganizado */}
+                <div className="flex flex-col xl:flex-row xl:items-center gap-4 xl:gap-6 mb-8">
 
-                        {/* Título */}
-                        <h1 className="text-3xl font-black tracking-tight text-[var(--color-text-value)] truncate max-w-full">
-                            {server.name}
-                        </h1>
+                    {/* Título */}
+                    <h1 className="text-3xl font-black tracking-tight text-[var(--color-text-value)] truncate max-w-full">
+                        {server.name}
+                    </h1>
+
+                    {/* Grupo de Informações (Status, Uptime e IP juntos) */}
+                    <div className="flex flex-wrap items-center gap-3 xl:border-l border-white/10 xl:pl-6">
 
                         {/* Badge de Status Estilo Pílula */}
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 shrink-0 mt-1 md:mt-0">
+                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 shrink-0">
                             <span className="relative flex h-2 w-2">
                                 {currentStatus.isAnimated && (
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: currentStatus.color }}></span>
@@ -137,30 +137,26 @@ export default function ConsoleContainer() {
 
                         {/* Uptime */}
                         {serverStatus === 'running' && (
-                            <div className="flex items-center gap-2 border-l border-white/10 pl-5 mt-1 md:mt-0">
+                            <div className="flex items-center gap-2 bg-white/5 border border-white/5 px-3 py-1.5 rounded-lg shrink-0">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-[var(--color-text-sub)]"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
                                 <span className="text-[12px] font-mono font-medium text-[var(--color-text-sub)]">
                                     {currentStatus.uptime}
                                 </span>
                             </div>
                         )}
-                    </div>
 
-                    {/* Endereço de Conexão Estilo Inset */}
-                    <div className="flex items-center">
+                        {/* Endereço de Conexão Estilo Inset (Copiável) */}
                         <CopyOnClick text={address} notify={true}>
-                            <div className="inline-flex items-center gap-2.5 bg-black/20 hover:bg-black/40 border border-white/5 rounded-lg px-4 py-2 transition-colors cursor-pointer group shadow-inner">
-                                <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-[var(--color-text-sub)] group-hover:text-[var(--color-primary)] transition-colors"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                <span className="text-[var(--color-text-value)] text-[13px] font-mono tracking-wide">{address}</span>
+                            <div className="inline-flex items-center gap-2.5 bg-black/20 hover:bg-black/40 border border-white/5 rounded-lg px-3 py-1.5 transition-colors cursor-pointer group shadow-inner shrink-0">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-[var(--color-text-sub)] group-hover:text-[var(--color-primary)] transition-colors"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span className="text-[var(--color-text-value)] text-[12px] font-mono tracking-wide">{address}</span>
                             </div>
                         </CopyOnClick>
                     </div>
                 </div>
 
-                {/* Container flex com min-w-0 para permitir redução de espaço pela sidebar */}
+                {/* Grid de Cards e Botões */}
                 <div className="flex flex-col xl:flex-row gap-4 xl:gap-6 mb-6 min-w-0 w-full">
-
-                    {/* Grid com breakpoints melhores para quando houver pouco espaço */}
                     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 xl:gap-6 flex-1 w-full min-w-0">
                         <StatCard
                             label="Uso de Processador"
@@ -185,11 +181,10 @@ export default function ConsoleContainer() {
                     <div className="flex items-center justify-center xl:justify-end shrink-0">
                         <ServerActions status={serverStatus} />
                     </div>
-
                 </div>
 
-                {/* Container do Terminal */}
-                <div className="w-full h-[600px] mb-8 shadow-inner overflow-hidden p-1 min-w-0">
+                {/* Container do Terminal (Agora com altura responsiva) */}
+                <div className="w-full h-[75vh] mb-8 shadow-inner overflow-hidden p-1 min-w-0">
                     <TerminalConsole />
                 </div>
 

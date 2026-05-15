@@ -29,15 +29,15 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 title="Iniciar"
                 disabled={isStartDisabled}
                 onClick={() => handleAction('start')}
-                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
+                className={`group border border-white/5 relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isStartDisabled
-                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-success)' }}
             >
-                {!isStartDisabled && <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ backgroundColor: 'var(--color-success)' }} />}
-                <svg className="relative z-10 drop-shadow-md" width="26" height="26" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
+                {!isStartDisabled && <div className="absolute inset-0 opacity-15 group-hover:opacity-25 transition-opacity duration-300" style={{ backgroundColor: 'var(--color-success)' }} />}
+                <svg className="relative z-10 drop-shadow-md transition-transform duration-300 group-hover:scale-110" width="26" height="26" fill="currentColor" viewBox="0 0 24 24"><path d="M8 5v14l11-7z" /></svg>
             </button>
 
             {/* Stop */}
@@ -45,15 +45,15 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 title="Desligar"
                 disabled={isStopDisabled}
                 onClick={() => handleAction('stop')}
-                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
+                className={`group border border-white/5 relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isStopDisabled
-                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-danger)' }}
             >
-                {!isStopDisabled && <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ backgroundColor: 'var(--color-danger)' }} />}
-                <svg className="relative z-10 drop-shadow-md" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10" /></svg>
+                {!isStopDisabled && <div className="absolute inset-0 opacity-15 group-hover:opacity-25 transition-opacity duration-300" style={{ backgroundColor: 'var(--color-danger)' }} />}
+                <svg className="relative z-10 drop-shadow-md transition-transform duration-300 group-hover:scale-110" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M18.36 6.64a9 9 0 1 1-12.73 0M12 2v10" /></svg>
             </button>
 
             {/* Restart */}
@@ -61,15 +61,15 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 title="Reiniciar"
                 disabled={isRestartDisabled}
                 onClick={() => handleAction('restart')}
-                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
+                className={`group border border-white/5 relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isRestartDisabled
-                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-info)' }}
             >
-                {!isRestartDisabled && <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ backgroundColor: 'var(--color-info)' }} />}
-                <svg className="relative z-10 drop-shadow-md" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
+                {!isRestartDisabled && <div className="absolute inset-0 opacity-15 group-hover:opacity-25 transition-opacity duration-300" style={{ backgroundColor: 'var(--color-info)' }} />}
+                <svg className="relative z-10 drop-shadow-md transition-transform duration-300 group-hover:scale-[-1.1]" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
             </button>
 
             {/* Separador */}
@@ -80,15 +80,15 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
                 title="Matar Processo"
                 disabled={isKillDisabled}
                 onClick={() => handleAction('kill')}
-                className={`group relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
+                className={`group border border-white/5 relative flex items-center justify-center h-14 w-16 rounded-2xl transition-all duration-300 overflow-hidden ${
                     isKillDisabled
-                        ? 'bg-[var(--color-secondary)]/40 border border-white/5 opacity-50 cursor-not-allowed shadow-none'
-                        : 'bg-[var(--color-secondary)] border border-white/5 hover:border-white/10 shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
+                        ? 'bg-[var(--color-secondary)]/40 opacity-50 cursor-not-allowed shadow-none'
+                        : 'bg-[var(--color-secondary)] shadow-[var(--card-shadow)] hover:-translate-y-1 active:translate-y-0 active:scale-95 cursor-pointer'
                 }`}
                 style={{ color: 'var(--color-warning)' }}
             >
-                {!isKillDisabled && <div className="absolute inset-0 opacity-0 group-hover:opacity-10 transition-opacity" style={{ backgroundColor: 'var(--color-warning)' }} />}
-                <svg className="relative z-10 drop-shadow-md" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
+                {!isKillDisabled && <div className="absolute inset-0 opacity-15 group-hover:opacity-25 transition-opacity duration-300" style={{ backgroundColor: 'var(--color-warning)' }} />}
+                <svg className="relative z-10 drop-shadow-md transition-transform duration-300 group-hover:scale-110" width="26" height="26" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" viewBox="0 0 24 24">
                     <circle cx="9" cy="12" r="1" />
                     <circle cx="15" cy="12" r="1" />
                     <path d="M8 20v2h8v-2" />

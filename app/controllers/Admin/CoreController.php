@@ -82,7 +82,28 @@ class CoreController
 
     public function viewAll(Request $request, Response $response): Response
     {
-        $cores = Core::all();
+        $perPage = max(1, (int) ($_GET['per_page'] ?? 10));
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+
+        $allCores = Core::all();
+
+        $totalItems = count($allCores);
+
+        $cores = array_slice(
+            $allCores,
+            ($page - 1) * $perPage,
+            $perPage
+        );
+
+        $lastPage = (int) ceil($totalItems / $perPage);
+
+        $pagination = [
+            'current_page' => $page,
+            'last_page'    => max(1, $lastPage),
+            'total'        => $totalItems,
+            'from'         => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : 0,
+            'to'           => min($page * $perPage, $totalItems),
+        ];
 
         $map = [
             ['label' => 'Identificador', 'key' => 'id', 'type' => 'text'],
@@ -92,14 +113,18 @@ class CoreController
         ];
 
         $viewData = [
-            'resources' => $cores,
-            'map'       => $map,
-            'see'       => 'cores/[id]/edit',
-            'create'    => 'cores/create',
-            'delete'    => 'cores/[id]/delete?return=all',
+            'resources'  => $cores,
+            'map'        => $map,
+            'see'        => 'cores/[id]/edit',
+            'create'     => 'cores/create',
+            'delete'     => 'cores/[id]/delete?return=all',
+            'pagination' => $pagination
         ];
 
-        return $response->view('resources.view_resources', $this->getViewData($request, 'Cores', $viewData));
+        return $response->view(
+            'resources.view_resources',
+            $this->getViewData($request, 'Cores', $viewData)
+        );
     }
 
     public function viewCreate(Request $request, Response $response): Response

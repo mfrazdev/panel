@@ -392,20 +392,25 @@ class UsersApiController
         try {
             $user = $request->getParsed('user');
             if ($user instanceof User) {
+
+                $type = $request->getQuery()['type'] ?? 'not_set';
+
+                if($user->isAdmin() && $type === 'others') {
+                    $serverList = $user->getOthersServers();
+                } else {
+                    $serverList = $user->getServers();
+                }
                 $servers = array_map(function ($server) {
                     unset($server->view_map);
                     $allocation = $server->getFirstAllocation()->toArray();
                     unset($allocation["view_map"]);
                     $server->allocation = $allocation;
+                    $server->user = $server->getOwnerNameAndEmail();
+
+
                     return $server;
-                }, $user->getServers());
-                $type = $request->getQuery()['type'] ?? 'not_set';
+                }, $serverList);
 
-
-
-                if($user->isAdmin() && $type === 'others') {
-                    $servers = $user->getOthersServers();
-                }
 
                 return $response->json([
                     'servers' => $servers

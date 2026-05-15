@@ -485,4 +485,19 @@ class Server extends Model
             return false;
         }
     }
+
+    public function getOwnerNameAndEmail()
+    {
+        try {
+            $pdo = DB::getPdo();
+            $stmt = $pdo->prepare("SELECT `id`, `first_name`, `email` FROM `users` WHERE `id` = :id LIMIT 1");
+            $stmt->execute(['id' => $this->ownerId]);
+            return $stmt->fetch(\PDO::FETCH_ASSOC);
+        } catch (\Exception $e) {
+            error_log("Error fetching owner info: " . $e->getMessage());
+            return null;
+        }
+    }
+
+
 }

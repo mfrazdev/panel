@@ -132,12 +132,116 @@ class ServerController
 
     public function viewAll(Request $request, Response $response): Response
     {
-        $servers = Server::all();
+        $existingServers = Server::all();
+
+        $ownerIds = [];
+        $rawOwnerEmails = []; // Novo array para armazenar o email isolado
+
+        $nodeIds = []; // Novo array para filtros da Node
+        $rawNodeNames = []; // Array para armazenar o nome da Node isolado
+
+        $pdo = DB::getPdo();
+        foreach ($existingServers as $server) {
+            // Evita fazer a mesma query para o mesmo Dono várias vezes
+            if (!empty($server->ownerId) && !isset($rawOwnerEmails[$server->ownerId])) {
+                $owner = $pdo->prepare("SELECT `email` FROM `users` WHERE `id` = :ownerId LIMIT 1");
+                $owner->execute(['ownerId' => $server->ownerId]);
+                $ownerEmail = $owner->fetchColumn();
+
+                if ($ownerEmail) {
+                    $rawOwnerEmails[$server->ownerId] = $ownerEmail; // Guarda apenas o e-mail limpo
+                    $ownerIds[$server->ownerId] = $ownerEmail . ' (ID: ' . $server->ownerId . ')';
+                } else {
+                    $rawOwnerEmails[$server->ownerId] = 'Dono ID ' . $server->ownerId;
+                    $ownerIds[$server->ownerId] = 'Dono ID ' . $server->ownerId;
+                }
+            }
+
+            // Lógica para otimizar a busca das Nodes da mesma forma que os Donos
+            if (!empty($server->nodeUuid) && !isset($rawNodeNames[$server->nodeUuid])) {
+                $node = $pdo->prepare("SELECT `name` FROM `nodes` WHERE `id` = :nodeId LIMIT 1");
+                error_log("Query para Node ID {$server->nodeUuid}: " . $node->queryString);
+                $node->execute(['nodeId' => $server->nodeUuid]);
+                $nodeName = $node->fetchColumn();
+
+                if ($nodeName) {
+                    $rawNodeNames[$server->nodeUuid] = $nodeName;
+                    $nodeIds[$server->nodeUuid] = $nodeName . ' (ID: ' . $server->nodeUuid . ')';
+                } else {
+                    $rawNodeNames[$server->nodeUuid] = 'Node ID ' . $server->nodeUuid;
+                    $nodeIds[$server->nodeUuid] = 'Node ID ' . $server->nodeUuid;
+                }
+            }
+        }
+
+        ksort($ownerIds);
+        ksort($nodeIds);
+
+        $filters = [
+            'ownerId' => [
+                'name' => 'Dono',
+                'keys' => $ownerIds
+            ],
+            'nodeId' => [
+                'name' => 'Node',
+                'keys' => $nodeIds
+            ]
+        ];
+
+        $query = Server::witch([]);
+
+        foreach ($filters as $key => $filter) {
+            if (!empty($_GET[$key])) {
+                $query->witch($key, $_GET[$key]);
+            }
+        }
+
+        $perPage = max(1, (int) ($_GET['per_page'] ?? 10));
+        $page = max(1, (int) ($_GET['page'] ?? 1));
+
+        $allServers = $query->get();
+
+        // Loop com referência (&$server) para injetarmos o 'owner_email' e 'node_name' direto nos itens retornados pelo banco
+        foreach ($allServers as &$server) {
+            $oId = (is_array($server) || $server instanceof \ArrayAccess) ? ($server['ownerId'] ?? null) : ($server->ownerId ?? null);
+            $email = $rawOwnerEmails[$oId] ?? 'Desconhecido';
+
+            $nId = (is_array($server) || $server instanceof \ArrayAccess) ? ($server['nodeUuid'] ?? null) : ($server->nodeUuid ?? null);
+            $nodeName = $rawNodeNames[$nId] ?? 'Desconhecida';
+
+            if (is_array($server) || $server instanceof \ArrayAccess) {
+                $server['owner_email'] = $email;
+                $server['node_name'] = $nodeName;
+            } else {
+                $server->owner_email = $email;
+                $server->node_name = $nodeName;
+            }
+        }
+        unset($server); // Limpa a referência de segurança do foreach
+
+        $totalItems = count($allServers);
+
+        $servers = array_slice(
+            $allServers,
+            ($page - 1) * $perPage,
+            $perPage
+        );
+
+        $lastPage = (int) ceil($totalItems / $perPage);
+
+        $pagination = [
+            'current_page' => $page,
+            'last_page'    => max(1, $lastPage),
+            'total'        => $totalItems,
+            'from'         => $totalItems > 0 ? (($page - 1) * $perPage) + 1 : 0,
+            'to'           => min($page * $perPage, $totalItems),
+        ];
 
         $map = [
             ['label' => 'ID', 'key' => 'id', 'type' => 'text'],
             ['label' => 'Nome', 'key' => 'name', 'type' => 'text'],
-            ['label' => 'Owner', 'key' => 'ownerId', 'type' => 'text'],
+            ['label' => 'Node', 'key' => 'node_name', 'type' => 'link', 'url_key' => 'nodeUuid', 'url' => '/admin/nodes/[nodeUuid]/edit'],
+            ['label' => 'Dono', 'key' => 'owner_email', 'type' => 'link', 'url_key' => 'ownerId', 'url' => '/admin/users/[ownerId]/edit'],
         ];
 
         $viewData = [
@@ -146,9 +250,14 @@ class ServerController
             'see' => 'servers/[id]/edit',
             'create' => 'servers/create',
             'delete' => 'servers/[id]/delete?return=all',
+            'filters' => $filters,
+            'pagination' => $pagination
         ];
 
-        return $response->view('resources.view_resources', $this->getViewData($request, 'Servidores', $viewData));
+        return $response->view(
+            'resources.view_resources',
+            $this->getViewData($request, 'Servidores', $viewData)
+        );
     }
 
     private function getServer(string $id): ?Server
