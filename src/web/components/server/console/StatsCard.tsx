@@ -3,7 +3,7 @@ import React from 'react';
 interface StatCardProps {
     label: string;
     value: string;
-    subValue?: string;
+    subValue?: string | React.ReactNode;
     icon: React.ReactNode;
 }
 
@@ -46,8 +46,7 @@ const StatsCard: React.FC<StatCardProps> = ({
                         {/* SubValue mantendo a padronização */}
                         {subValue && (
                             <span
-                                className="text-[10px] @[16rem]:text-[11px] font-mono font-medium text-[var(--color-text-sub)] whitespace-nowrap truncate max-w-full"
-                                title={subValue}
+                                className="inline-flex items-center text-[10px] @[16rem]:text-[11px] font-mono font-medium text-[var(--color-text-sub)] whitespace-nowrap truncate max-w-full"
                             >
                                 <span className="opacity-30 mr-1">/</span>
                                 {subValue}

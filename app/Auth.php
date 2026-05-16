@@ -1,18 +1,33 @@
 <?php
 
+use models\Settings;
 use models\User;
 use Vatts\Auth\Providers\CredentialsProvider;
 use Vatts\Auth\VattsAuth;
 use Vatts\Vatts;
 
-// Configuramos a instância
-$whmcsClientId = (string) Vatts::getEnv('WHMCS_CLIENT_ID', '');
-$whmcsClientSecret = (string) Vatts::getEnv('WHMCS_CLIENT_SECRET', '');
-$whmcsUrl = rtrim((string) Vatts::getEnv('WHMCS_URL', ''), '/');
-$whmcsCallbackUrl = (string) Vatts::getEnv('WHMCS_CALLBACK_URL', '');
-$whmcsSuccessUrl = (string) Vatts::getEnv('WHMCS_SUCCESS_URL', '');
+if (!function_exists('getConfigs')) {
+    function getConfigs(): array
+    {
+        $settings = Settings::all();
+        $mapped = [];
+
+        foreach ($settings as $model) {
+            $mapped[$model->key] = $model->value;
+        }
+        return $mapped;
+    }
+}
 
 $auth = new VattsAuth([
+    'session' => [
+        'lifetime_days' => 30,
+        'idle_timeout' => 2592000,
+        'bind_ip' => false,
+        'samesite' => 'Lax',
+        'secure' => str_contains(Vatts::getEnv('URL'), 'https'),
+    ],
+
     'providers' => [
         new CredentialsProvider([
             'authorize' => function ($credentials) {
@@ -22,18 +37,26 @@ $auth = new VattsAuth([
                     : User::get('name', $email);
 
                 if ($user && password_verify($credentials['password'], $user->password)) {
-                    return $user->toArray();
+                    $u = $user->toArray();
+                    unset($u['view_map']);
+                    return $u;
                 }
                 return null;
             }
         ]),
-        new \App\WHMCSProvider([
+
+        new \App\Auth\WHMCSProvider([
             'id' => 'whmcs',
-            'clientId' => $whmcsClientId,
-            'clientSecret' => $whmcsClientSecret,
-            'whmcsUrl' => $whmcsUrl,
-            'callbackUrl' => $whmcsCallbackUrl,
-            'successUrl' => $whmcsSuccessUrl,
+            'clientId' => function () {
+                return getConfigs()['oauth_client_id'] ?? null;
+            },
+            'clientSecret' => function () {
+                return getConfigs()['oauth_client_secret'] ?? null;
+            },
+            'whmcsUrl' => function () {
+                return getConfigs()['oauth_url'] ?? null;
+            },
+            'callbackUrl' => Vatts::getEnv('URL') . '/api/auth/callback/whmcs',
             'whenCallback' => function($user1, $whmcsUser) {
                 $email = $whmcsUser['email'] ?? null;
                 if (!$email) {
@@ -44,26 +67,56 @@ $auth = new VattsAuth([
                     return false;
                 }
 
+                $u = $user->toArray();
+                unset($u['view_map']);
+                return $u;
+            }
+        ]),
 
-                // Retorna os dados modificados para salvar na sessão
-                return $user->toArray();
+        new \App\Auth\PaymenterProvider([
+            'id' => 'paymenter',
+            'clientId' => function () {
+                return getConfigs()['oauth_client_id'] ?? null;
+            },
+            'clientSecret' => function () {
+                return getConfigs()['oauth_client_secret'] ?? null;
+            },
+            'paymenterUrl' => function () {
+                return getConfigs()['oauth_url'] ?? null;
+            },
+            'callbackUrl' => Vatts::getEnv('URL') . '/api/auth/callback/paymenter',
+            'whenCallback' => function($user1, $paymenterUser) {
+                $email = $paymenterUser['email'] ?? null;
+                if (!$email) {
+                    return false;
+                }
+                $user = User::get('email', $email);
+                if (!$user) {
+                    return false;
+                }
+
+                $u = $user->toArray();
+                unset($u['view_map']);
+                return $u;
             }
         ])
     ],
+
     'callbacks' => [
-        // Altera o que vai ser SALVO na sessão ($_SESSION)
         'jwt' => function($user) {
             return [
                 'id' => $user['id'],
             ];
         },
-        // Altera o que o FRONT-END recebe quando bate no GET /api/auth/session
+
         'session' => function($sessionData) {
             $id = $sessionData['id'] ?? null;
             if ($id) {
                 $user = User::get('id', $id);
                 if ($user) {
-                    return User::get('id', $id)->toArray();
+                    $user =  $user->toArray();
+                    unset($user['view_map']);
+                    return $user;
                 }
             }
             return $sessionData;
@@ -71,5 +124,4 @@ $auth = new VattsAuth([
     ]
 ]);
 
-// Retornamos a instância para que possa ser capturada por outro arquivo
 return $auth;

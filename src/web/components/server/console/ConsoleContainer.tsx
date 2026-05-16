@@ -8,6 +8,8 @@ import { useLoading } from "@/web/components/wrappers/Wrapper";
 import LoadingPage from "@/web/components/commons/LoadingPage";
 import CopyOnClick from "@/web/components/commons/CopyOnClick";
 
+import {Infinity} from "lucide-react";
+
 const formatBytes = (bytes: number = 0) => (bytes / 1024 / 1024).toFixed(2) + ' MiB';
 const formatNetwork = (bytes: number = 0) => {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB/s';
@@ -161,19 +163,19 @@ export default function ConsoleContainer() {
                         <StatCard
                             label="Uso de Processador"
                             value={usage && !isSuspended ? `${usage.cpu.toFixed(2)}%` : '0.00%'}
-                            subValue={server.cpu === 0 ? "Ilimitado" : `${server.cpu}%`}
+                            subValue={server.cpu === 0 ? <Infinity /> : `${server.cpu}%`}
                             icon={<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><rect x="4" y="4" width="16" height="16" rx="2" /><path d="M12 1v3m0 16v3M20 12h3M1 12h3" /></svg>}
                         />
                         <StatCard
                             label="Memória RAM"
                             value={isSuspended ? '0.00 MiB' : formatBytes(usage?.memory)}
-                            subValue={server.ram === 0 ? "Ilimitado" : `${server.ram} MB`}
+                            subValue={server.ram === 0 ? <Infinity /> : `${server.ram} MB`}
                             icon={<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h7m2-6h6m2 8h6" /></svg>}
                         />
                         <StatCard
                             label="Armazenamento"
                             value={isSuspended ? '0.00 MiB' : formatBytes(usage?.disk)}
-                            subValue={server.disk === 0 ? "Ilimitado" : `${server.disk} MB`}
+                            subValue={server.disk === 0 ? <Infinity /> : `${server.disk} MB`}
                             icon={<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M22 12H2M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" /></svg>}
                         />
                     </div>

@@ -54,7 +54,7 @@ class SettingsController
                     'desc'  => 'Este é o nome utilizado em todo o painel e nos e-mails enviados aos clientes.',
                     'required' => true,
                     'default' => 'Lunar Panel'
-                ]
+                ],
             ],
             'E-mail (SMTP)' => [
                 [
@@ -97,6 +97,65 @@ class SettingsController
                     ],
                     'desc' => 'Se sim, o servidor não poderá ser iniciado, modificado ou receber comandos.'
                 ],
+            ],
+            'Plataformas de Pagamento' => [
+                [
+                    'label' => 'Sistema de Faturamento',
+                    'key'   => 'billing_system',
+                    'type'  => 'select',
+                    'options' => [
+                        'none'      => 'Nenhum (Desativado)',
+                        'whmcs'     => 'WHMCS',
+                        'paymenter' => 'Paymenter'
+                    ],
+                    'default' => 'none',
+                    'desc'  => 'Selecione qual sistema de faturamento será utilizado.'
+                ],
+                [
+                    'label' => 'URL do Sistema (OAuth)',
+                    'key'   => 'oauth_url',
+                    'type'  => 'text',
+                    'desc'  => 'URL completa do sistema escolhido (ex: https://seudominio.com/whmcs ou https://billing.com).',
+                    'default' => 'https://seudominio.com'
+                ],
+                [
+                    'label' => 'Client ID (OAuth)',
+                    'key'   => 'oauth_client_id',
+                    'type'  => 'text',
+                    'desc'  => 'Credencial Client ID fornecida pelo sistema de faturamento.',
+                ],
+                [
+                    'label' => 'Client Secret (OAuth)',
+                    'key'   => 'oauth_client_secret',
+                    'type'  => 'password',
+                    'desc'  => 'Credencial Client Secret (senha/token) fornecida pelo sistema de faturamento.',
+                ]
+            ],
+            'Segurança (Captcha)' => [
+                [
+                    'label' => 'Sistema de Captcha',
+                    'key'   => 'captcha_system',
+                    'type'  => 'select',
+                    'options' => [
+                        'none'       => 'Nenhum (Desativado)',
+                        'turnstile'  => 'Cloudflare Turnstile',
+                        'hcaptcha'   => 'hCaptcha'
+                    ],
+                    'default' => 'none',
+                    'desc'  => 'Cloudflare Turnstile é recomendado por ser potente e não exigir interação do usuário.'
+                ],
+                [
+                    'label' => 'Site Key (Chave Pública)',
+                    'key'   => 'captcha_site_key',
+                    'type'  => 'text',
+                    'desc'  => 'Chave pública (Site Key) fornecida pelo Cloudflare Turnstile ou hCaptcha.',
+                ],
+                [
+                    'label' => 'Secret Key (Chave Secreta)',
+                    'key'   => 'captcha_secret_key',
+                    'type'  => 'password',
+                    'desc'  => 'Chave privada (Secret Key) usada para validação segura no backend.',
+                ]
             ]
         ];
 
@@ -114,10 +173,12 @@ class SettingsController
     {
         $body = $request->getBody();
 
-        // Salva as configurações de banco de dados
+        // Salva as configurações de banco de dados (Lista atualizada e mais limpa)
         $allowedDbKeys = [
             'sftp_host', 'sftp_port',
-            'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_send_email', 'type'
+            'smtp_host', 'smtp_port', 'smtp_user', 'smtp_pass', 'smtp_send_email', 'type',
+            'billing_system', 'oauth_url', 'oauth_client_id', 'oauth_client_secret',
+            'captcha_system', 'captcha_site_key', 'captcha_secret_key'
         ];
 
         foreach ($allowedDbKeys as $key) {

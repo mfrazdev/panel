@@ -17,7 +17,7 @@ export default function ProfilePage() {
             const newEmail = newEmailRef.current?.value;
             const password = passwordRef.current?.value;
 
-            const response = await fetch(`/api/v1/users/recovery/email`, {
+            const response = await fetch(`/api/v1/users/email`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ currentPassword: password, newEmail })

@@ -2,22 +2,16 @@
 
 /** @var \Vatts\Router\Router $app */
 /** @var \Vatts\Vatts $v */
-use Vatts\Router\Request;
-use Vatts\Router\Response;
-use Vatts\Handlers\FrontendHandler;
-use Vatts\Utils\BladeConfig;
-use Vatts\Vatts;
 
-$appEnv = (string) Vatts::getEnv('APP_ENV', 'production');
-$showErrors = $appEnv !== 'production';
-ini_set('display_errors', $showErrors ? '1' : '0');
-ini_set('display_startup_errors', $showErrors ? '1' : '0');
-error_reporting(E_ALL);
+use Vatts\Utils\BladeConfig;
 
 BladeConfig::init(__DIR__ . '/../src/views', __DIR__ . '/../t-cache');
 BladeConfig::get()->share('current_version', \App\controllers\Admin\DashboardController::getCurrentVersion() ?? 'dev');
+
+require_once __DIR__ . '/Routes/routes.php';
+
 $app->group(["prefix" => '/api'], function (\Vatts\Router\Router $router) {
-    \App\controllers\Api\ApiRoutes::setup($router);
+    \App\Routes\routes::setup($router);
 });
 
 $app->group(["prefix" => "/admin", "middleware" => "admin"], function (\Vatts\Router\Router $router) {
