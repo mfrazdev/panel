@@ -1,5 +1,6 @@
 <?php
 
+use App\Services\Logger;
 use Vatts\Vatts;
 
 $type = Vatts::getEnv("DB_TYPE", "sqlite");
@@ -26,6 +27,6 @@ try {
         throw new Exception("Tipo de banco de dados não suportado: $type");
     }
 } catch (Exception $e) {
-    error_log("Erro ao conectar ao banco de dados: " . $e->getMessage());
+    Logger::error("Erro ao conectar ao banco de dados: " . $e->getMessage());
     die("Erro ao conectar ao banco de dados. Verifique os logs para mais detalhes.");
 }

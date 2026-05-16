@@ -2,6 +2,7 @@
 
 namespace App\Utils;
 
+use App\Services\Logger;
 use models\Server;
 
 class SchedulerUtils
@@ -87,7 +88,7 @@ class SchedulerUtils
                 // você pode fazer um sleep aqui, ex: se existir $task['delay'], dá um sleep.
 
             } catch (\Exception $e) {
-                error_log("Erro ao executar task do Scheduler no servidor {$server->id}: " . $e->getMessage());
+                Logger::error("Erro ao executar task do Scheduler no servidor {$server->id}: " . $e->getMessage());
             }
         }
     }

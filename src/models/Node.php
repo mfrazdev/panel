@@ -2,6 +2,7 @@
 
 namespace models;
 
+use App\Services\Logger;
 use Vatts\Database\Model;
 
 class Node extends Model
@@ -145,7 +146,7 @@ class Node extends Model
 
 
         if ($response === false) {
-            error_log("apiRequest cURL Error (Node {$this->id}): " . curl_error($ch));
+            Logger::error("apiRequest cURL Error (Node {$this->id}): " . curl_error($ch));
             return false;
         }
 

@@ -4,6 +4,7 @@ namespace App\controllers\Admin;
 
 require_once __DIR__ . '/../../Utils/EnvVarUtils.php';
 
+use App\Services\Logger;
 use App\Services\ServerService;
 use models\Server;
 use models\Node;
@@ -160,7 +161,6 @@ class ServerController
             // Lógica para otimizar a busca das Nodes da mesma forma que os Donos
             if (!empty($server->nodeUuid) && !isset($rawNodeNames[$server->nodeUuid])) {
                 $node = $pdo->prepare("SELECT `name` FROM `nodes` WHERE `id` = :nodeId LIMIT 1");
-                error_log("Query para Node ID {$server->nodeUuid}: " . $node->queryString);
                 $node->execute(['nodeId' => $server->nodeUuid]);
                 $nodeName = $node->fetchColumn();
 

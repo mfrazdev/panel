@@ -1,13 +1,15 @@
 <?php
 
-namespace App\controllers\Api\Users\Servers;
+namespace App\controllers\Api\Server;
 
-require_once __DIR__ . '/../../../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../../vendor/autoload.php';
 
+use App\Services\Logger;
 use models\Server;
+use models\ServerAuditLog;
+use Rakit\Validation\Validator;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
-use Rakit\Validation\Validator;
 
 class ServerSchedulersApiController
 {
@@ -98,6 +100,18 @@ class ServerSchedulersApiController
 
         $schedulerId = $server->addScheduler($body['name'], $body['cron'], $tasks, $isActive);
 
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = 'Criação de um novo agendamento';
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
+
         return $response->json([
             'success' => true,
             'message' => 'Agendamento criado com sucesso!',
@@ -128,6 +142,17 @@ class ServerSchedulersApiController
 
         $server->removeScheduler($schedulerId);
 
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = 'Remoção de um agendamento';
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
         return $response->json([
             'success' => true,
             'message' => 'Agendamento removido com sucesso.'
@@ -157,7 +182,17 @@ class ServerSchedulersApiController
         }
 
         $server->toggleScheduler($schedulerId, (bool)$isActive);
-
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = $isActive ? 'Ativação de um agendamento' : "Desligamento de um agendamento";
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
         return $response->json([
             'success' => true,
             'message' => 'Status do agendamento atualizado com sucesso.'
@@ -234,7 +269,17 @@ class ServerSchedulersApiController
 
         // Atualiza no banco
         $updated = $server->editScheduler($body['schedulerId'], $body['name'], $body['cron'], $tasks, $isActive);
-
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = 'Edição de um agendamento';
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
         if (!$updated) {
             return $response->json([
                 'error' => 'Agendamento não encontrado.'

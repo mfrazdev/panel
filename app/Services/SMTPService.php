@@ -21,7 +21,6 @@ class SMTPService
         $mail = new PHPMailer(true);
 
         try {
-            error_log('configurando');
             $settings = Settings::all();
             $mapped = [];
 
@@ -60,7 +59,7 @@ class SMTPService
 
         } catch (Exception $e) {
             // Loga o erro caso o envio falhe
-            error_log("Erro no SMTPService ao enviar para {$to}: " . $mail->ErrorInfo);
+            Logger::error("Erro no SMTPService ao enviar para {$to}: " . $mail->ErrorInfo);
             return false;
         }
     }

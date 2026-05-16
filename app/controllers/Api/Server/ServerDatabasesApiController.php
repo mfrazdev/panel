@@ -1,10 +1,13 @@
 <?php
 
-namespace App\controllers\Api\Servers;
+namespace App\controllers\Api\Server;
 
 use App\Services\DatabaseHostsApi;
+use App\Services\Logger;
 use models\DatabaseHosts;
 use models\Server;
+use models\ServerAuditLog;
+use mysql_xdevapi\Exception;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
 
@@ -82,6 +85,18 @@ class ServerDatabasesApiController
 
         $server->addDatabase($dbInfo);
 
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = 'Criação de uma nova database '. $dbName;
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
+
         return $response->json([
             'success'  => true,
             'database' => $dbInfo
@@ -134,6 +149,18 @@ class ServerDatabasesApiController
 
         // Desvincula do Server
         $server->removeDatabase($dbName);
+
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = 'Remoção da database: ' . $dbName;
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
 
         return $response->json([
             'success' => true,

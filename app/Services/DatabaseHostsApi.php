@@ -67,7 +67,7 @@ class DatabaseHostsApi
             
             return true;
         } catch (PDOException $e) {
-            error_log($e);
+            Logger::error($e);
             return false;
         }
     }

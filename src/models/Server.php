@@ -2,6 +2,7 @@
 
 namespace models;
 
+use App\Services\Logger;
 use Vatts\Database\Model;
 use Vatts\Database\DB;
 
@@ -98,6 +99,7 @@ class Server extends Model
         $dbs[] = $dbInfo;
         $this->databases = json_encode($dbs, JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE);
         $this->save();
+
     }
 
     public function removeDatabase(string $dbName): void
@@ -305,7 +307,18 @@ class Server extends Model
     {
         // Bloqueia ações de inicialização, instalação ou comandos caso o servidor esteja suspenso
         if ($this->suspended === 1 && in_array($action, ['start', 'restart', 'install', 'command'])) {
-            error_log("Ação bloqueada: Servidor {$this->id} está suspenso.");
+            try {
+                $logError = new ServerAuditLog();
+                $logError->server_id = $this->id;
+                $logError->user_id = null; // Ajuste conforme necessário
+                $logError->action = "Falha ao executar ação '{$action}' - Servidor Suspenso";
+                $logError->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+                $logError->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+                $logError->save();
+            } catch (\Exception $e) {
+                Logger::error("Erro ao salvar log de auditoria (falha): " . $e->getMessage());
+            }
+            Logger::error("Ação bloqueada: Servidor {$this->id} está suspenso.");
             return false;
         }
 
@@ -458,30 +471,60 @@ class Server extends Model
 
             $node = new Node($nodeRow, false);
 
-            $timePayloadReady = microtime(true);
 
             $request = $node->apiRequest("POST", '/api/v1/servers/action', $payload);
             if($action === 'command') {
-                error_log("[sendAction] Enviando comando para o servidor #{$this->id}: " . $command);
+                Logger::info("[sendAction] Enviando comando para o servidor #{$this->id}: " . $command);
             }
-            $timeApiDone = microtime(true);
 
-            $ms_php = round(($timePayloadReady - $timeStart) * 1000, 2);
-            $ms_api = round(($timeApiDone - $timePayloadReady) * 1000, 2);
-            $ms_total = round(($timeApiDone - $timeStart) * 1000, 2);
 
-            error_log("[sendAction Otimizado] PHP Payload: {$ms_php}ms | cURL Node.js: {$ms_api}ms | Total: {$ms_total}ms");
+
+            $nomesAcoes = [
+                'start'   => 'Iniciou o servidor',
+                'stop'    => 'Parou o servidor',
+                'restart' => 'Reiniciou o servidor',
+                'kill'    => 'Forçou a parada do servidor',
+                'install' => 'Iniciou a instalação do servidor',
+                'command' => $command ? "Enviou o comando: {$command}" : 'Enviou um comando',
+            ];
+
+            $acaoFormatada = $nomesAcoes[$action] ?? "Ação executada: {$action}";
 
             if (!$request || empty($request['success'])) {
-                if (isset($request['body']['error'])) {
-                    error_log("Daemon API Error: " . $request['body']['error']);
+
+                try {
+                    $logError = new ServerAuditLog();
+                    $logError->server_id = $this->id;
+                    $logError->user_id = $requestUserUuid ?? null; // Ajuste conforme necessário
+                    $logError->action = "Falha: " . $acaoFormatada;
+                    $logError->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+                    $logError->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+                    $logError->save();
+                } catch (\Exception $e) {
+                    Logger::error("Erro ao salvar log de auditoria (falha): " . $e->getMessage());
                 }
+
+                if (isset($request['body']['error'])) {
+                    Logger::error("Daemon API Error: " . $request['body']['error']);
+                }
+
                 return false;
             }
-
+            // add
+            try {
+                $log = new ServerAuditLog();
+                $log->server_id = $this->id;
+                $log->user_id = $requestUserUuid ?? null; // Ajuste conforme necessário
+                $log->action = $acaoFormatada;
+                $log->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+                $log->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+                $log->save();
+            } catch (\Exception $e) {
+                Logger::error("Erro ao salvar log de auditoria (sucesso): " . $e->getMessage());
+            }
             return $request['body'] ?? true;
         } catch (\Exception $e) {
-            error_log("Error sending action to node: " . $e->getMessage());
+            Logger::error("Error sending action to node: " . $e->getMessage());
             return false;
         }
     }
@@ -494,7 +537,7 @@ class Server extends Model
             $stmt->execute(['id' => $this->ownerId]);
             return $stmt->fetch(\PDO::FETCH_ASSOC);
         } catch (\Exception $e) {
-            error_log("Error fetching owner info: " . $e->getMessage());
+            Logger::error("Error fetching owner info: " . $e->getMessage());
             return null;
         }
     }

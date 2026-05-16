@@ -2,6 +2,7 @@
 
 namespace App\controllers\Api\admin;
 
+use App\Services\Logger;
 use models\Allocation;
 use models\Node;
 use models\Server;
@@ -32,7 +33,6 @@ class NodesController
                 try {
 
                     $isOnline = $node->getStatus();
-                    error_log(json_encode($isOnline));
                     if ($isOnline) {
                         unset($node->view_map);
                         $array = $node->toArray();
@@ -42,7 +42,7 @@ class NodesController
                         $onlineNodes[] = $array;
                     }
                 } catch (\Throwable $e) {
-                    error_log($e);
+                    Logger::error($e);
                     // Se estourar exceção, o node não está comunicando (offline), pulamos ele.
                     continue;
                 }

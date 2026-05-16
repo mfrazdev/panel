@@ -2,6 +2,7 @@
 
 namespace App\Auth;
 
+use App\Services\Logger;
 use Exception;
 use Vatts\Auth\AuthProviderInterface;
 use Vatts\Router\Request;
@@ -89,12 +90,12 @@ class WHMCSProvider implements AuthProviderInterface
         }
 
         if (time() > ($stored['expiresAt'] ?? 0)) {
-            error_log("[WHMCS Provider] OAuth State expired.");
+            Logger::error("[WHMCS Provider] OAuth State expired.");
             return null;
         }
 
         if (!hash_equals((string)($stored['value'] ?? ''), (string)$state)) {
-            error_log("[WHMCS Provider] OAuth State mismatch.");
+            Logger::error("[WHMCS Provider] OAuth State mismatch.");
             return null;
         }
 
@@ -214,7 +215,7 @@ class WHMCSProvider implements AuthProviderInterface
             return $user;
 
         } catch (Exception $error) {
-            error_log("[{$this->id} Provider] Error during OAuth callback: " . $error->getMessage());
+            Logger::error("[{$this->id} Provider] Error during OAuth callback: " . $error->getMessage());
             // Agora estamos propagando o erro para exibir no JSON final
             throw $error;
         }
@@ -260,7 +261,7 @@ class WHMCSProvider implements AuthProviderInterface
                     }
                     $error = $query['error'] ?? null;
                     if ($error !== null) {
-                        error_log("[WHMCS OAuth] Error from auth server: " . $query['error']);
+                        Logger::error("[WHMCS OAuth] Error from auth server: " . $query['error']);
                         if ($isPopup) {
                             return $res->redirect("/api/auth/popup-callback?success=false&error=Authorization+cancelled&provider={$this->id}");
                         }

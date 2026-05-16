@@ -5,7 +5,7 @@
 
 use Vatts\Utils\BladeConfig;
 
-BladeConfig::init(__DIR__ . '/../src/views', __DIR__ . '/../t-cache');
+BladeConfig::init(__DIR__ . '/../src/views', __DIR__ . '/../storage/t-cache');
 BladeConfig::get()->share('current_version', \App\controllers\Admin\DashboardController::getCurrentVersion() ?? 'dev');
 
 require_once __DIR__ . '/Routes/routes.php';

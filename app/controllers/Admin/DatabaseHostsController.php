@@ -3,6 +3,7 @@
 namespace App\controllers\Admin;
 
 use App\Services\DatabaseHostsApi;
+use App\Services\Logger;
 use models\DatabaseHosts;
 use models\Server;
 use Vatts\Router\Request;
@@ -44,7 +45,7 @@ class DatabaseHostsController
                     }
                 }
             } catch (\Exception $e) {
-                error_log("Erro ao decodificar JSON do servidor ID {$server->id}: " . $e->getMessage());
+                Logger::error("Erro ao decodificar JSON do servidor ID {$server->id}: " . $e->getMessage());
                 continue; // Se der erro no JSON, ignora esse servidor
             }
         }

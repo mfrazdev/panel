@@ -2,24 +2,13 @@
 
 require __DIR__ . '/../vendor/autoload.php';
 
-// Ativa o log de erros
-ini_set('log_errors', 1);
-
-// Define o caminho do arquivo (pode ser relativo ao script ou absoluto)
-ini_set('error_log', __DIR__ . '/meus_erros.log');
-
-error_reporting(E_ALL);
+require __DIR__ . '/../app/Services/LoggerService.php';
+\App\Services\Logger::init();
 
 use Vatts\Vatts;
 
-
 $project = dirname(__DIR__);
 Vatts::loadEnv($project);
-
-$appEnv = (string) Vatts::getEnv('APP_ENV', 'production');
-$showErrors = $appEnv !== 'production';
-ini_set('display_errors', $showErrors ? '1' : '0');
-ini_set('display_startup_errors', $showErrors ? '1' : '0');
 
 require_once __DIR__ . '/../app/Utils/DatabaseBooter.php';
 

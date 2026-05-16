@@ -2,6 +2,7 @@
 
 namespace App\controllers\Admin;
 
+use App\Services\Logger;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
 use ZipArchive;
@@ -90,13 +91,13 @@ class DashboardController
         if ($zip->open($tempZipPath) === true) {
             $extractPath = realpath(__DIR__ . '/../../../');
 
-            error_log("[Update Debug] Iniciando extração da versão {$tagName}");
-            error_log("[Update Debug] Caminho de extração resolvido (realpath): " . ($extractPath ?: 'FALSO - CAMINHO INVÁLIDO'));
+            Logger::info("[Update Debug] Iniciando extração da versão {$tagName}");
+            Logger::info("[Update Debug] Caminho de extração resolvido (realpath): " . ($extractPath ?: 'FALSO - CAMINHO INVÁLIDO'));
 
             $extractSuccess = $zip->extractTo($extractPath);
 
             if (!$extractSuccess) {
-                error_log("[Update Debug] ZipArchive->extractTo() retornou false. Status do Zip: " . $zip->getStatusString());
+                Logger::error("[Update Debug] ZipArchive->extractTo() retornou false. Status do Zip: " . $zip->getStatusString());
             }
 
             $zip->close();
@@ -106,7 +107,7 @@ class DashboardController
                 $this->applyPermissions($extractPath);
                 return $response->json(['success' => true, 'message' => 'Atualização aplicada com sucesso!']);
             } else {
-                return $response->json(['success' => false, 'message' => 'Falha ao extrair o arquivo de atualização. Verifique o error_log do PHP para detalhes.']);
+                return $response->json(['success' => false, 'message' => 'Falha ao extrair o arquivo de atualização.']);
             }
         }
 

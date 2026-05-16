@@ -2,12 +2,13 @@
 
 namespace App\Routes;
 
-use Vatts\Router\Router;
+use App\controllers\Api\NodesHelper;
+use App\controllers\Api\System\AuthController;
+use App\controllers\Api\Users\UsersApiController;
+use models\Settings;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
-use models\Settings;
-use App\controllers\Api\NodesHelper;
-use App\controllers\Api\Users\UsersApiController;
+use Vatts\Router\Router;
 
 class SystemRoutes
 {
@@ -15,8 +16,8 @@ class SystemRoutes
     {
         $router->group(["prefix" => '/v1/auth'], function (Router $router) {
             $router->group(["prefix" => '/captcha'], function (Router $router) {
-                $router->get('/config', [\App\controllers\CaptchaController::class, 'getConfig']);
-                $router->post('/validate', [\App\controllers\CaptchaController::class, 'validateToken']); // Opcional
+                $router->get('/config', [\App\controllers\Api\System\CaptchaController::class, 'getConfig']);
+                $router->post('/validate', [\App\controllers\Api\System\CaptchaController::class, 'validateToken']); // Opcional
             });
 
             $router->get('/billing/status', function (Request $request, Response $response) {
@@ -46,9 +47,9 @@ class SystemRoutes
         // Rotas de Recuperação de Conta (Deslogado / Públicas)
         // ==========================================
         $router->group(['prefix' => '/v1/users/recovery'], function (Router $router) {
-            $router->post('/send', [UsersApiController::class, 'sendRecoveryEmail']);
-            $router->post('/change', [UsersApiController::class, 'changePassword']);
-            $router->get('/validate', [UsersApiController::class, 'verifyCode']);
+            $router->post('/send', [AuthController::class, 'sendRecoveryEmail']);
+            $router->post('/change', [AuthController::class, 'changePassword']);
+            $router->get('/validate', [AuthController::class, 'verifyCode']);
         });
     }
 }

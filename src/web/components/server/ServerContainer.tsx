@@ -13,6 +13,7 @@ import AllocationsContainer from "@/web/components/server/allocations/Allocation
 import DatabasesContainer from "@/web/components/server/databases/DatabasesContainer";
 import SchedulersContainer from "@/web/components/server/schedulers/SchedulersContainer";
 import NotFound from "@/web/notFound";
+import AuditContainer from "@/web/components/server/audit/AuditContainer";
 
 type ServerProps = {
     action?: string;
@@ -114,6 +115,8 @@ export default function ServerContainer({ action }: ServerProps) {
                 return <AllocationsContainer />
             case 'schedulers':
                 return <SchedulersContainer></SchedulersContainer>
+            case 'audit':
+                return <AuditContainer/>
             default:
                 return <NotFound/>;
         }

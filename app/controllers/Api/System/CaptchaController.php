@@ -1,6 +1,6 @@
 <?php
 
-namespace App\controllers;
+namespace App\controllers\Api\System;
 
 use App\Services\CaptchaService;
 use Vatts\Router\Request;

@@ -2,31 +2,34 @@
 
 namespace App\Routes;
 
+use App\controllers\Api\Server\AllocationController;
+use App\controllers\Api\Server\ServerController;
+use App\controllers\Api\Server\ServerDatabasesApiController;
+use App\controllers\Api\Server\ServerSchedulersApiController;
+use App\controllers\Api\Server\ServerStartupApiController;
+use App\controllers\Api\Users\UserController;
 use Vatts\Router\Router;
-use App\controllers\Api\Users\UsersApiController;
-use App\controllers\Api\Users\Servers\ServerStartupApiController;
-use App\controllers\Api\Users\Servers\ServerSchedulersApiController;
-use App\controllers\Api\Servers\ServerDatabasesApiController;
 
 class UserRoutes
 {
     public static function setup(Router $router): void
     {
         $router->group(["prefix" => '/v1/users', 'middleware' => 'api'], function (Router $router) {
-            $router->get('/servers', [UsersApiController::class, 'getServers']);
-            $router->post('/email', [UsersApiController::class, 'changeEmail']);
+            $router->get('/servers', [UserController::class, 'getServers']);
+            $router->post('/email', [UserController::class, 'changeEmail']);
 
             // Rotas de Gerenciamento do Servidor
             $router->group(["prefix" => '/server', "middleware" => 'server'], function (Router $router) {
 
                 // Base
-                $router->get('/[server_id]', [UsersApiController::class, 'getServer']);
-                $router->get('/[server_id]/status', [UsersApiController::class, 'getStatus']);
-                $router->post('/[server_id]/config', [UsersApiController::class, 'saveNameAndDesc']);
+                $router->get('/[server_id]', [ServerController::class, 'getServer']);
+                $router->get('/[server_id]/status', [ServerController::class, 'getStatus']);
+                $router->get('/[server_id]/audit', [ServerController::class, 'getAudit']);
+                $router->post('/[server_id]/config', [ServerController::class, 'saveNameAndDesc']);
 
                 // Actions
-                $router->post('/[server_id]/action', [UsersApiController::class, 'sendAction']);
-                $router->get('/[server_id]/action/[action]', [UsersApiController::class, 'sendAction']);
+                $router->post('/[server_id]/action', [ServerController::class, 'sendAction']);
+                $router->get('/[server_id]/action/[action]', [ServerController::class, 'sendAction']);
 
                 // Startup
                 $router->get('/[server_id]/startup', [ServerStartupApiController::class, 'getCoreInfo']);
@@ -34,9 +37,9 @@ class UserRoutes
                 $router->post('/[server_id]/startup/variable', [ServerStartupApiController::class, 'saveVariable']);
 
                 // Alocações (Portas/IPs)
-                $router->get('/[server_id]/allocations', [UsersApiController::class, 'getAdditionalAllocations']);
-                $router->post('/[server_id]/allocations/add', [UsersApiController::class, 'addAdditionalAllocation']);
-                $router->post('/[server_id]/allocations/remove', [UsersApiController::class, 'removeAdditionalAllocation']);
+                $router->get('/[server_id]/allocations', [AllocationController::class, 'getAdditionalAllocations']);
+                $router->post('/[server_id]/allocations/add', [AllocationController::class, 'addAdditionalAllocation']);
+                $router->post('/[server_id]/allocations/remove', [AllocationController::class, 'removeAdditionalAllocation']);
 
                 // Banco de Dados
                 $router->get('/[server_id]/databases', [ServerDatabasesApiController::class, 'getDatabases']);

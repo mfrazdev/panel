@@ -180,7 +180,7 @@ class ServerService
                 $a->save();
             }
         } catch (\Throwable $e) {
-            error_log($e);
+            Logger::error($e);
         }
 
         $server->delete();

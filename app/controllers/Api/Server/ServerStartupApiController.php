@@ -1,13 +1,15 @@
 <?php
 
-namespace App\controllers\Api\Users\Servers;
+namespace App\controllers\Api\Server;
 
-require_once __DIR__ . '/../../../../../vendor/autoload.php';
+require_once __DIR__ . '/../../../../vendor/autoload.php';
 
+use App\Services\Logger;
 use models\Core;
+use models\ServerAuditLog;
+use Rakit\Validation\Validator;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
-use Rakit\Validation\Validator;
 
 class ServerStartupApiController
 {
@@ -79,7 +81,17 @@ class ServerStartupApiController
 
         $server->dockerImage = $dockerImage;
         $server->save();
-
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = 'Edição da imagem selecionada';
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
         return $response->json([
             'success' => true,
             'message' => 'Imagem Docker atualizada com sucesso.'
@@ -175,7 +187,17 @@ class ServerStartupApiController
 
         $server->envVars = json_encode($currentEnvVars);
         $server->save();
-
+        try {
+            $audit = new ServerAuditLog();
+            $audit->server_id = $server->id;
+            $audit->user_id = $request->getParsed('user')->id;
+            $audit->action = 'Atualização de variável do ambiente';
+            $audit->ip = $_SERVER['REMOTE_ADDR'] ?? null;
+            $audit->userAgent = $_SERVER['HTTP_USER_AGENT'] ?? null;
+            $audit->save();
+        } catch (\Exception $exception) {
+            Logger::error("Failed to log server audit: " . $exception->getMessage());
+        }
         return $response->json([
             'success' => true,
             'message' => 'Variável atualizada com sucesso.'

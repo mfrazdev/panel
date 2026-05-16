@@ -2,6 +2,7 @@
 
 namespace App\Auth;
 
+use App\Services\Logger;
 use Vatts\Auth\AuthProviderInterface;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
@@ -84,12 +85,12 @@ class PaymenterProvider implements AuthProviderInterface
         }
 
         if (time() > ($stored['expiresAt'] ?? 0)) {
-            error_log("[Paymenter Provider] OAuth State expired.");
+            Logger::error("[Paymenter Provider] OAuth State expired.");
             return null;
         }
 
         if (!hash_equals((string)($stored['value'] ?? ''), (string)$state)) {
-            error_log("[Paymenter Provider] OAuth State mismatch.");
+            Logger::error("[Paymenter Provider] OAuth State mismatch.");
             return null;
         }
 
@@ -213,7 +214,7 @@ class PaymenterProvider implements AuthProviderInterface
             return $user;
 
         } catch (Exception $error) {
-            error_log("[{$this->id} Provider] Error during OAuth callback: " . $error->getMessage());
+            Logger::error("[{$this->id} Provider] Error during OAuth callback: " . $error->getMessage());
             throw $error;
         }
     }
@@ -259,7 +260,7 @@ class PaymenterProvider implements AuthProviderInterface
                     }
                     $error = $query['error'] ?? null;
                     if ($error !== null) {
-                        error_log("[Paymenter OAuth] Error from auth server: " . $query['error']);
+                        Logger::error("[Paymenter OAuth] Error from auth server: " . $query['error']);
                         if ($isPopup) {
                             return $res->redirect("/api/auth/popup-callback?success=false&error=Authorization+cancelled&provider={$this->id}");
                         }
