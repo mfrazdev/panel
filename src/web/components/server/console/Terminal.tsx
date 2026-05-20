@@ -1,4 +1,4 @@
-import React, { useLayoutEffect, useRef, useState } from 'react';
+import React, { useLayoutEffect, useRef, useState, useEffect } from 'react';
 import Ansi from 'ansi-to-react';
 import { useServerContext } from '@/web/contexts/ServerContext';
 import LoadingPage from "@/web/components/commons/LoadingPage";
@@ -10,7 +10,19 @@ export default function Terminal() {
     const [commandInput, setCommandInput] = useState('');
     const shouldScrollRef = useRef(true);
 
+    // Estados para o histórico de comandos
+    const [history, setHistory] = useState<string[]>([]);
+    const [historyIndex, setHistoryIndex] = useState(-1);
+
     const isSuspended = server?.suspended === 1;
+
+    // Carrega o histórico do localStorage ao iniciar
+    useEffect(() => {
+        const savedHistory = localStorage.getItem('terminal_command_history');
+        if (savedHistory) {
+            setHistory(JSON.parse(savedHistory));
+        }
+    }, []);
 
     useLayoutEffect(() => {
         if (!scrollRef.current || !shouldScrollRef.current) return;
@@ -25,12 +37,39 @@ export default function Terminal() {
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
         if (e.key === 'Enter' && commandInput.trim()) {
-            sendCommand(commandInput);
+            const currentCommand = commandInput.trim();
+            sendCommand(currentCommand);
+
+            // Salva no histórico (evitando duplicatas seguidas e limitando a 50 comandos)
+            const newHistory = [currentCommand, ...history.filter(cmd => cmd !== currentCommand)].slice(0, 50);
+            setHistory(newHistory);
+            localStorage.setItem('terminal_command_history', JSON.stringify(newHistory));
+            setHistoryIndex(-1); // Reseta a navegação
+
             setCommandInput('');
             shouldScrollRef.current = true;
             setTimeout(() => {
                 if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
             }, 10);
+        }
+        else if (e.key === 'ArrowUp') {
+            e.preventDefault(); // Previne o cursor de ir pro início do texto
+            if (history.length > 0) {
+                const nextIndex = Math.min(historyIndex + 1, history.length - 1);
+                setHistoryIndex(nextIndex);
+                setCommandInput(history[nextIndex]);
+            }
+        }
+        else if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            if (historyIndex > 0) {
+                const nextIndex = historyIndex - 1;
+                setHistoryIndex(nextIndex);
+                setCommandInput(history[nextIndex]);
+            } else if (historyIndex === 0) {
+                setHistoryIndex(-1);
+                setCommandInput(''); // Limpa o input se voltar tudo pra baixo
+            }
         }
     };
 
