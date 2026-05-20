@@ -16,13 +16,20 @@ export default function Terminal() {
 
     const isSuspended = server?.suspended === 1;
 
-    // Carrega o histórico do localStorage ao iniciar
+    // Carrega o histórico do localStorage específico do servidor ao iniciar ou trocar de servidor
     useEffect(() => {
-        const savedHistory = localStorage.getItem('terminal_command_history');
+        if (!server?.id) return; // Garante que temos o ID do servidor
+
+        const storageKey = `terminal_history_${server.id}`;
+        const savedHistory = localStorage.getItem(storageKey);
+
         if (savedHistory) {
             setHistory(JSON.parse(savedHistory));
+        } else {
+            setHistory([]); // Limpa o estado se o servidor não tiver histórico
         }
-    }, []);
+        setHistoryIndex(-1); // Reseta a navegação ao trocar de servidor
+    }, [server?.id]);
 
     useLayoutEffect(() => {
         if (!scrollRef.current || !shouldScrollRef.current) return;
@@ -43,9 +50,13 @@ export default function Terminal() {
             // Salva no histórico (evitando duplicatas seguidas e limitando a 50 comandos)
             const newHistory = [currentCommand, ...history.filter(cmd => cmd !== currentCommand)].slice(0, 50);
             setHistory(newHistory);
-            localStorage.setItem('terminal_command_history', JSON.stringify(newHistory));
-            setHistoryIndex(-1); // Reseta a navegação
 
+            // Salva no localStorage com o ID do servidor
+            if (server?.id) {
+                localStorage.setItem(`terminal_history_${server.id}`, JSON.stringify(newHistory));
+            }
+
+            setHistoryIndex(-1); // Reseta a navegação
             setCommandInput('');
             shouldScrollRef.current = true;
             setTimeout(() => {
