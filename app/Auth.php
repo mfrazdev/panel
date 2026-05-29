@@ -37,7 +37,6 @@ $auth = new VattsAuth([
                     : User::get('name', $email);
 
                 $pass = $credentials['password'] ?? null;
-                \App\Services\Logger::info("Attempting login for user: {$email} and {$pass}");
 
                 if ($user && password_verify($credentials['password'], $user->password)) {
                     $u = $user->toArray();
