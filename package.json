@@ -17,6 +17,7 @@
     "@vatts/auth": "2.2.0-canary.0.7.0",
     "ansi-to-react": "^6.2.6",
     "autoprefixer": "^10.5.0",
+    "cbor-x": "^1.6.4",
     "classnames": "^2.5.1",
     "copy-to-clipboard": "^4.0.2",
     "framer-motion": "^12.38.0",

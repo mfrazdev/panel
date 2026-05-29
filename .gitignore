@@ -3,4 +3,11 @@
 /t-cache/
 /serve/meus_erros.log
 /panel.db
-
+.idea
+.vatts
+node_modules
+serve/dist
+storage
+vendor
+pnpm-lock.yaml
+composer.lock

@@ -100,7 +100,7 @@
                     </a>
 
                     <!-- Link GitHub Daemon -->
-                    <a href="https://github.com/mfrazlab/daemon" target="_blank" class="flex items-center justify-between p-4 bg-black/20 border border-white/5 hover:border-white/10 rounded-xl transition-all duration-300 group shadow-inner">
+                    <a href="https://github.com/mfrazlab/feather" target="_blank" class="flex items-center justify-between p-4 bg-black/20 border border-white/5 hover:border-white/10 rounded-xl transition-all duration-300 group shadow-inner">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-textValue group-hover:text-primary transition-colors">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>

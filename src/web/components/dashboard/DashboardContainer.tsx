@@ -123,6 +123,7 @@ const DashboardContainer: React.FC = () => {
                     if (!response.ok) throw new Error('Erro na requisição');
 
                     const data = await response.json();
+                    console.log(data)
                     const { status, usage } = data.status;
 
                     newStatuses[server.id] = status;

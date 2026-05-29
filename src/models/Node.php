@@ -78,11 +78,11 @@ class Node extends Model
     {
         // Reutiliza o apiRequest, mas passa os timeouts super curtos (100/200ms)
         $response = $this->apiRequest('POST', '/api/v1/status');
+   
         json_encode($response);
         if ($response !== false && $response['success'] && isset($response['body']['status']) && $response['body']['status'] === 'success') {
             return $response['body'];
         }
-
         return false;
     }
     public function apiRequest(string $method, string $endpoint, array $data = [], array $headers = [], array $customOptions = []): array|bool
@@ -125,14 +125,22 @@ class Node extends Model
             $headers[] = 'Content-Type: application/json';
             $headers[] = 'Content-Length: ' . strlen($payload);
         }
-
+        if ($this->token) {
+            $headers[] = 'Authorization: Bearer ' . $this->token;
+        }
         $options[CURLOPT_HTTPHEADER] = $headers;
         if ($this->httpsConnection === 1) {
             $options[CURLOPT_SSL_VERIFYPEER] = false;
             $options[CURLOPT_SSL_VERIFYHOST] = false;
+
+            // HTTP/2 só em HTTPS
+            $options[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_2TLS;
         } else {
             $options[CURLOPT_SSL_VERIFYPEER] = true;
             $options[CURLOPT_SSL_VERIFYHOST] = 2;
+
+            // HTTP/1.1 no HTTP puro
+            $options[CURLOPT_HTTP_VERSION] = CURL_HTTP_VERSION_1_1;
         }
 
         curl_setopt_array($ch, $options);

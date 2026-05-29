@@ -285,15 +285,15 @@ class Server extends Model
             'userUuid' => $requestUserUuid ?? $this->ownerId
         ];
 
-        $request = $node->apiRequest("POST", '/api/v1/servers/status', $payload);
         $request2 = $node->apiRequest("POST", '/api/v1/servers/usage', $payload);
 
-        if (!$request || !$request2 || empty($request['success']) || empty($request2['success'])) {
+        if (!$request2 || empty($request2['success'])) {
             return false;
         }
 
+
         return [
-            'status' => $request['body']['serverStatus'] ?? 'unknown',
+            'status' => $request2['body']['usage']["state"] ?? 'unknown',
             'usage'  => $request2['body']['usage'] ?? null
         ];
     }
@@ -504,8 +504,8 @@ class Server extends Model
                     Logger::error("Erro ao salvar log de auditoria (falha): " . $e->getMessage());
                 }
 
-                if (isset($request['body']['error'])) {
-                    Logger::error("Daemon API Error: " . $request['body']['error']);
+                if (isset($request['body'])) {
+                    Logger::error("Daemon API Error: " . json_encode($request));
                 }
 
                 return false;

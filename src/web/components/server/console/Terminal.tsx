@@ -111,8 +111,8 @@ export default function Terminal() {
                 </AnimatePresence>
 
                 <div className="flex flex-col">
-                    {logs.map((log) => (
-                        <div key={log.id} className={`leading-relaxed break-all whitespace-pre-wrap mb-[1px] ${isSuspended ? 'text-red-400/80' : 'text-(--color-text-value)'}`}>
+                    {logs.map((log, index) => (
+                        <div key={`${log.id}-${index}`} className={`leading-relaxed break-all whitespace-pre-wrap mb-[1px] ${isSuspended ? 'text-red-400/80' : 'text-(--color-text-value)'}`}>
                             <Ansi>{log.line || log.message}</Ansi>
                         </div>
                     ))}

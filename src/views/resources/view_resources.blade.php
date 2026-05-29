@@ -12,6 +12,11 @@
                 <h1 class="text-3xl font-black tracking-tight text-textValue mb-2">{{ $title }}</h1>
                 <p class="text-textSub text-sm font-medium">
                     Gerencie a listagem completa de {{ strtolower($title) }}.
+                    <span id="search-display-text" style="display: {{ (isset($_GET['search']) && !empty($_GET['search'])) ? 'inline' : 'none' }}">
+                        @if(isset($_GET['search']) && !empty($_GET['search']))
+                            <span class="text-primary font-bold ml-1">Resultados para "{{ $_GET['search'] }}"</span>
+                        @endif
+                    </span>
                 </p>
             </div>
             <!-- Botão de Adicionar -->
@@ -20,8 +25,8 @@
                 Novo Registro
             </a>
         </div>
-        @if(isset($pagination) || isset($filters))
 
+        @if(isset($pagination) || isset($filters))
             <!-- Barra de Filtros e Busca Inteligente -->
             <form method="GET" action="" id="filter-form" class="mb-6 flex flex-wrap gap-4 items-center bg-cards border border-white/5 p-4 rounded-xl shadow-sm">
 
@@ -184,6 +189,19 @@
                             </td>
                         </tr>
                     @endforelse
+
+                    <!-- Empty state gerado pelo JS na busca -->
+                    <tr id="js-empty-state" style="display: none;">
+                        <td colspan="{{ count($map) }}" class="py-24 text-center">
+                            <div class="flex flex-col items-center gap-3">
+                                <div class="w-14 h-14 rounded-2xl bg-white/5 border border-white/10 flex items-center justify-center text-textSub mb-2 shadow-sm">
+                                    <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+                                </div>
+                                <p class="text-textValue font-bold text-base tracking-tight">Nada encontrado para a sua busca.</p>
+                                <p class="text-textSub text-sm font-medium">Tente pesquisar usando outros termos ou limpe o campo de busca.</p>
+                            </div>
+                        </td>
+                    </tr>
                     </tbody>
                 </table>
             </div>
@@ -281,17 +299,74 @@
         window.handleRowClick = function(url) {
             const selection = window.getSelection().toString();
             if (selection.length > 0) {
-                return; // Se o usuário selecionou texto (arrastou o mouse), não redireciona
+                return;
             }
             window.location.href = url;
         };
 
-        // Escuta os eventos do Componente de Select Customizado para submeter os filtros
         document.addEventListener('DOMContentLoaded', function() {
             const filterForm = document.getElementById('filter-form');
+            const searchInput = document.querySelector('input[name="search"]'); // Pega de onde quer que ele esteja
+            const dataRows = document.querySelectorAll('tr.data-row');
+            const jsEmptyState = document.getElementById('js-empty-state');
+            const searchDisplayText = document.getElementById('search-display-text');
+
+            // Lida com o filtro em tempo real via JS para o campo de pesquisa
+            function filterTable(searchTerm) {
+                const term = searchTerm.toLowerCase().trim();
+                let visibleCount = 0;
+
+                dataRows.forEach(row => {
+                    const textContent = row.textContent.toLowerCase();
+                    if (textContent.includes(term)) {
+                        row.style.display = '';
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                    }
+                });
+
+                if (jsEmptyState) {
+                    if (visibleCount === 0 && dataRows.length > 0) {
+                        jsEmptyState.style.display = '';
+                    } else {
+                        jsEmptyState.style.display = 'none';
+                    }
+                }
+
+                if (searchDisplayText) {
+                    if (term !== '') {
+                        searchDisplayText.innerHTML = `<span class="text-primary font-bold ml-1">Resultados para "${searchTerm}"</span>`;
+                        searchDisplayText.style.display = 'inline';
+                    } else {
+                        searchDisplayText.style.display = 'none';
+                    }
+                }
+            }
+
+            if (searchInput) {
+                // Impede que o form de busca faça submit e recarregue a página se a ideia for só o live search da tabela local
+                const searchForm = searchInput.closest('form');
+                if (searchForm && searchForm.id !== 'filter-form') {
+                    searchForm.addEventListener('submit', function(e) { e.preventDefault(); });
+                }
+
+                // Ao digitar, filtra a tabela (live search)
+                searchInput.addEventListener('input', function(e) { filterTable(e.target.value); });
+
+                // Impede que o enter dê submit se o foco estiver na pesquisa (opcional, mas evita recarregar a página atoa já que é live)
+                searchInput.addEventListener('keydown', function(e) {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                    }
+                });
+
+                if (searchInput.value) { filterTable(searchInput.value); }
+            }
+
+            // Submete o formulário caso os SELECTS sejam alterados
             if (filterForm) {
                 filterForm.addEventListener('change', function(e) {
-                    // Como os selects falsos usam input hidden, detectamos a mudança neles
                     if (e.target.tagName === 'INPUT' && e.target.type === 'hidden') {
                         filterForm.submit();
                     }

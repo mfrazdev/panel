@@ -139,10 +139,19 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
 
         const ws = new WebSocket(getWsUrl(`/api/v1/servers/usages?serverId=${server.serverUuid}&userUuid=${userUuid}`));
         usageWsRef.current = ws;
-
+        const CONNECTION_TIMEOUT = 8000;
+        let connectTimeout: ReturnType<typeof setTimeout> | null = null;
+        connectTimeout = setTimeout(() => {
+            if (ws.readyState !== WebSocket.OPEN) {
+                console.log("WebSocket connection timeout");
+                ws.close();
+            }
+        }, CONNECTION_TIMEOUT);
         ws.onopen = () => {
+            if (connectTimeout) clearTimeout(connectTimeout);
             usageRetryCount.current = 0;
             setUsageWsStatus('connected');
+
             if (usageReconnectTimeoutRef.current) clearTimeout(usageReconnectTimeoutRef.current);
         };
         ws.onmessage = (event) => {
@@ -191,7 +200,11 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
             setConsoleWsStatus('connected');
             if (consoleReconnectTimeoutRef.current) clearTimeout(consoleReconnectTimeoutRef.current);
         };
-
+        ws.onerror = (err) => {
+            console.error("WS error:", err);
+            console.log("URL:", ws.url);
+            console.log("readyState:", ws.readyState);
+        };
         ws.onmessage = (event) => {
             try {
                 const data = JSON.parse(event.data);
@@ -211,7 +224,11 @@ export const ServerProvider: React.FC<ServerProviderProps> = ({
             } catch (e) { }
         };
 
-        ws.onclose = () => {
+        ws.onclose = (event) => {
+            console.log("WS closed:");
+            console.log("code:", event.code);
+            console.log("reason:", event.reason);
+            console.log("wasClean:", event.wasClean);
             if (!isConsoleIntentionalDisconnect.current) {
                 if (consoleRetryCount.current < MAX_RETRIES) {
                     consoleRetryCount.current += 1;

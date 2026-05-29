@@ -19,7 +19,7 @@
                 </div>
 
                 <p class="text-[12px] font-medium text-textSub mt-1 ml-1 leading-relaxed">
-                    Copie o conteúdo acima e cole no arquivo <span class="text-primary font-bold">/etc/feather/config.json</span> no servidor onde o node está instalado para vinculá-lo a este painel.
+                    Copie o conteúdo acima e cole no arquivo <span class="text-primary font-bold">/etc/plume/config.yml</span> no servidor onde o node está instalado para vinculá-lo a este painel.
                 </p>
             </div>
         </div>
@@ -49,22 +49,27 @@
                 });
 
                 const configContent = [
-                    `{
-                        "uuid": "{{ $resource->id }}",
-                        "port": {{ $resource->port }},
-                        "sftp": {{ $resource->sftp }},
-                        "remote": "http://localhost:8000",
-                        "token": "{{ $resource->token }}",
-                        "path": "/etc/feather",
-                        "ssl": {{ $resource->ssl === 'https' ? 'true' : 'false' }},
-                        "certPath": "/etc/feather/certs/cert.pem",
-                        "keyPath": "/etc/feather/certs/key.pem"
-                    }`
+                    `app:
+  id: "{{ $resource->id }}"
+  port: {{ $resource->port }}
+  path: "/var/lib/plume"
+
+sftp:
+  port: {{ $resource->sftp }}
+
+ssl:
+  enabled: {{ $resource->httpsConnection === 1 ? 'true' : 'false' }}
+  certPath: "/etc/letsencrypt/live/{{ $resource->ip }}/fullchain.pem"
+  keyPath: "/etc/letsencrypt/live/{{ $resource->ip }}/privkey.pem"
+
+remote:
+  url: "http://localhost:8000"
+  token: "{{ $resource->token }}"`
                 ].join('\n');
 
                 const editor = monaco.editor.create(document.getElementById('monaco-config-editor'), {
                     value: configContent,
-                    language: 'json',
+                    language: 'yml',
                     theme: 'lunarPanelTheme',
                     readOnly: true,
                     minimap: { enabled: false },
