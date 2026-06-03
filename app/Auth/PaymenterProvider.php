@@ -97,9 +97,42 @@ class PaymenterProvider implements AuthProviderInterface
         return $stored;
     }
 
+    /**
+     * Aplica os mesmos parâmetros de expiração do cookie de sessão utilizados globalmente
+     */
+    protected function forceCookieExpiration(): void
+    {
+        $sessionConfig = $this->config['session'] ?? [];
+        $lifetimeDays = (int) ($sessionConfig['lifetime_days'] ?? 30);
+        $lifetime = max(0, $lifetimeDays * 86400);
+
+        $secure = $sessionConfig['secure'] ?? (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+        $httpOnly = $sessionConfig['httponly'] ?? true;
+        $sameSite = $sessionConfig['samesite'] ?? 'Lax';
+        $path = $sessionConfig['path'] ?? '/';
+        $domain = $sessionConfig['domain'] ?? '';
+
+        if (PHP_VERSION_ID >= 70300) {
+            setcookie(session_name(), session_id(), [
+                'expires' => time() + $lifetime,
+                'path' => $path,
+                'domain' => $domain,
+                'secure' => $secure,
+                'httponly' => $httpOnly,
+                'samesite' => $sameSite,
+            ]);
+        } else {
+            setcookie(session_name(), session_id(), time() + $lifetime, $path, $domain, $secure, $httpOnly);
+        }
+    }
+
     private function processOAuthCallback(array $credentials): ?array
     {
         try {
+            // [SEGURANÇA] Prevenção de Array Injection
+            if (empty($credentials['code']) || !is_string($credentials['code'])) {
+                throw new Exception("Invalid code format provided.");
+            }
             $code = $credentials['code'];
 
             $paymenterUrl = rtrim((string) $this->resolveConfigValue('paymenterUrl'), '/');
@@ -119,8 +152,9 @@ class PaymenterProvider implements AuthProviderInterface
             curl_setopt($ch, CURLOPT_TIMEOUT, 20);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            // [SEGURANÇA CRÍTICA] Bypass de SSL removido
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($ch, CURLOPT_USERAGENT, 'Vatts.js Auth Client/1.0');
 
             // Header explicitando que esperamos JSON (Laravel requer isso)
@@ -158,8 +192,9 @@ class PaymenterProvider implements AuthProviderInterface
             curl_setopt($chInfo, CURLOPT_TIMEOUT, 20);
             curl_setopt($chInfo, CURLOPT_FOLLOWLOCATION, false);
 
-            curl_setopt($chInfo, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($chInfo, CURLOPT_SSL_VERIFYHOST, 0);
+            // [SEGURANÇA CRÍTICA] Bypass de SSL removido
+            curl_setopt($chInfo, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($chInfo, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($chInfo, CURLOPT_USERAGENT, 'Vatts.js Auth Client/1.0');
 
             // Autenticação via Bearer Token (Padrão OAuth2/Passport)
@@ -249,7 +284,11 @@ class PaymenterProvider implements AuthProviderInterface
                 'handler' => function (Request $req, Response $res) {
                     $query = $req->getQuery();
                     $code = $query['code'] ?? null;
-                    $stateData = $this->consumeOAuthState($query['state'] ?? null);
+
+                    // [SEGURANÇA] Força a variável state a ser null se for injetado um array
+                    $stateParam = isset($query['state']) && is_string($query['state']) ? $query['state'] : null;
+
+                    $stateData = $this->consumeOAuthState($stateParam);
                     $isPopup = (bool)($stateData['popup'] ?? false);
 
                     if (!$stateData) {
@@ -278,7 +317,9 @@ class PaymenterProvider implements AuthProviderInterface
                         $user = $this->processOAuthCallback(['code' => $code]);
 
                         if ($user) {
+                            // [SEGURANÇA] Correção de Session Fixation
                             session_regenerate_id(true);
+                            $this->forceCookieExpiration();
 
                             $_SESSION['vatts_auth_user'] = $user;
                             $_SESSION['vatts_auth_ua'] = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';

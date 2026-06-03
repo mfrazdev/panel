@@ -146,35 +146,35 @@ export default function App() {
     return (
         <GuestOnly redirectTo="/">
             <div className="min-h-screen flex flex-col relative bg-[var(--color-background)]">
-                <div className="flex-1 flex flex-col justify-center items-center px-4 py-12 animate-[fadeIn_0.4s_ease-out]">
+                <div className="flex-1 flex flex-col justify-center items-center px-4 py-8 animate-[fadeIn_0.4s_ease-out]">
 
-                    <div className="w-full max-w-4xl">
-                        <div className="text-center mb-10">
-                            <h1 className="text-3xl md:text-4xl font-black tracking-tight text-[var(--color-text-value)]">
+                    <div className="w-full max-w-3xl">
+                        <div className="text-center mb-6">
+                            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--color-text-value)]">
                                 Autenticação
                             </h1>
-                            <p className="text-[var(--color-text-sub)] mt-2 font-medium">
+                            <p className="text-[var(--color-text-sub)] mt-1 text-sm font-medium">
                                 Faça login para acessar o painel de controle
                             </p>
                         </div>
 
                         <Card>
-                            <div className="grid grid-cols-1 md:grid-cols-[1fr_1.5fr] gap-6 md:gap-10 items-center">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-center p-2 md:p-6">
 
-                                <div className="hidden md:flex justify-center items-center p-8 rounded-xl h-full shadow-inner">
+                                <div className="hidden md:flex justify-center items-center p-4 rounded-xl h-full shadow-inner bg-[var(--color-background-sub)]">
                                     <VattsImage
                                         src={urlImage}
-                                        width={240}
+                                        width={240} // Aumentado de 180 para 240
                                         className="hover:scale-105 transition-transform duration-500 drop-shadow-xl"
                                     />
                                 </div>
 
-                                <div className="w-full flex flex-col p-2 md:py-6 md:pr-6">
-                                    <div className="md:hidden flex justify-center mb-8">
-                                        <VattsImage src={urlImage} width={180} />
+                                <div className="w-full flex flex-col">
+                                    <div className="md:hidden flex justify-center mb-6">
+                                        <VattsImage src={urlImage} width={180} /> {/* Aumentado de 140 para 180 */}
                                     </div>
 
-                                    <form onSubmit={handleSubmit} className="space-y-6 w-full">
+                                    <form onSubmit={handleSubmit} className="space-y-4 w-full">
                                         <Input
                                             label="Nome de Usuário ou Email"
                                             type="text"
@@ -193,7 +193,7 @@ export default function App() {
 
                                         {/* Renderização das Libs de Captcha */}
                                         {captchaConfig.active && (
-                                            <div className="flex justify-center my-4">
+                                            <div className="flex justify-center my-2 scale-90 origin-center">
                                                 {captchaConfig.system === 'turnstile' ? (
                                                     <Turnstile
                                                         ref={turnstileRef}
@@ -215,15 +215,15 @@ export default function App() {
                                         <Button
                                             type="submit"
                                             fullWidth
-                                            className="!py-3.5 mt-2 shadow-lg"
+                                            className="!py-3 mt-1 shadow-md"
                                         >
                                             ENTRAR NO PAINEL
                                         </Button>
 
                                         {billingSystem.active && (
-                                            <div className="mt-6 flex flex-col space-y-4">
-                                                <div className="flex items-center before:flex-1 before:border-t before:border-[var(--color-border)] before:mt-0.5 after:flex-1 after:border-t after:border-[var(--color-border)] after:mt-0.5">
-                                                    <p className="text-center text-[var(--color-text-sub)] text-xs font-bold uppercase tracking-widest mx-4">
+                                            <div className="mt-4 flex flex-col space-y-3">
+                                                <div className="flex items-center before:flex-1 before:border-t before:border-[var(--color-border)] after:flex-1 after:border-t after:border-[var(--color-border)]">
+                                                    <p className="text-center text-[var(--color-text-sub)] text-[10px] font-bold uppercase tracking-widest mx-3">
                                                         OU
                                                     </p>
                                                 </div>
@@ -233,17 +233,18 @@ export default function App() {
                                                     type="button"
                                                     onClick={handleOAuthLogin}
                                                     fullWidth
+                                                    className="!py-2.5 text-sm"
                                                 >
-                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="20" height="20" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M64 128C64 92.7 92.7 64 128 64L384 64C419.3 64 448 92.7 448 128L448 272.7C412.3 275.6 379.5 288.3 352 308.1L352 304.1C352 295.3 344.8 288.1 336 288.1L304 288.1C295.2 288.1 288 295.3 288 304.1L288 336.1C288 344.9 295.2 352.1 304 352.1L308 352.1C294.2 371.3 283.9 393.1 277.9 416.6C276 416.2 274 416.1 272 416.1L240 416.1C222.3 416.1 208 430.4 208 448.1L208 528.1L282.9 528.1C289 545.4 297.5 561.5 308 576.1L128 576C92.7 576 64 547.3 64 512L64 128zM176 160C167.2 160 160 167.2 160 176L160 208C160 216.8 167.2 224 176 224L208 224C216.8 224 224 216.8 224 208L224 176C224 167.2 216.8 160 208 160L176 160zM288 176L288 208C288 216.8 295.2 224 304 224L336 224C344.8 224 352 216.8 352 208L352 176C352 167.2 344.8 160 336 160L304 160C295.2 160 288 167.2 288 176zM176 288C167.2 288 160 295.2 160 304L160 336C160 344.8 167.2 352 176 352L208 352C216.8 352 224 344.8 224 336L224 304C224 295.2 216.8 288 208 288L176 288zM320 464C320 384.5 384.5 320 464 320C543.5 320 608 384.5 608 464C608 543.5 543.5 608 464 608C384.5 608 320 543.5 320 464zM460.7 396.7C454.5 402.9 454.5 413.1 460.7 419.3L489.4 448L400 448C391.2 448 384 455.2 384 464C384 472.8 391.2 480 400 480L489.4 480L460.7 508.7C454.5 514.9 454.5 525.1 460.7 531.3C466.9 537.5 477.1 537.5 483.3 531.3L539.3 475.3C545.5 469.1 545.5 458.9 539.3 452.7L483.3 396.7C477.1 390.5 466.9 390.5 460.7 396.7z"/></svg>
+                                                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 640" width="16" height="16" fill="currentColor" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="mr-2 inline"><path d="M64 128C64 92.7 92.7 64 128 64L384 64C419.3 64 448 92.7 448 128L448 272.7C412.3 275.6 379.5 288.3 352 308.1L352 304.1C352 295.3 344.8 288.1 336 288.1L304 288.1C295.2 288.1 288 295.3 288 304.1L288 336.1C288 344.9 295.2 352.1 304 352.1L308 352.1C294.2 371.3 283.9 393.1 277.9 416.6C276 416.2 274 416.1 272 416.1L240 416.1C222.3 416.1 208 430.4 208 448.1L208 528.1L282.9 528.1C289 545.4 297.5 561.5 308 576.1L128 576C92.7 576 64 547.3 64 512L64 128zM176 160C167.2 160 160 167.2 160 176L160 208C160 216.8 167.2 224 176 224L208 224C216.8 224 224 216.8 224 208L224 176C224 167.2 216.8 160 208 160L176 160zM288 176L288 208C288 216.8 295.2 224 304 224L336 224C344.8 224 352 216.8 352 208L352 176C352 167.2 344.8 160 336 160L304 160C295.2 160 288 167.2 288 176zM176 288C167.2 288 160 295.2 160 304L160 336C160 344.8 167.2 352 176 352L208 352C216.8 352 224 344.8 224 336L224 304C224 295.2 216.8 288 208 288L176 288zM320 464C320 384.5 384.5 320 464 320C543.5 320 608 384.5 608 464C608 543.5 543.5 608 464 608C384.5 608 320 543.5 320 464zM460.7 396.7C454.5 402.9 454.5 413.1 460.7 419.3L489.4 448L400 448C391.2 448 384 455.2 384 464C384 472.8 391.2 480 400 480L489.4 480L460.7 508.7C454.5 514.9 454.5 525.1 460.7 531.3C466.9 537.5 477.1 537.5 483.3 531.3L539.3 475.3C545.5 469.1 545.5 458.9 539.3 452.7L483.3 396.7C477.1 390.5 466.9 390.5 460.7 396.7z"/></svg>
                                                     ENTRAR COM {billingSystem.system === 'paymenter' ? 'PAYMENTER' : 'WHMCS'}
                                                 </Button>
                                             </div>
                                         )}
 
-                                        <div className="text-center pt-2">
+                                        <div className="text-center pt-1">
                                             <Link
                                                 href="/auth/recovery"
-                                                className="text-[13px] font-bold text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] transition-colors"
+                                                className="text-xs font-bold text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] transition-colors"
                                             >
                                                 Esqueceu a senha?
                                             </Link>

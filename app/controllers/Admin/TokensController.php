@@ -39,7 +39,8 @@ class TokensController
      */
     private function validateTokenData(array $body): ?string
     {
-        $name = $body['name'] ?? null;
+        // [SEGURANÇA] Type casting e validação para evitar Array Injection (Fatal Error / DOS)
+        $name = is_string($body['name'] ?? null) ? trim($body['name']) : null;
 
         if (!$name) return "O nome do token é obrigatório.";
 
@@ -87,7 +88,10 @@ class TokensController
             'deleteUrl' => 'tokens/[id]/delete?return=edit'
         ];
 
-        return $response->view('resources.edit_create', $this->getViewData($request, "Token API - {$token->name}", $viewData));
+        // [SEGURANÇA] Proteção contra XSS injetado no Título pela propriedade name (Cross-Site Scripting)
+        $safeName = htmlspecialchars((string)$token->name, ENT_QUOTES, 'UTF-8');
+
+        return $response->view('resources.edit_create', $this->getViewData($request, "Token API - {$safeName}", $viewData));
     }
 
     public function edit(Request $request, Response $response): Response
@@ -106,8 +110,9 @@ class TokensController
                 ->redirect("/admin/tokens/{$token->id}/edit");
         }
 
-        $token->name = $body['name'];
-        $token->desc = $body['desc'] ?? '';
+        // [SEGURANÇA] Cast rígido para string previne Array Injection no PDO e no banco
+        $token->name = (string)($body['name'] ?? '');
+        $token->desc = is_string($body['desc'] ?? null) ? trim($body['desc']) : '';
 
         // A string do token em si não costuma ser editável após criada.
         $token->save();
@@ -139,8 +144,10 @@ class TokensController
         }
 
         $token = new Tokens();
-        $token->name  = $body['name'];
-        $token->desc  = $body['desc'] ?? '';
+
+        // [SEGURANÇA] Cast rígido para (string) mitigando o risco de Fatal Error por injecções
+        $token->name  = (string)($body['name'] ?? '');
+        $token->desc  = is_string($body['desc'] ?? null) ? trim($body['desc']) : '';
 
         // Gera uma string aleatória segura de 64 caracteres (32 bytes em hex)
         $token->token = bin2hex(random_bytes(32));

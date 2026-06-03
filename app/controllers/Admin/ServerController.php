@@ -311,8 +311,10 @@ class ServerController
         }
 
         $body = $request->getBody();
-        $server->name = $body['name'] ?? $server->name;
-        $server->description = $body['description'] ?? $server->description;
+
+        // [SEGURANÇA] Casting rigoroso para strings evitando injetar arrays nulos e causar Fatal Errors de PDO.
+        $server->name = isset($body['name']) ? (string)$body['name'] : $server->name;
+        $server->description = isset($body['description']) ? (string)$body['description'] : $server->description;
 
         if (isset($body['ownerId'])) $server->ownerId = (string)$body['ownerId'];
 
@@ -472,7 +474,7 @@ class ServerController
                 'ssl' => $n->ssl ?? false,
                 'online' => $status,
                 'location' => $n->location ?? null,
-                'token' => $n->token ?? null,
+                // [SEGURANÇA CRÍTICA] Removida a exposição do token privado da Node para a web!
             ];
         }
         return $response->json($out);

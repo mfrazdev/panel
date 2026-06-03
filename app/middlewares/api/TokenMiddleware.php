@@ -21,19 +21,22 @@ class TokenMiddleware extends Middleware
             $token = $matches[1];
 
             $tokenmodel = Tokens::get('token', $token);
-            if(!$tokenmodel) {
-                return $response->json([
+            if (!$tokenmodel) {
+                // [SEGURANÇA] O método status(401) chamado ANTES do json() garante que
+                // o código HTTP de bloqueio vá pro cabeçalho de forma consistente.
+                return $response->status(401)->json([
                     'error' => true,
                     'message' => 'Unauthorized. Invalid token.'
-                ])->status(401);
+                ]);
             }
 
             return $request;
-        } else {
-            return $response->json([
-                'error' => true,
-                'message' => 'Unauthorized. Bearer token is required.'
-            ])->status(401);
         }
+
+        // Retorno de segurança padronizado para ausência de token
+        return $response->status(401)->json([
+            'error' => true,
+            'message' => 'Unauthorized. Bearer token is required.'
+        ]);
     }
 }

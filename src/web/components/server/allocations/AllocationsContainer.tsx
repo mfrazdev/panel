@@ -147,10 +147,11 @@ export default function AllocationsContainer() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="text-[13px] font-medium text-[var(--color-text-sub)] bg-[var(--color-secondary)] border border-white/5 px-5 py-3 rounded-xl shadow-sm">
-                        Uso Adicional: <span className="text-[var(--color-text-value)] font-bold ml-1">{userAddedCount}</span> / {maxAllocations === null || maxAllocations === undefined ? 'Ilimitado' : maxAllocations}
-                    </div>
-
+                    <Card>
+                        <div className="text-[13px] font-medium text-[var(--color-text-sub)] -m-2">
+                            Uso Adicional: <span className="text-[var(--color-text-value)] font-bold ml-1">{userAddedCount}</span> / {maxAllocations === null || maxAllocations === undefined ? 'Ilimitado' : maxAllocations}
+                        </div>
+                    </Card>
                     <Button
                         variant="info"
                         onClick={handleAddAllocation}

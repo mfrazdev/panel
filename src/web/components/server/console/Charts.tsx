@@ -30,7 +30,8 @@ interface ChartDataPoint {
 const CustomTooltip = ({ active, payload, label, formatter }: any) => {
     if (active && payload && payload.length) {
         return (
-            <div className="bg-[var(--color-background)] border border-white/5 backdrop-blur-xl p-3 rounded-xl shadow-[var(--card-shadow)]">
+            // Tooltip também clean, sem borda seca, usando as variáveis do root
+            <div className="bg-[var(--color-secondary)] backdrop-blur-xl p-3 rounded-xl shadow-[var(--card-shadow)]">
                 <p className="text-[10px] font-bold uppercase tracking-widest mb-1 text-[var(--color-text-label)]">
                     {label}
                 </p>
@@ -107,68 +108,76 @@ const Charts: React.FC = () => {
     return (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {chartConfigs.map((chart) => (
+                /* Glow Wrapper - Substituindo a borda real pelo padding fake animado (p-[4px]) */
                 <div
                     key={chart.id}
-                    className="group flex flex-col p-4 bg-[var(--color-secondary)] border border-white/5 rounded-xl  hover:border-white/10 transition-all duration-300 shadow-sm"
+                    className="group relative p-[4px] rounded-2xl bg-gradient-to-br from-[var(--color-terciary)] via-[var(--color-secondary)] to-transparent transition-all duration-500 ease-out shadow-xl hover:shadow-2xl hover:-translate-y-0.5 transform flex flex-col h-full"
                 >
-                    <div className="flex items-center gap-4 mb-4">
-                        <div
-                            className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center transition-colors shadow-sm shrink-0"
-                            style={{ color: chart.color }}
-                        >
-                            <div className="scale-90 group-hover:scale-100 transition-transform duration-300">
-                                {chart.icon}
+                    {/* Inner Container - Fundo secundário sem borda */}
+                    <div className="relative flex flex-col h-full bg-[var(--color-secondary)] backdrop-blur-xl rounded-[15px] p-4 transition-colors duration-500 ease-out">
+
+                        <div className="flex items-center gap-4 mb-4">
+                            {/* Caixa do ícone agora com cor terciária do root e sem borda */}
+                            <div
+                                className="w-12 h-12 rounded-xl bg-[var(--color-terciary)] flex items-center justify-center transition-all duration-300 ease-out shadow-sm shrink-0"
+                                style={{ color: chart.color }}
+                            >
+                                <div className="scale-90 group-hover:scale-105 transition-transform duration-300 ease-out">
+                                    {chart.icon}
+                                </div>
+                            </div>
+
+                            <div className="flex flex-col flex-1 min-w-0">
+                                <span className="text-[10px] text-[var(--color-text-sub)] uppercase font-black tracking-widest mb-0.5 truncate block w-full transition-colors duration-300 ease-out">
+                                    {chart.label}
+                                </span>
+                                <span className="text-xl font-mono text-[var(--color-text-value)] font-medium tracking-tight truncate max-w-full transition-colors duration-300 ease-out">
+                                    {chart.value}
+                                </span>
                             </div>
                         </div>
 
-                        <div className="flex flex-col flex-1 min-w-0">
-                            <span className="text-[10px] text-[var(--color-text-sub)] uppercase font-black tracking-widest mb-0.5 truncate block w-full">
-                                {chart.label}
-                            </span>
-                            <span className="text-xl font-mono text-[var(--color-text-value)] font-medium tracking-tight truncate max-w-full">
-                                {chart.value}
-                            </span>
+                        <div className="h-40 w-full">
+                            <ResponsiveContainer width="100%" height="100%">
+                                <AreaChart data={dataHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
+                                    <defs>
+                                        <linearGradient id={`color${chart.id}`} x1="0" y1="0" x2="0" y2="1">
+                                            <stop offset="5%" stopColor={chart.color} stopOpacity={0.3}/>
+                                            <stop offset="95%" stopColor={chart.color} stopOpacity={0}/>
+                                        </linearGradient>
+                                    </defs>
+                                    {/* Linhas de fundo mais sutis para não poluir */}
+                                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(161, 161, 170, 0.15)" vertical={false} />
+                                    <XAxis
+                                        dataKey="time"
+                                        tick={false}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <YAxis
+                                        width={65}
+                                        stroke="rgba(161, 161, 170, 0.5)"
+                                        fontSize={10}
+                                        fontFamily="monospace"
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickCount={4}
+                                        tickFormatter={(val: any) => chart.axisFormatter(val)}
+                                    />
+                                    <Tooltip content={<CustomTooltip formatter={chart.formatter} />} cursor={{ stroke: 'rgba(161, 161, 170, 0.2)', strokeWidth: 1 }} />
+                                    <Area
+                                        type="monotone"
+                                        dataKey={chart.dataKey}
+                                        stroke={chart.color}
+                                        strokeWidth={2}
+                                        fillOpacity={1}
+                                        fill={`url(#color${chart.id})`}
+                                        isAnimationActive={false}
+                                    />
+                                </AreaChart>
+                            </ResponsiveContainer>
                         </div>
-                    </div>
 
-                    <div className="h-40 w-full">
-                        <ResponsiveContainer width="100%" height="100%">
-                            <AreaChart data={dataHistory} margin={{ top: 10, right: 10, left: 0, bottom: 0 }}>
-                                <defs>
-                                    <linearGradient id={`color${chart.id}`} x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="5%" stopColor={chart.color} stopOpacity={0.3}/>
-                                        <stop offset="95%" stopColor={chart.color} stopOpacity={0}/>
-                                    </linearGradient>
-                                </defs>
-                                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.03)" vertical={false} />
-                                <XAxis
-                                    dataKey="time"
-                                    tick={false}
-                                    axisLine={false}
-                                    tickLine={false}
-                                />
-                                <YAxis
-                                    width={65}
-                                    stroke="rgba(255,255,255,0.2)"
-                                    fontSize={10}
-                                    fontFamily="monospace"
-                                    tickLine={false}
-                                    axisLine={false}
-                                    tickCount={4}
-                                    tickFormatter={(val: any) => chart.axisFormatter(val)}
-                                />
-                                <Tooltip content={<CustomTooltip formatter={chart.formatter} />} cursor={{ stroke: 'rgba(255,255,255,0.1)', strokeWidth: 1 }} />
-                                <Area
-                                    type="monotone"
-                                    dataKey={chart.dataKey}
-                                    stroke={chart.color}
-                                    strokeWidth={2}
-                                    fillOpacity={1}
-                                    fill={`url(#color${chart.id})`}
-                                    isAnimationActive={false}
-                                />
-                            </AreaChart>
-                        </ResponsiveContainer>
                     </div>
                 </div>
             ))}

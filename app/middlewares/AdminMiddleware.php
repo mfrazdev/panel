@@ -11,24 +11,41 @@ class AdminMiddleware extends Middleware
 {
     public static string $name = 'admin';
 
-    public function handle(Request $request, Response $response): Request
+    /**
+     * O tipo de retorno foi ajustado para Request|Response para permitir
+     * que a execução pare (retornando Response) ou continue (retornando Request)
+     */
+    public function handle(Request $request, Response $response): Request|Response
     {
         $auth = require __DIR__ . '/../Auth.php';
         $session = $auth->getSession();
-        if($session !== null) {
-            $request->setParsed('user', User::get('id', $session['id']));
-            if($request->getParsed('user')->role !== 'admin') {
-                $response->redirect('/');
-                return $request;
+
+        if ($session !== null) {
+            $user = User::get('id', $session['id']);
+
+            // [SEGURANÇA] Verifica se o usuário logado realmente ainda existe no banco
+            if (!$user) {
+                $auth->signOut();
+                // [SEGURANÇA CRÍTICA] Retornar o $response trava a rota imediatamente
+                return $response->redirect('/auth');
+            }
+
+            $request->setParsed('user', $user);
+
+            if ($user->role !== 'admin') {
+                // [SEGURANÇA CRÍTICA] Retornar $response! Se retornasse $request,
+                // a rota restrita de admin seria executada mesmo com o redirect agendado.
+                return $response->redirect('/');
             }
         } else {
             $request->setParsed('user', null);
-            $response->redirect('/auth');
+
+            // [SEGURANÇA CRÍTICA] Bloqueia a execução encadeada retornando a Response
+            return $response->redirect('/auth');
         }
 
-
+        // Tudo certo (Usuário existe, está logado e é admin).
+        // Retorna o Request para o Router liberar o acesso ao Controller.
         return $request;
     }
 }
-
-

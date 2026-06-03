@@ -18,6 +18,12 @@ class SMTPService
      */
     public function send(string $to, string $subject, string $body): bool
     {
+        // [SEGURANÇA] Validação antecipada do e-mail para poupar recursos e evitar exceptions
+        if (!filter_var($to, FILTER_VALIDATE_EMAIL)) {
+            Logger::error("Tentativa de envio de e-mail para endereço inválido/malformado: {$to}");
+            return false;
+        }
+
         $mail = new PHPMailer(true);
 
         try {
@@ -43,15 +49,24 @@ class SMTPService
                 $mail->SMTPSecure = PHPMailer::ENCRYPTION_STARTTLS;
             }
 
-            $mail->Port = $mapped['smtp_port'] ?? 587;
+            // [ESTABILIDADE] Cast para (int) para garantir que a porta seja um número
+            $mail->Port = (int) ($mapped['smtp_port'] ?? 587);
+
+            // [SEGURANÇA] Prevenção de Email Header Injection (CRLF Injection)
+            // Remove quebras de linha que atacantes usam para adicionar campos BCC ocultos e fazer Spam.
+            $systemName = str_replace(["\r", "\n", "\0"], '', $mapped['system_name'] ?? 'Lunar Panel');
+            $senderEmail = filter_var($mapped['smtp_send_email'] ?? 'nao-responda@exemplo.com', FILTER_VALIDATE_EMAIL) ?: 'nao-responda@exemplo.com';
 
             // Destinatários e Remetente
-            $mail->setFrom($mapped['smtp_send_email'] ?? 'nao-responda@exemplo.com', $mapped['system_name'] ?? 'Lunar Panel');
+            $mail->setFrom($senderEmail, $systemName);
             $mail->addAddress($to);
 
             // Conteúdo
             $mail->isHTML();
-            $mail->Subject = $subject;
+
+            // [SEGURANÇA] Higieniza o assunto contra injeção de cabeçalhos
+            $mail->Subject = str_replace(["\r", "\n", "\0"], '', $subject);
+
             $mail->Body    = $body;
             $mail->AltBody = strip_tags($body); // Versão em texto puro
 

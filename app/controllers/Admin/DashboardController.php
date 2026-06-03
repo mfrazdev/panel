@@ -15,7 +15,7 @@ class DashboardController
 
     public function view(Request $request, Response $response): Response
     {
-        
+
         $currentData = $this->getCurrentVersionData();
         $latestData = $this->getLatestGitHubVersionData($currentData['version']);
 
@@ -62,7 +62,14 @@ class DashboardController
 
         $tagName = $latestData['version'];
         $zipUrl = "https://github.com/" . self::GITHUB_REPO . "/releases/download/{$tagName}/panel.zip";
-        $tempZipPath = sys_get_temp_dir() . '/panel_update_' . time() . '.zip';
+
+        // [SEGURANÇA] Prevenção de Symlink Attack (Predictable Temp File)
+        // Usar tempnam garante a criação de um arquivo único seguro a nível de SO, impedindo a sobreposição de arquivos maliciosos locais.
+        $tempZipPath = tempnam(sys_get_temp_dir(), 'vatts_update_');
+
+        if ($tempZipPath === false) {
+            return $response->json(['success' => false, 'message' => 'Falha interna ao criar diretório temporário para a atualização.']);
+        }
 
         $ch = curl_init($zipUrl);
         $fp = fopen($tempZipPath, 'w+');
@@ -72,6 +79,10 @@ class DashboardController
         curl_setopt($ch, CURLOPT_MAXREDIRS, 5);
         curl_setopt($ch, CURLOPT_USERAGENT, 'Vatts-App');
         curl_setopt($ch, CURLOPT_FAILONERROR, true);
+
+        // [SEGURANÇA] Impede ataques Man-in-the-Middle forçando a validação do certificado SSL do GitHub
+        curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+        curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
 
         curl_exec($ch);
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
@@ -83,7 +94,7 @@ class DashboardController
             @unlink($tempZipPath);
             return $response->json([
                 'success' => false,
-                'message' => "Falha ao baixar o arquivo (HTTP {$httpCode}). " . ($httpCode == 404 ? "O arquivo panel.zip não foi encontrado na release {$tagName}." : "Erro cURL: {$curlError}")
+                'message' => "Falha ao baixar o arquivo (HTTP {$httpCode}). " . ($httpCode == 404 ? "O arquivo panel.zip não foi encontrado na release {$tagName}." : "Erro de Conexão. Verifique os logs.")
             ]);
         }
 
@@ -162,7 +173,11 @@ class DashboardController
             return $default;
         }
 
-        $xml = @simplexml_load_string($xmlData);
+        // [SEGURANÇA] Mitigação de XXE (XML External Entity)
+        // Obriga o parser a não fazer conexões externas sob nenhuma circunstância caso o feed seja falsificado.
+        libxml_use_internal_errors(true);
+        $xml = @simplexml_load_string($xmlData, 'SimpleXMLElement', LIBXML_NONET);
+
         if (!$xml || !isset($xml->entry)) {
             return $default;
         }

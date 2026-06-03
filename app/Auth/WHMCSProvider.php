@@ -26,10 +26,6 @@ class WHMCSProvider implements AuthProviderInterface
         $this->config = $config;
         $this->id = $this->resolveConfigValue('id') ?? 'whmcs';
         $this->name = $this->resolveConfigValue('name') ?? 'WHMCS';
-
-        if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-        }
     }
 
     public function getId(): string
@@ -67,6 +63,11 @@ class WHMCSProvider implements AuthProviderInterface
 
     private function storeOAuthState(bool $isPopup): string
     {
+        // Garante a sessão apenas na hora de usar, onde as configs já foram carregadas
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $state = bin2hex(random_bytes(32));
         $expiresAt = time() + 600;
 
@@ -81,6 +82,10 @@ class WHMCSProvider implements AuthProviderInterface
 
     private function consumeOAuthState(?string $state): ?array
     {
+        if (session_status() === PHP_SESSION_NONE) {
+            session_start();
+        }
+
         $key = 'oauth_state_' . $this->id;
         $stored = $_SESSION[$key] ?? null;
         unset($_SESSION[$key]);
@@ -102,9 +107,42 @@ class WHMCSProvider implements AuthProviderInterface
         return $stored;
     }
 
+    /**
+     * Aplica os mesmos parâmetros de expiração do cookie de sessão utilizados globalmente
+     */
+    protected function forceCookieExpiration(): void
+    {
+        $sessionConfig = $this->config['session'] ?? [];
+        $lifetimeDays = (int) ($sessionConfig['lifetime_days'] ?? 30);
+        $lifetime = max(0, $lifetimeDays * 86400);
+
+        $secure = $sessionConfig['secure'] ?? (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off');
+        $httpOnly = $sessionConfig['httponly'] ?? true;
+        $sameSite = $sessionConfig['samesite'] ?? 'Lax';
+        $path = $sessionConfig['path'] ?? '/';
+        $domain = $sessionConfig['domain'] ?? '';
+
+        if (PHP_VERSION_ID >= 70300) {
+            setcookie(session_name(), session_id(), [
+                'expires' => time() + $lifetime,
+                'path' => $path,
+                'domain' => $domain,
+                'secure' => $secure,
+                'httponly' => $httpOnly,
+                'samesite' => $sameSite,
+            ]);
+        } else {
+            setcookie(session_name(), session_id(), time() + $lifetime, $path, $domain, $secure, $httpOnly);
+        }
+    }
+
     private function processOAuthCallback(array $credentials): ?array
     {
         try {
+            // [SEGURANÇA] Prevenção de Array Injection
+            if (empty($credentials['code']) || !is_string($credentials['code'])) {
+                throw new Exception("Invalid code format provided.");
+            }
             $code = $credentials['code'];
 
             $whmcsUrl = rtrim((string) $this->resolveConfigValue('whmcsUrl'), '/');
@@ -123,9 +161,9 @@ class WHMCSProvider implements AuthProviderInterface
             curl_setopt($ch, CURLOPT_TIMEOUT, 20);
             curl_setopt($ch, CURLOPT_FOLLOWLOCATION, false);
 
-            // BYPASS DE SSL AQUI:
-            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 0);
+            // [SEGURANÇA CRÍTICA] Bypass de SSL removido para impedir ataques Man-In-The-Middle
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
             // Finge ser um navegador para o firewall do WHMCS não chiar
             curl_setopt($ch, CURLOPT_USERAGENT, 'Vatts.js Auth Client/1.0');
 
@@ -158,9 +196,9 @@ class WHMCSProvider implements AuthProviderInterface
             curl_setopt($chInfo, CURLOPT_TIMEOUT, 20);
             curl_setopt($chInfo, CURLOPT_FOLLOWLOCATION, false);
 
-            // O Bypass de SSL continua
-            curl_setopt($chInfo, CURLOPT_SSL_VERIFYPEER, false);
-            curl_setopt($chInfo, CURLOPT_SSL_VERIFYHOST, 0);
+            // [SEGURANÇA CRÍTICA] Bypass de SSL removido
+            curl_setopt($chInfo, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($chInfo, CURLOPT_SSL_VERIFYHOST, 2);
             curl_setopt($chInfo, CURLOPT_USERAGENT, 'Vatts.js Auth Client/1.0');
 
             // Mantemos no header para garantir...
@@ -250,7 +288,11 @@ class WHMCSProvider implements AuthProviderInterface
                 'handler' => function (Request $req, Response $res) {
                     $query = $req->getQuery();
                     $code = $query['code'] ?? null;
-                    $stateData = $this->consumeOAuthState($query['state'] ?? null);
+
+                    // [SEGURANÇA] Força a variável state a ser null se for injetado um array
+                    $stateParam = isset($query['state']) && is_string($query['state']) ? $query['state'] : null;
+
+                    $stateData = $this->consumeOAuthState($stateParam);
                     $isPopup = (bool)($stateData['popup'] ?? false);
 
                     if (!$stateData) {
@@ -280,7 +322,13 @@ class WHMCSProvider implements AuthProviderInterface
                         $user = $this->processOAuthCallback(['code' => $code]);
 
                         if ($user) {
+                            if (session_status() === PHP_SESSION_NONE) {
+                                session_start();
+                            }
+
+                            // [SEGURANÇA] Correção de Session Fixation
                             session_regenerate_id(true);
+                            $this->forceCookieExpiration();
 
                             $_SESSION['vatts_auth_user'] = $user;
                             $_SESSION['vatts_auth_ua'] = $_SERVER['HTTP_USER_AGENT'] ?? 'unknown';
@@ -301,7 +349,6 @@ class WHMCSProvider implements AuthProviderInterface
                         }
 
                     } catch (Exception $e) {
-                        // Agora se der erro no WHMCS, ele te mostra o motivo no JSON (ex: Client ID errado, callback mismatch, etc)
                         if ($isPopup) {
                             return $res->redirect("/api/auth/popup-callback?success=false&error=" . urlencode($e->getMessage()) . "&provider={$this->id}");
                         }

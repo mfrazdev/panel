@@ -182,24 +182,26 @@ class SettingsController
         ];
 
         foreach ($allowedDbKeys as $key) {
-            if (isset($body[$key]) && $body[$key] !== '') {
+            // [SEGURANÇA] Bloqueia Array Injection verificando se o input é estritamente uma string
+            if (isset($body[$key]) && is_string($body[$key]) && $body[$key] !== '') {
                 $setting = Settings::get('key', $key);
+                $value = trim($body[$key]);
 
                 if ($setting) {
-                    $setting->value = $body[$key];
+                    $setting->value = $value;
                     $setting->save();
                 } else {
                     $newSetting = new Settings();
                     $newSetting->key = $key;
-                    $newSetting->value = $body[$key];
+                    $newSetting->value = $value;
                     $newSetting->save();
                 }
             }
         }
 
         // Salva a configuração de .env separadamente
-        if (isset($body['company_name'])) {
-            $this->updateEnvFile(['COMPANY_NAME' => $body['company_name']]);
+        if (isset($body['company_name']) && is_string($body['company_name'])) {
+            $this->updateEnvFile(['COMPANY_NAME' => trim($body['company_name'])]);
         }
 
         return $response->setFlash(['success' => 'As configurações foram salvas com sucesso!'])
@@ -234,9 +236,17 @@ class SettingsController
 
             if (array_key_exists($key, $data)) {
                 $val = (string) $data[$key];
-                if (preg_match('/\s/', $val)) {
+
+                // [SEGURANÇA CRÍTICA] Prevenção de Environment Injection (CRLF) no .env
+                // Remove quebras de linha que o atacante usaria para pular a linha e injetar
+                // falsas chaves de ambiente, como DB_PASSWORD.
+                $val = str_replace(["\r", "\n", "\0"], '', $val);
+                $val = str_replace('"', '\"', $val); // Escapa as aspas originais
+
+                if (preg_match('/\s/', $val) || str_contains($val, '=')) {
                     $val = '"' . $val . '"';
                 }
+
                 $newLines[] = "{$key}={$val}";
                 $updatedKeys[] = $key;
             } else {
@@ -247,9 +257,15 @@ class SettingsController
         foreach ($data as $key => $val) {
             if (!in_array($key, $updatedKeys)) {
                 $val = (string) $val;
-                if (preg_match('/\s/', $val)) {
+
+                // [SEGURANÇA CRÍTICA] Prevenção de Environment Injection (CRLF) no .env
+                $val = str_replace(["\r", "\n", "\0"], '', $val);
+                $val = str_replace('"', '\"', $val);
+
+                if (preg_match('/\s/', $val) || str_contains($val, '=')) {
                     $val = '"' . $val . '"';
                 }
+
                 $newLines[] = "{$key}={$val}";
             }
         }

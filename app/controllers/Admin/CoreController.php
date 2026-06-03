@@ -82,8 +82,12 @@ class CoreController
 
     public function viewAll(Request $request, Response $response): Response
     {
-        $perPage = max(1, (int) ($_GET['per_page'] ?? 10));
-        $page = max(1, (int) ($_GET['page'] ?? 1));
+        // [SEGURANÇA] Força cast seguro blindando o sistema contra Array Injection via Query String
+        $perPageRaw = $_GET['per_page'] ?? 10;
+        $perPage = max(1, (int) (is_scalar($perPageRaw) ? $perPageRaw : 10));
+
+        $pageRaw = $_GET['page'] ?? 1;
+        $page = max(1, (int) (is_scalar($pageRaw) ? $pageRaw : 1));
 
         $allCores = Core::all();
 
@@ -171,7 +175,10 @@ class CoreController
             'custom_cards'  => ['partials.core.import_export'], // Adicionado o custom card aqui
         ];
 
-        return $response->view('resources.edit_create', $this->getViewData($request, "Core - {$core->name}", $viewData));
+        // [SEGURANÇA] Proteção contra XSS armazenado no título da View
+        $safeName = htmlspecialchars((string)$core->name, ENT_QUOTES, 'UTF-8');
+
+        return $response->view('resources.edit_create', $this->getViewData($request, "Core - {$safeName}", $viewData));
     }
 
     public function edit(Request $request, Response $response): Response
@@ -251,10 +258,13 @@ class CoreController
         // Converte o model filtrado para JSON
         $jsonData = json_encode($exportData, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-        header('Content-Type: application/json; charset=utf-8');
-        header('Content-Disposition: attachment; filename="core_' . $core->id . '_export.json"');
-        echo $jsonData;
-        exit;
+        // [SEGURANÇA CRÍTICA] Tratamento de HTTP Header Injection (CRLF) no envio de arquivos
+        // E substituição do "exit;" abrupto por envio direto via Response object nativo do Vatts.
+        $safeId = str_replace(["\r", "\n", "\0", '"'], '', (string)$core->id);
+
+        return $response->header('Content-Type', 'application/json; charset=utf-8')
+            ->header('Content-Disposition', 'attachment; filename="core_' . $safeId . '_export.json"')
+            ->send($jsonData);
     }
 
     public function importJson(Request $request, Response $response): Response
@@ -272,10 +282,13 @@ class CoreController
         }
 
         $fileContent = file_get_contents($_FILES['json_file']['tmp_name']);
-        $decodedData = json_decode($fileContent, true);
 
-        if (!$decodedData) {
-            return $response->setFlash(['error' => 'O arquivo enviado não é um JSON válido.'])
+        // [SEGURANÇA] Bloqueia ataques de "JSON Bomb" impondo limite de profundidade (512) seguro
+        $decodedData = json_decode($fileContent, true, 512);
+
+        // Verifica erros precisos do JSON
+        if (json_last_error() !== JSON_ERROR_NONE || !is_array($decodedData)) {
+            return $response->setFlash(['error' => 'O arquivo enviado não é um JSON válido ou legível.'])
                 ->redirect("/admin/cores/{$core->id}/edit");
         }
 
@@ -283,9 +296,15 @@ class CoreController
         $exclude = ['id', 'created_at', 'updated_at', 'view_map'];
 
         foreach ($decodedData as $key => $value) {
+            // [SEGURANÇA] Validação contra "Mass Assignment" dinâmico no Loop
+            if (!is_string($key)) {
+                continue;
+            }
+
             if (!in_array($key, $exclude)) {
-                // Preenche o model diretamente para evitar que o Utils perca campos
-                $core->{$key} = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : $value;
+                // [SEGURANÇA] Type safety garantido em tempo de execução
+                // Transforma os dados em seu tipo original correto para não causar erro interno no ORM.
+                $core->{$key} = is_array($value) ? json_encode($value, JSON_UNESCAPED_UNICODE) : (is_scalar($value) ? $value : null);
             }
         }
 

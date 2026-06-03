@@ -88,64 +88,78 @@ export default function Terminal() {
     const showSpinner = !isSuspended && (consoleWsStatus === 'connecting' || consoleWsStatus === 'reconnecting' || (logs.length === 0 && consoleWsStatus === 'connected'));
 
     return (
-        <div className={`flex flex-col  border border-white/5 h-full w-full rounded-lg overflow-hidden shadow-[var(--card-shadow)] transition-all duration-300 ${isSuspended ? 'bg-red-950/20' : 'bg-[var(--color-console)]'}`}>
+        /* Glow Wrapper com a Borda Fake animada */
+        <div className={`group relative p-[4px] rounded-2xl transition-all duration-500 ease-out h-full w-full flex flex-col ${
+            isSuspended
+                ? 'bg-gradient-to-br from-[var(--color-danger)]/40 via-[var(--color-secondary)] to-transparent hover:from-[var(--color-danger)]/60 hover:shadow-[var(--color-danger)]/10'
+                : 'bg-gradient-to-br from-[var(--color-terciary)] via-[var(--color-secondary)] to-transparent'
+        }`}>
 
-            {/* Área de Logs */}
-            <div
-                ref={scrollRef}
-                onScroll={handleScroll}
-                className={`terminal-font flex-1 p-5 text-[13px] overflow-y-auto custom-scrollbar selection:bg-[var(--color-primary)]/30 min-h-0 antialiased relative ${isSuspended ? 'bg-transparent' : 'bg-transparent'}`}
-            >
-                <AnimatePresence>
-                    {showSpinner && (
-                        <motion.div
-                            key="loading-terminal"
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                            exit={{ opacity: 0 }}
-                            className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[var(--color-console)]/50 backdrop-blur-sm rounded-lg"
-                        >
-                            <LoadingPage />
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+            {/* Inner Container - Fundo Escuro Limpo sem bordas reais */}
+            <div className={`relative flex flex-col flex-1 rounded-[14px] overflow-hidden transition-colors duration-500 ease-out backdrop-blur-xl ${
+                isSuspended ? 'bg-[var(--color-danger)]/10' : 'bg-[var(--color-console)]'
+            }`}>
 
-                <div className="flex flex-col">
-                    {logs.map((log, index) => (
-                        <div key={`${log.id}-${index}`} className={`leading-relaxed break-all whitespace-pre-wrap mb-[1px] ${isSuspended ? 'text-red-400/80' : 'text-(--color-text-value)'}`}>
-                            <Ansi>{log.line || log.message}</Ansi>
-                        </div>
-                    ))}
+                {/* Área de Logs */}
+                <div
+                    ref={scrollRef}
+                    onScroll={handleScroll}
+                    className="terminal-font flex-1 p-5 text-[13px] overflow-y-auto custom-scrollbar selection:bg-[var(--color-primary)]/30 min-h-0 antialiased relative bg-transparent"
+                >
+                    <AnimatePresence>
+                        {showSpinner && (
+                            <motion.div
+                                key="loading-terminal"
+                                initial={{ opacity: 0 }}
+                                animate={{ opacity: 1 }}
+                                exit={{ opacity: 0 }}
+                                className="absolute inset-0 flex flex-col items-center justify-center z-10 bg-[var(--color-console)]/50 backdrop-blur-sm rounded-[14px]"
+                            >
+                                <LoadingPage />
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
 
-                    {/* Mensagem fixa no console quando suspenso */}
-                    {isSuspended && logs.length === 0 && (
-                        <div className="text-red-500 font-bold tracking-wide mt-2">
-                            [SISTEMA] Conexão recusada. O servidor encontra-se suspenso.
-                        </div>
-                    )}
+                    <div className="flex flex-col">
+                        {logs.map((log, index) => (
+                            <div key={`${log.id}-${index}`} className={`leading-relaxed break-all whitespace-pre-wrap mb-[1px] ${isSuspended ? 'text-[var(--color-danger)]/80' : 'text-[var(--color-text-value)]'}`}>
+                                <Ansi>{log.line || log.message}</Ansi>
+                            </div>
+                        ))}
+
+                        {/* Mensagem fixa no console quando suspenso */}
+                        {isSuspended && logs.length === 0 && (
+                            <div className="text-[var(--color-danger)] font-bold tracking-wide mt-2">
+                                [SISTEMA] Conexão recusada. O servidor encontra-se suspenso.
+                            </div>
+                        )}
+                    </div>
                 </div>
-            </div>
 
-            {/* Input de Comandos (Estilo Inset Clean) */}
-            <div className={`flex items-center gap-3 px-5 py-4 group bg-black/20 shadow-inner ${isSuspended ? 'bg-red-950/40' : ''}`}>
-                <span className={`${isSuspended ? 'text-red-500/50' : 'text-[var(--color-text-sub)] group-focus-within:text-[var(--color-primary)]'} transition-colors duration-300 shrink-0`}>
-                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                        <polyline points="9 18 15 12 9 6" />
-                    </svg>
-                </span>
-                <input
-                    type="text"
-                    value={commandInput}
-                    onChange={(e) => setCommandInput(e.target.value)}
-                    onKeyDown={handleKeyDown}
-                    disabled={consoleWsStatus !== 'connected' || isSuspended}
-                    placeholder={
-                        isSuspended
-                            ? "Acesso negado: Servidor suspenso."
-                            : (consoleWsStatus === 'connected' ? "Digite um comando..." : "Console desconectado.")
-                    }
-                    className="terminal-font flex-1 bg-transparent border-none outline-none text-[var(--color-text-value)] text-[14px] placeholder:text-[var(--color-text-sub)]/50 disabled:opacity-50 transition-colors"
-                />
+                {/* Input de Comandos (Estilo Inset Clean adaptado pro Root) */}
+                <div className={`flex items-center gap-3 px-5 py-4 relative z-10 transition-colors duration-500 ease-out ${
+                    isSuspended ? 'bg-[var(--color-danger)]/20' : 'bg-[var(--color-console-command)]'
+                }`}>
+                    <span className={`${isSuspended ? 'text-[var(--color-danger)]/50' : 'text-[var(--color-text-sub)] focus-within:text-[var(--color-primary)]'} transition-colors duration-300 shrink-0`}>
+                        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                            <polyline points="9 18 15 12 9 6" />
+                        </svg>
+                    </span>
+                    <input
+                        type="text"
+                        value={commandInput}
+                        onChange={(e) => setCommandInput(e.target.value)}
+                        onKeyDown={handleKeyDown}
+                        disabled={consoleWsStatus !== 'connected' || isSuspended}
+                        placeholder={
+                            isSuspended
+                                ? "Acesso negado: Servidor suspenso."
+                                : (consoleWsStatus === 'connected' ? "Digite um comando..." : "Console desconectado.")
+                        }
+                        className="terminal-font flex-1 bg-transparent border-none outline-none text-[var(--color-text-value)] text-[14px] placeholder:text-[var(--color-text-sub)]/50 disabled:opacity-50 transition-colors"
+                    />
+                </div>
+
             </div>
         </div>
     );

@@ -66,18 +66,31 @@ class UsersController
     /**
      * Centraliza as validações para Create e Edit
      */
-    private function validateUserData(array $body, ?User $currentUser = null): ?string
+    private function validateUserData(array $body, ?User $editingUser = null, ?User $currentUser = null): ?string
     {
-        $email      = $body['email'] ?? null;
-        $username   = $body['name'] ?? null;
-        $first_name = $body['first_name'] ?? null;
-        $last_name  = $body['last_name'] ?? null;
-        $role       = $body['role'] ?? null;
+        // [SEGURANÇA] Blindagem contra Array Injection
+        $email      = is_string($body['email'] ?? null) ? trim($body['email']) : null;
+        $username   = is_string($body['name'] ?? null) ? trim($body['name']) : null;
+        $first_name = is_string($body['first_name'] ?? null) ? trim($body['first_name']) : null;
+        $last_name  = is_string($body['last_name'] ?? null) ? trim($body['last_name']) : null;
+        $role       = is_string($body['role'] ?? null) ? trim($body['role']) : null;
 
         if (!$email || !filter_var($email, FILTER_VALIDATE_EMAIL)) return "O email precisa ser um email válido.";
         if (!$username) return "O nome de usuário é obrigatório.";
         if (!$first_name || !$last_name) return "Nome e sobrenome são obrigatórios.";
         if (!$role) return "O cargo (role) deve ser selecionado.";
+
+        // [SEGURANÇA] Whitelist de Cargos (Privilege Escalation protection)
+        // Adicione outras roles aqui se existirem na sua aplicação
+        $allowedRoles = ['admin', 'user'];
+        if (!in_array($role, $allowedRoles)) {
+            return "Cargo (role) inválido selecionado.";
+        }
+
+        // [SEGURANÇA] Impede o Auto-Bloqueio (Self-Lockout). Um Admin não pode remover sua própria role de admin.
+        if ($currentUser && $editingUser && $currentUser->id === $editingUser->id && $role !== $editingUser->role) {
+            return "Você não pode alterar seu próprio cargo para evitar a perda do acesso administrativo.";
+        }
 
         // Validar espaços e maiúsculas
         if (preg_match('/\s/', $username)) return "O nome de usuário não pode conter espaços.";
@@ -85,13 +98,13 @@ class UsersController
 
         // Verifica se o email já existe
         $existingEmailUser = User::get('email', $email);
-        if ($existingEmailUser && (!$currentUser || $existingEmailUser->id !== $currentUser->id)) {
+        if ($existingEmailUser && (!$editingUser || $existingEmailUser->id !== $editingUser->id)) {
             return "O email fornecido já está em uso por outro usuário.";
         }
 
         // Verifica se o nome de usuário já existe
         $existingUsernameUser = User::get('name', $username);
-        if ($existingUsernameUser && (!$currentUser || $existingUsernameUser->id !== $currentUser->id)) {
+        if ($existingUsernameUser && (!$editingUser || $existingUsernameUser->id !== $editingUser->id)) {
             return "O nome de usuário fornecido já está em uso por outro usuário.";
         }
 
@@ -104,8 +117,12 @@ class UsersController
 
     public function viewAll(Request $request, Response $response): Response
     {
-        $perPage = max(1, (int) ($_GET['per_page'] ?? 10));
-        $page = max(1, (int) ($_GET['page'] ?? 1));
+        // [SEGURANÇA] Força cast seguro blindando o sistema contra Array Injection via Query String
+        $perPageRaw = $_GET['per_page'] ?? 10;
+        $perPage = max(1, (int) (is_scalar($perPageRaw) ? $perPageRaw : 10));
+
+        $pageRaw = $_GET['page'] ?? 1;
+        $page = max(1, (int) (is_scalar($pageRaw) ? $pageRaw : 1));
 
         $allUsers = User::all();
 
@@ -164,7 +181,12 @@ class UsersController
             'tabs' => false
         ];
 
-        return $response->view('resources.edit_create', $this->getViewData($request, "Usuário - {$user->first_name} {$user->last_name}", $viewData));
+        // [SEGURANÇA] Proteção contra XSS no Título
+        // Se um atacante usar tags <script> no nome, a view poderia executá-las ao renderizar a string concatenada.
+        $safeFirstName = htmlspecialchars((string)$user->first_name, ENT_QUOTES, 'UTF-8');
+        $safeLastName  = htmlspecialchars((string)$user->last_name, ENT_QUOTES, 'UTF-8');
+
+        return $response->view('resources.edit_create', $this->getViewData($request, "Usuário - {$safeFirstName} {$safeLastName}", $viewData));
     }
 
     public function edit(Request $request, Response $response): Response
@@ -176,23 +198,32 @@ class UsersController
         }
 
         $body = $request->getBody();
-        $error = $this->validateUserData($body, $user);
+        $currentUser = $request->getParsed('user');
 
-        // Se houve erro, retorna a view com o erro (aqui mantemos view para preservar o input do usuário)
+        $error = $this->validateUserData($body, $user, $currentUser);
+
+        // Se houve erro, retorna a view com o erro
         if ($error) {
             return $response->setFlash(['error' => $error])
                 ->redirect("/admin/users/{$user->id}/edit");
         }
 
-        // Atualiza e salva
-        $user->name       = $body['name'];
-        $user->email      = $body['email'];
-        $user->first_name = $body['first_name'];
-        $user->last_name  = $body['last_name'];
-        $user->role       = $body['role'];
+        // [SEGURANÇA] Cast rígido na inserção para evitar que PDO exploda com Fatal Error se receber arrays
+        $user->name       = (string)$body['name'];
+        $user->email      = (string)$body['email'];
+        $user->first_name = (string)$body['first_name'];
+        $user->last_name  = (string)$body['last_name'];
+        $user->role       = (string)$body['role'];
 
-        if (!empty($body['password'])) {
-            $user->password = password_hash($body['password'], PASSWORD_DEFAULT);
+        // [SEGURANÇA] Tratamento do password para corrigir falha do '0' e evitar DOS do hash com limites
+        $password = isset($body['password']) && is_string($body['password']) ? $body['password'] : '';
+
+        if ($password !== '') {
+            if (strlen($password) > 72) {
+                return $response->setFlash(['error' => 'A senha não pode ter mais de 72 caracteres.'])
+                    ->redirect("/admin/users/{$user->id}/edit");
+            }
+            $user->password = password_hash($password, PASSWORD_DEFAULT);
         }
 
         $user->save();
@@ -219,11 +250,17 @@ class UsersController
     public function create(Request $request, Response $response): Response
     {
         $body = $request->getBody();
-        $error = $this->validateUserData($body);
+        $currentUser = $request->getParsed('user');
 
-        // Validação extra apenas para o Create
-        if (!$error && empty($body['password'])) {
+        $error = $this->validateUserData($body, null, $currentUser);
+
+        $password = isset($body['password']) && is_string($body['password']) ? $body['password'] : '';
+
+        // [SEGURANÇA] Correção do Bug do Password '0' (que o empty() entendia como falso/nulo) e verificação de limite
+        if (!$error && $password === '') {
             $error = "A senha é obrigatória.";
+        } elseif (!$error && strlen($password) > 72) {
+            $error = "A senha não pode ter mais de 72 caracteres.";
         }
 
         $user = new User();
@@ -233,13 +270,14 @@ class UsersController
                 ->redirect("/admin/users/create");
         }
 
-        // Popula e salva
-        $user->name       = $body['name'];
-        $user->email      = $body['email'];
-        $user->first_name = $body['first_name'];
-        $user->last_name  = $body['last_name'];
-        $user->role       = $body['role'];
-        $user->password   = password_hash($body['password'], PASSWORD_DEFAULT);
+        // [SEGURANÇA] Cast rígido na inserção PDO
+        $user->name       = (string)$body['name'];
+        $user->email      = (string)$body['email'];
+        $user->first_name = (string)$body['first_name'];
+        $user->last_name  = (string)$body['last_name'];
+        $user->role       = (string)$body['role'];
+        $user->password   = password_hash($password, PASSWORD_DEFAULT);
+
         $user->save();
 
         // Redireciona para a página de edição do novo usuário com sucesso

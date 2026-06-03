@@ -140,9 +140,11 @@ export default function DatabasesContainer() {
                 </div>
 
                 <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4">
-                    <div className="text-[13px] font-medium text-[var(--color-text-sub)] bg-[var(--color-secondary)] border border-white/5 px-5 py-3 rounded-xl shadow-sm">
-                        Uso: <span className="text-[var(--color-text-value)] font-bold ml-1">{databases.length}</span> / {maxDatabases === null ? 'Ilimitado' : maxDatabases}
-                    </div>
+                    <Card>
+                        <div className="text-[13px] font-medium text-[var(--color-text-sub)] -m-2">
+                            Uso: <span className="text-[var(--color-text-value)] font-bold ml-1">{databases.length}</span> / {maxDatabases === null ? 'Ilimitado' : maxDatabases}
+                        </div>
+                    </Card>
 
                     <Button
                         variant="info"

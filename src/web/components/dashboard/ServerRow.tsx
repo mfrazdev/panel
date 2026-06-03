@@ -3,7 +3,6 @@ import { ServerData } from "@/web/types";
 import { Link } from "vatts/react";
 
 interface ServerRowProps {
-    // Tipagem atualizada para aceitar o objeto user e o ownerId
     server: ServerData & {
         description?: string;
         user?: { id: number; first_name: string; email: string };
@@ -20,19 +19,20 @@ interface ServerRowProps {
         externalIp: string;
         port: number;
     };
-    isAdminView?: boolean; // Nova prop para saber se estamos no modo global
+    isAdminView?: boolean;
 }
 
-const STATUS_CONFIG: Record<string, { color: string; label: string; isAnimated: boolean }> = {
-    running: { color: 'var(--color-success)', label: 'Online', isAnimated: true },
-    initializing: { color: 'var(--color-warning)', label: 'Iniciando', isAnimated: true },
-    starting: { color: 'var(--color-warning)', label: 'Iniciando', isAnimated: true },
-    installing: { color: 'var(--color-warning)', label: 'Instalando', isAnimated: true },
-    stopping: { color: 'var(--color-warning)', label: 'Desligando', isAnimated: true },
-    stopped: { color: 'var(--color-danger)', label: 'Offline', isAnimated: false },
-    offline: { color: 'var(--color-danger)', label: 'Offline', isAnimated: false },
-    suspended: { color: 'var(--color-danger)', label: 'Suspenso', isAnimated: false },
-    conectando: { color: 'var(--color-text-sub)', label: 'Conectando...', isAnimated: true },
+// Lógica de status 100% adaptada para as variáveis do root
+const STATUS_CONFIG: Record<string, { color: string; label: string; isAnimated: boolean; gradient: string }> = {
+    running: { color: 'var(--color-success)', label: 'Online', isAnimated: true, gradient: 'from-[var(--color-success)]/40 via-[var(--color-terciary)]/10' },
+    initializing: { color: 'var(--color-warning)', label: 'Iniciando', isAnimated: true, gradient: 'from-[var(--color-warning)]/40 via-[var(--color-terciary)]/10' },
+    starting: { color: 'var(--color-warning)', label: 'Iniciando', isAnimated: true, gradient: 'from-[var(--color-warning)]/40 via-[var(--color-terciary)]/10' },
+    installing: { color: 'var(--color-warning)', label: 'Instalando', isAnimated: true, gradient: 'from-[var(--color-warning)]/40 via-[var(--color-terciary)]/10' },
+    stopping: { color: 'var(--color-warning)', label: 'Desligando', isAnimated: true, gradient: 'from-[var(--color-warning)]/40 via-[var(--color-terciary)]/10' },
+    stopped: { color: 'var(--color-danger)', label: 'Offline', isAnimated: false, gradient: 'from-[var(--color-danger)]/40 via-[var(--color-terciary)]/10' },
+    offline: { color: 'var(--color-danger)', label: 'Offline', isAnimated: false, gradient: 'from-[var(--color-danger)]/40 via-[var(--color-terciary)]/10' },
+    suspended: { color: 'var(--color-warning)', label: 'Suspenso', isAnimated: false, gradient: 'from-[var(--color-warning)]/40 via-[var(--color-terciary)]/10' },
+    conectando: { color: 'var(--color-warning)', label: 'Conectando...', isAnimated: true, gradient: 'from-[var(--color-warning)]/40 via-[var(--color-terciary)]/10' },
 };
 
 const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats, allocation, isAdminView = false }) => {
@@ -59,118 +59,127 @@ const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats
     const diskPercent = server.disk > 0 ? Math.min((diskInMB / server.disk) * 100, 100) : 0;
 
     return (
-        <Link
-            href={`/server/${server.serverUuid.split('-')[0]}`}
-            className="group flex flex-col xl:flex-row items-start xl:items-center justify-between p-3 gap-6 bg-[var(--color-secondary)] border border-white/5 rounded-xl hover:bg-white/[0.02] hover:border-white/10 transition-all duration-300"
-        >
-            {/* Esquerda: Ícone e Info do Servidor */}
-            <div className="flex items-center gap-5 w-full xl:w-auto">
-                <div className="w-12 h-12 rounded-xl bg-white/5 border border-white/10 flex items-center justify-center text-[var(--color-text-sub)] group-hover:text-[var(--color-primary)] transition-colors shadow-sm shrink-0">
-                    <svg width="22" height="22" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
-                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
-                        <line x1="6" y1="6" x2="6.01" y2="6"></line>
-                        <line x1="6" y1="18" x2="6.01" y2="18"></line>
-                    </svg>
-                </div>
+        <div className={`group relative p-[4px] rounded-2xl bg-gradient-to-br ${currentStatus.gradient} to-transparent hover:via-[var(--color-terciary)]/30 transition-all duration-500 block w-full shadow-2xl`}>
+            <Link
+                href={`/server/${server.serverUuid.split('-')[0]}`}
+                className="relative block h-full bg-[var(--color-secondary)] backdrop-blur-xl rounded-[14px] p-3"
+            >
+                <div className="flex flex-col xl:flex-row items-start xl:items-center justify-between gap-6">
 
-                <div className="flex flex-col min-w-0">
-                    <h3 className="text-[15px] font-bold text-[var(--color-text-value)] tracking-tight truncate max-w-[250px] md:max-w-[320px]">
-                        {server.name}
-                    </h3>
-
-                    <span className="font-mono text-[13px] text-[var(--color-text-sub)] mt-0.5 truncate">
-                        {address}
-                    </span>
-
-                    {/* Tag de Usuário APENAS se for Admin View */}
-                    {isAdminView && server.user && (
-                        <div className="mt-2 flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-black/20 border border-white/5 w-fit shadow-inner">
-                            <svg width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-[var(--color-text-sub)]">
-                                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="12" cy="7" r="4"></circle>
+                    <div className="flex items-center gap-5 w-full xl:w-auto">
+                        <div className="w-14 h-14 rounded-xl bg-[var(--color-terciary)] text-[var(--color-text-label)] group-hover:text-[var(--color-text-value)] transition-colors shadow-xl shrink-0 flex items-center justify-center">
+                            <svg width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
+                                <rect x="2" y="2" width="20" height="8" rx="2" ry="2"></rect>
+                                <rect x="2" y="14" width="20" height="8" rx="2" ry="2"></rect>
+                                <line x1="6" y1="6" x2="6.01" y2="6"></line>
+                                <line x1="6" y1="18" x2="6.01" y2="18"></line>
                             </svg>
-                            <span className="text-[11px] font-mono text-[var(--color-text-sub)] truncate max-w-[200px]">
-                                <span className="text-[var(--color-primary)] font-bold">#{server.user.id}</span> {server.user.first_name}
+                        </div>
+
+                        <div className="flex flex-col min-w-0">
+                            <h3 className="text-[18px] font-black text-[var(--color-text-value)] tracking-tight truncate max-w-[250px] md:max-w-[320px]">
+                                {server.name}
+                            </h3>
+
+                            <span className="font-mono text-[13px] text-[var(--color-text-sub)] mt-1 truncate">
+                                {address}
+                            </span>
+
+                            {isAdminView && server.user && (
+                                <div className="mt-2.5 flex items-center gap-2 px-3 py-1.5 rounded-lg bg-[var(--color-background)]/50 w-fit shadow-lg">
+                                    <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-[var(--color-text-sub)]">
+                                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                                        <circle cx="12" cy="7" r="4"></circle>
+                                    </svg>
+                                    <span className="text-[12px] font-mono text-[var(--color-text-label)] truncate max-w-[200px]">
+                                        <span className="text-[var(--color-text-value)] font-bold">#{server.user.id}</span> {server.user.first_name}
+                                    </span>
+                                </div>
+                            )}
+
+                            {server.description && !isAdminView && (
+                                <p className="mt-2 text-[13px] text-[var(--color-text-sub)] opacity-80 truncate max-w-[250px] md:max-w-[320px]">
+                                    {server.description}
+                                </p>
+                            )}
+                        </div>
+                    </div>
+
+                    <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full xl:w-auto">
+
+                        <div className="flex items-center gap-3 px-4 py-2 rounded-xl bg-[var(--color-background)]/50 shadow-xl shrink-0">
+                            <span className="relative flex h-2.5 w-2.5">
+                                {currentStatus.isAnimated && (
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: currentStatus.color }}></span>
+                                )}
+                                <span className="relative inline-flex rounded-full h-2.5 w-2.5" style={{ backgroundColor: currentStatus.color, boxShadow: `0 0 10px ${currentStatus.color}` }}></span>
+                            </span>
+                            <span className="text-[11px] uppercase font-black tracking-widest text-[var(--color-text-value)]">
+                                {currentStatus.label}
                             </span>
                         </div>
-                    )}
 
-                    {server.description && !isAdminView && (
-                        <p className="mt-1 text-[12px] text-[var(--color-text-sub)] opacity-80 truncate max-w-[250px] md:max-w-[320px]">
-                            {server.description}
-                        </p>
-                    )}
-                </div>
-            </div>
+                        <div className="flex flex-wrap sm:flex-nowrap items-center gap-6 sm:gap-8 bg-[var(--color-background)]/50 rounded-xl px-6 py-4 shadow-xl w-full sm:w-auto">
+                            {/* CPU */}
+                            <div className="flex flex-col w-full sm:w-24">
+                                <div className="flex items-end justify-between mb-2.5">
+                                    <span className="text-[10px] text-[var(--color-text-label)] uppercase font-black tracking-widest">CPU</span>
+                                    <span className="text-[13px] font-mono text-[var(--color-text-value)] font-bold">
+                                        {isConnecting ? '--' : `${currentCpu.toFixed(1)}%`}
+                                    </span>
+                                </div>
+                                <div className="w-full h-1.5 bg-[var(--color-terciary)] rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_currentColor]"
+                                        style={{
+                                            width: `${cpuPercent}%`,
+                                            backgroundColor: cpuPercent > 85 ? 'var(--color-danger)' : cpuPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)',
+                                            color: cpuPercent > 85 ? 'var(--color-danger)' : cpuPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)'
+                                        }}
+                                    />
+                                </div>
+                            </div>
 
-            {/* Direita: Status e Métricas Inset */}
-            <div className="flex flex-col sm:flex-row items-start sm:items-center gap-6 w-full xl:w-auto">
+                            {/* RAM */}
+                            <div className="flex flex-col w-full sm:w-28">
+                                <div className="flex items-end justify-between mb-2.5">
+                                    <span className="text-[10px] text-[var(--color-text-label)] uppercase font-black tracking-widest">RAM</span>
+                                    <span className="text-[13px] font-mono text-[var(--color-text-value)] font-bold">{isConnecting ? '--' : formatUsage(currentRamBytes)}</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-[var(--color-terciary)] rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_currentColor]"
+                                        style={{
+                                            width: `${ramPercent}%`,
+                                            backgroundColor: ramPercent > 85 ? 'var(--color-danger)' : ramPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)',
+                                            color: ramPercent > 85 ? 'var(--color-danger)' : ramPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)'
+                                        }}
+                                    />
+                                </div>
+                            </div>
 
-                <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-white/5 border border-white/5 shrink-0">
-                    <span className="relative flex h-2 w-2">
-                        {currentStatus.isAnimated && (
-                            <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: currentStatus.color }}></span>
-                        )}
-                        <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: currentStatus.color, boxShadow: `0 0 8px ${currentStatus.color}` }}></span>
-                    </span>
-                    <span className="text-[11px] uppercase font-black tracking-widest text-[var(--color-text-value)]">
-                        {currentStatus.label}
-                    </span>
-                </div>
-
-                <div className="flex flex-wrap sm:flex-nowrap items-center gap-5 sm:gap-8 bg-black/20 border border-white/5 rounded-lg px-6 py-4 shadow-inner w-full sm:w-auto">
-                    {/* CPU */}
-                    <div className="flex flex-col w-full sm:w-24">
-                        <div className="flex items-end justify-between mb-2">
-                            <span className="text-[10px] text-[var(--color-text-sub)] uppercase font-black tracking-widest">CPU</span>
-                            <span className="text-[12px] font-mono text-[var(--color-text-value)] font-medium">
-                                {isConnecting ? '--' : `${currentCpu.toFixed(1)}%`}
-                            </span>
-                        </div>
-                        <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                            <div
-                                className="h-full rounded-full transition-all duration-700 ease-out"
-                                style={{ width: `${cpuPercent}%`, backgroundColor: cpuPercent > 85 ? 'var(--color-danger)' : cpuPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)' }}
-                            />
-                        </div>
-                    </div>
-
-                    {/* RAM */}
-                    <div className="flex flex-col w-full sm:w-28">
-                        <div className="flex items-end justify-between mb-2">
-                            <span className="text-[10px] text-[var(--color-text-sub)] uppercase font-black tracking-widest">RAM</span>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-[12px] font-mono text-[var(--color-text-value)] font-medium">{isConnecting ? '--' : formatUsage(currentRamBytes)}</span>
+                            {/* DISK */}
+                            <div className="flex flex-col w-full sm:w-28">
+                                <div className="flex items-end justify-between mb-2.5">
+                                    <span className="text-[10px] text-[var(--color-text-label)] uppercase font-black tracking-widest">SSD</span>
+                                    <span className="text-[13px] font-mono text-[var(--color-text-value)] font-bold">{isConnecting ? '--' : formatUsage(currentDiskBytes)}</span>
+                                </div>
+                                <div className="w-full h-1.5 bg-[var(--color-terciary)] rounded-full overflow-hidden">
+                                    <div
+                                        className="h-full rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_currentColor]"
+                                        style={{
+                                            width: `${diskPercent}%`,
+                                            backgroundColor: diskPercent > 85 ? 'var(--color-danger)' : diskPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)',
+                                            color: diskPercent > 85 ? 'var(--color-danger)' : diskPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)'
+                                        }}
+                                    />
+                                </div>
                             </div>
                         </div>
-                        <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                            <div
-                                className="h-full rounded-full transition-all duration-700 ease-out"
-                                style={{ width: `${ramPercent}%`, backgroundColor: ramPercent > 85 ? 'var(--color-danger)' : ramPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)' }}
-                            />
-                        </div>
                     </div>
-
-                    {/* DISK (SSD) */}
-                    <div className="flex flex-col w-full sm:w-28">
-                        <div className="flex items-end justify-between mb-2">
-                            <span className="text-[10px] text-[var(--color-text-sub)] uppercase font-black tracking-widest">SSD</span>
-                            <div className="flex items-baseline gap-1">
-                                <span className="text-[12px] font-mono text-[var(--color-text-value)] font-medium">{isConnecting ? '--' : formatUsage(currentDiskBytes)}</span>
-                            </div>
-                        </div>
-                        <div className="w-full h-1 bg-black/40 rounded-full overflow-hidden">
-                            <div
-                                className="h-full rounded-full transition-all duration-700 ease-out"
-                                style={{ width: `${diskPercent}%`, backgroundColor: diskPercent > 85 ? 'var(--color-danger)' : diskPercent > 60 ? 'var(--color-warning)' : 'var(--color-primary)' }}
-                            />
-                        </div>
-                    </div>
-
                 </div>
-            </div>
-        </Link>
+            </Link>
+        </div>
     );
 };
 

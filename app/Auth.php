@@ -31,14 +31,20 @@ $auth = new VattsAuth([
     'providers' => [
         new CredentialsProvider([
             'authorize' => function ($credentials) {
-                $email = $credentials['email'];
+                $email = $credentials['email'] ?? '';
                 $user = filter_var($email, FILTER_VALIDATE_EMAIL)
                     ? User::get('email', $email)
                     : User::get('name', $email);
 
-                $pass = $credentials['password'] ?? null;
+                // [SEGURANÇA] Prevenção de "Timing Attacks" (Descobrir usuários cadastrados).
+                // Geramos um hash falso com o mesmo custo para enganar requisições onde o usuário não existe.
+                $dummyHash = '$2y$10$usesomesillystringfore2uDLv11eM9/O4kL3v11eM9/O4kL3v1'; // Hash de 60 caracteres válido do bcrypt como placeholder
+                $hashToVerify = $user ? $user->password : $dummyHash;
+                $passwordToCheck = $credentials['password'] ?? '';
 
-                if ($user && password_verify($credentials['password'], $user->password)) {
+                $isPasswordValid = password_verify($passwordToCheck, $hashToVerify);
+
+                if ($user && $isPasswordValid) {
                     $u = $user->toArray();
                     unset($u['view_map']);
                     return $u;
@@ -108,20 +114,38 @@ $auth = new VattsAuth([
         'jwt' => function($user) {
             return [
                 'id' => $user['id'],
+                // [SEGURANÇA] O Carimbo de Segurança.
+                // Criamos um hash com base na senha atual ou e-mail.
+                // Isso fica salvo na sessão do PHP. Se no banco alterar, a sessão cai.
+                'security_stamp' => isset($user['password']) ? md5($user['password']) : null,
             ];
         },
 
         'session' => function($sessionData) {
             $id = $sessionData['id'] ?? null;
+            $sessionStamp = $sessionData['security_stamp'] ?? null;
+
             if ($id) {
                 $user = User::get('id', $id);
                 if ($user) {
-                    $user =  $user->toArray();
-                    unset($user['view_map']);
-                    return $user;
+                    // [SEGURANÇA] Valida se o usuário mudou a senha (o que muda o security stamp)
+                    $currentStamp = isset($user->password) ? md5($user->password) : null;
+
+                    if ($sessionStamp !== null && $currentStamp !== null && !hash_equals($currentStamp, $sessionStamp)) {
+                        // O "carimbo" não bateu! Senha foi alterada em outro lugar.
+                        // Ao retornar null, o novo VattsAuth::getSession() destrói a sessão imediatamente.
+                        return null;
+                    }
+
+                    $userArray = $user->toArray();
+                    unset($userArray['view_map']);
+                    // [SEGURANÇA] Nunca enviar dados sensíveis em cache/sessão pro frontend
+                    unset($userArray['password']);
+
+                    return $userArray;
                 }
             }
-            return $sessionData;
+            return null;
         }
     ]
 ]);

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use models\DatabaseHosts;
+use App\Services\Logger; // [SEGURANÇA / ESTABILIDADE] Import obrigatório adicionado
 use PDO;
 use PDOException;
 
@@ -27,7 +28,7 @@ class DatabaseHostsApi
             PDO::ATTR_EMULATE_PREPARES   => false,
             PDO::ATTR_TIMEOUT            => 5 // Timeout de 5s para não travar a aplicação se o host estiver offline
         ];
-        
+
         return new PDO($dsn, $this->host->username, $this->host->password, $options);
     }
 
@@ -54,9 +55,16 @@ class DatabaseHostsApi
         $dbName = preg_replace('/[^a-zA-Z0-9_]/', '', $dbName);
         $dbUser = preg_replace('/[^a-zA-Z0-9_]/', '', $dbUser);
 
+        // [SEGURANÇA CRÍTICA] Bloqueio de System Databases (Privilege Escalation / Takeover)
+        // Impede que um usuário crie/assuma o controle de bancos internos cruciais enviando nomes como "mysql".
+        $reservedDbs = ['mysql', 'information_schema', 'performance_schema', 'sys'];
+        if (empty($dbName) || in_array(strtolower($dbName), $reservedDbs)) {
+            return false;
+        }
+
         try {
             $pdo = $this->getConnection();
-            
+
             // O PDO::quote escapa a string da senha com segurança
             $escapedPassword = $pdo->quote($dbPassword);
 
@@ -64,7 +72,7 @@ class DatabaseHostsApi
             $pdo->exec("CREATE USER '$dbUser'@'%' IDENTIFIED BY $escapedPassword");
             $pdo->exec("GRANT ALL PRIVILEGES ON `$dbName`.* TO '$dbUser'@'%'");
             $pdo->exec("FLUSH PRIVILEGES");
-            
+
             return true;
         } catch (PDOException $e) {
             Logger::error($e);
@@ -80,13 +88,20 @@ class DatabaseHostsApi
         $dbName = preg_replace('/[^a-zA-Z0-9_]/', '', $dbName);
         $dbUser = preg_replace('/[^a-zA-Z0-9_]/', '', $dbUser);
 
+        // [SEGURANÇA CRÍTICA] Impede Denial of Service (DOS)
+        // Evita que um atacante consiga excluir o banco nativo "mysql" e destrua o servidor.
+        $reservedDbs = ['mysql', 'information_schema', 'performance_schema', 'sys'];
+        if (empty($dbName) || in_array(strtolower($dbName), $reservedDbs)) {
+            return false;
+        }
+
         try {
             $pdo = $this->getConnection();
-            
+
             $pdo->exec("DROP DATABASE IF EXISTS `$dbName`");
             $pdo->exec("DROP USER IF EXISTS '$dbUser'@'%'");
             $pdo->exec("FLUSH PRIVILEGES");
-            
+
             return true;
         } catch (PDOException $e) {
             return false;

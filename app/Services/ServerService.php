@@ -8,6 +8,7 @@ use models\Core;
 use models\Allocation;
 use App\Utils\EnvVarUtils;
 use Vatts\Database\DB;
+use App\Services\Logger; // [ESTABILIDADE] Import obrigatório adicionado para evitar Fatal Error no deleteServer()
 
 class ServerService
 {
@@ -64,7 +65,10 @@ class ServerService
         try {
             $envVars = EnvVarUtils::validateAndApplyDefaults($core->getVariables(), $envVars);
         } catch (\Throwable $e) {
-            throw new \Exception($e->getMessage());
+            // [SEGURANÇA] Information Disclosure: Impede o vazamento de stack traces e dados internos
+            // do parser de variáveis de ambiente para o usuário final.
+            Logger::error("EnvVar Validation Error: " . $e->getMessage());
+            throw new \Exception("Configuração de variáveis de ambiente inválida.");
         }
 
         // allocation escolhida pelo usuário (precisa estar livre e pertencer ao node)
@@ -76,7 +80,14 @@ class ServerService
         // Gera um server UUID local e usa como serverId para enviar ao node
         $serverUuid = $this->generateUuid();
 
-        $url = $node->getUrl() . '/api/v1/servers/create';
+        // [SEGURANÇA] Prevenção de SSRF e malformações
+        // Valida se o URL do Node é de fato um URL HTTP/HTTPS válido antes de disparar o cURL
+        $baseUrl = $node->getUrl();
+        if (!filter_var($baseUrl, FILTER_VALIDATE_URL) || !preg_match('/^https?:\/\//i', $baseUrl)) {
+            throw new \Exception('URL do Node configurada incorretamente.');
+        }
+
+        $url = rtrim($baseUrl, '/') . '/api/v1/servers/create';
 
         $payload = json_encode([
             'token' => $node->token,
@@ -104,14 +115,21 @@ class ServerService
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
 
         if ($resp === false) {
-            throw new \Exception("Erro ao conectar com o node: {$curlError}");
+            // [SEGURANÇA] Information Disclosure de Topologia de Rede
+            // O erro nativo do cURL ($curlError) vaza IPs internos, portas e razões de bloqueio de firewall.
+            // Logamos internamente e mostramos uma mensagem cega pro usuário.
+            Logger::error("cURL Error [Node {$node->id}]: {$curlError}");
+            throw new \Exception("Erro de comunicação com o node de hospedagem.");
         }
 
         $responseData = json_decode($resp, true);
 
         if ($httpCode !== 200 || ($responseData !== null && isset($responseData['error']))) {
             $msg = $responseData['error'] ?? 'Erro desconhecido ao criar servidor no node';
-            throw new \Exception("Node API: {$msg}");
+            // [SEGURANÇA] Evita XSS / Forjamento provindos da API do Node
+            // Se um Node for comprometido e retornar HTML na chave error, o strip_tags neutraliza o ataque.
+            $safeMsg = strip_tags((string) $msg);
+            throw new \Exception("Node API: {$safeMsg}");
         }
 
         // Se chegou aqui é sucesso conforme espec. Agora salva no banco
@@ -149,6 +167,7 @@ class ServerService
             $allocation->save();
         } catch (\Throwable $e) {
             // não bloqueia o fluxo, mas deixa rastreável
+            Logger::error("Falha ao salvar a atribuicao da allocation {$allocation->id}: " . $e->getMessage());
         }
 
         $this->syncFixedAllocations($server, [], $fixedIds);
@@ -165,7 +184,8 @@ class ServerService
             $result = $this->requestDeleteOnNode($server, $userUuid);
             if ($result !== true) {
                 $msg = is_string($result) && $result !== '' ? $result : 'Falha ao deletar no node.';
-                throw new \Exception($msg);
+                $safeMsg = strip_tags($msg); // Segurança adicional
+                throw new \Exception($safeMsg);
             }
         } else {
             $this->requestDeleteOnNode($server, $userUuid);
@@ -189,6 +209,7 @@ class ServerService
     public function getFreeAllocationForNodeById(string $nodeId, int $allocationId): ?Allocation
     {
         $pdo = DB::getPdo();
+        // Utiliza parâmetros nomeados blindando o PDO contra Injeções de SQL.
         $stmt = $pdo->prepare("SELECT * FROM `allocations` WHERE `id` = :id AND `nodeId` = :nodeId AND (`assignedTo` IS NULL OR `assignedTo` = '') LIMIT 1");
         $stmt->execute([
             'id' => $allocationId,
@@ -277,8 +298,10 @@ class ServerService
 
             return 'Falha ao comunicar com o Node.';
         } catch (\Throwable $e) {
-            return $e->getMessage();
+            // [SEGURANÇA] Proteção contra Information Disclosure
+            // Logamos internamente e retornamos erro genérico
+            Logger::error("Request Delete On Node Error: " . $e->getMessage());
+            return 'Ocorreu um erro interno de conexão.';
         }
     }
 }
-

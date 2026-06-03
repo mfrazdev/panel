@@ -52,8 +52,9 @@ class NodesController
      */
     private function validateNodeData(array $body): ?string
     {
-        $name = $body['name'] ?? null;
-        $ip = $body['ip'] ?? null;
+        // [SEGURANÇA] Type Safety para evitar Array Injection
+        $name = is_string($body['name'] ?? null) ? trim($body['name']) : null;
+        $ip = is_string($body['ip'] ?? null) ? trim($body['ip']) : null;
 
         if (!$name) return 'O nome do node é obrigatório.';
         if (!$ip) return 'O endereço IP / FQDN do node é obrigatório.';
@@ -152,8 +153,9 @@ class NodesController
         if (!$apiResponse || !$apiResponse['success']) {
             $errorMsg = 'Falha ao conectar no Daemon ou ele retornou um erro.';
 
+            // [SEGURANÇA] Bloqueia XSS vindo da resposta de um Daemon comprometido
             if (is_array($apiResponse) && isset($apiResponse['body']['error'])) {
-                $errorMsg = "Daemon: " . $apiResponse['body']['error'];
+                $errorMsg = "Daemon: " . strip_tags((string)$apiResponse['body']['error']);
             }
 
             return $response->json(['success' => false, 'error' => $errorMsg]);
@@ -205,7 +207,10 @@ class NodesController
             ]
         ];
 
-        return $response->view('resources.edit_create', $this->getViewData($request, "Node - {$node->name}", $viewData));
+        // [SEGURANÇA] Htmlspecialchars protege contra XSS se um Node tiver nome malicioso
+        $safeName = htmlspecialchars((string)$node->name, ENT_QUOTES, 'UTF-8');
+
+        return $response->view('resources.edit_create', $this->getViewData($request, "Node - {$safeName}", $viewData));
     }
 
     public function edit(Request $request, Response $response): Response
@@ -224,12 +229,13 @@ class NodesController
                 ->redirect("/admin/nodes/{$node->id}/edit");
         }
 
-        $node->name = $body['name'];
-        $node->ip = $body['ip'] ?? '';
-        $node->port = $body['port'] ?? '';
-        $node->sftp = $body['sftp'] ?? '';
-        $node->httpsConnection = $body['httpsConnection'] ?? '';
-        $node->location = $body['location'] ?? '';
+        // [SEGURANÇA] Cast estrito (string) para prevenir injecções de array que crashem o PDO
+        $node->name = (string)($body['name'] ?? '');
+        $node->ip = (string)($body['ip'] ?? '');
+        $node->port = (string)($body['port'] ?? '');
+        $node->sftp = (string)($body['sftp'] ?? '');
+        $node->httpsConnection = (string)($body['httpsConnection'] ?? '');
+        $node->location = (string)($body['location'] ?? '');
         $node->save();
 
         return $response->setFlash(['success' => 'O node foi atualizado com sucesso!'])
@@ -248,6 +254,7 @@ class NodesController
             'deleteUrl' => 'nodes/[id]/delete?return=edit'
         ]));
     }
+
     function uuidv4() {
         $data = random_bytes(16);
 
@@ -269,13 +276,14 @@ class NodesController
                 ->redirect("/admin/nodes/create");
         }
 
-        $node->name = $body['name'];
-        $node->ip = $body['ip'] ?? '';
-        $node->port = $body['port'] ?? '';
-        $node->sftp = $body['sftp'] ?? '';
-        $node->httpsConnection = $body['httpsConnection'] ?? '';
-        $node->token = $this->uuidv4();//gerar token
-        $node->location = $body['location'] ?? '';
+        // [SEGURANÇA] Cast estrito para prevenir Array Injection
+        $node->name = (string)($body['name'] ?? '');
+        $node->ip = (string)($body['ip'] ?? '');
+        $node->port = (string)($body['port'] ?? '');
+        $node->sftp = (string)($body['sftp'] ?? '');
+        $node->httpsConnection = (string)($body['httpsConnection'] ?? '');
+        $node->token = $this->uuidv4(); //gerar token
+        $node->location = (string)($body['location'] ?? '');
         $node->save();
 
         return $response->setFlash(['success' => 'O node foi criado com sucesso!'])
@@ -320,8 +328,8 @@ class NodesController
         $nodeId = $request->getParam('node');
         $body = $request->getBody();
 
-        if (empty($body['allocation_ip']) || empty($body['allocation_ports'])) {
-            return $response->setFlash(['error' => 'O IP e as Portas são obrigatórios.'])
+        if (empty($body['allocation_ip']) || empty($body['allocation_ports']) || !is_string($body['allocation_ports'])) {
+            return $response->setFlash(['error' => 'O IP e as Portas são obrigatórios e devem ser válidos.'])
                 ->redirect("/admin/nodes/{$nodeId}/edit#tab-allocations");
         }
 
@@ -338,7 +346,9 @@ class NodesController
                 $start = (int)trim($range[0]);
                 $end = (int)trim($range[1]);
 
-                if ($start > 0 && $end > 0 && $start <= $end) {
+                // [SEGURANÇA] Impede que números falsos/negativos burlem a conta de limite (< 1000) e crie lixo.
+                // Portas TCP/UDP só vão de 1 a 65535.
+                if ($start >= 1 && $end <= 65535 && $start <= $end) {
                     if (($end - $start) > 1000) {
                         return $response->setFlash(['error' => 'O intervalo máximo permitido é de 1000 portas de uma vez.'])
                             ->redirect("/admin/nodes/{$nodeId}/edit#tab-allocations");
@@ -348,8 +358,11 @@ class NodesController
                     }
                 }
             } elseif (is_numeric($part)) {
-                // Porta única
-                $portsToCreate[] = (int)$part;
+                // Porta única validada
+                $portInt = (int)$part;
+                if ($portInt >= 1 && $portInt <= 65535) {
+                    $portsToCreate[] = $portInt;
+                }
             }
         }
 
@@ -357,7 +370,7 @@ class NodesController
         $portsToCreate = array_unique($portsToCreate);
 
         if (empty($portsToCreate)) {
-            return $response->setFlash(['error' => 'Nenhuma porta válida foi informada.'])
+            return $response->setFlash(['error' => 'Nenhuma porta válida foi informada (portas devem estar entre 1 e 65535).'])
                 ->redirect("/admin/nodes/{$nodeId}/edit#tab-allocations");
         }
 
@@ -365,8 +378,9 @@ class NodesController
         foreach ($portsToCreate as $port) {
             $allocation = new Allocation();
             $allocation->nodeId = $nodeId;
-            $allocation->ip = $body['allocation_ip'];
-            $allocation->externalIp = !empty($body['allocation_external_ip']) ? $body['allocation_external_ip'] : null;
+            // [SEGURANÇA] Strip_tags previne XSS refletido e Injeção no IP
+            $allocation->ip = strip_tags((string)$body['allocation_ip']);
+            $allocation->externalIp = !empty($body['allocation_external_ip']) ? strip_tags((string)$body['allocation_external_ip']) : null;
             $allocation->port = $port;
             $allocation->assignedTo = null;
             $allocation->save();
@@ -387,10 +401,15 @@ class NodesController
 
         if (is_array($aliases)) {
             foreach ($aliases as $id => $alias) {
-                $allocation = Allocation::get('id', $id);
+                // [SEGURANÇA] Previne Array Injection nos itens do ForEach
+                if (!is_string($alias) && !is_numeric($alias)) {
+                    continue;
+                }
+
+                $allocation = Allocation::get('id', (int)$id);
                 // Garante que a alocação pertence a este node antes de editar
                 if ($allocation && $allocation->nodeId == $nodeId) {
-                    $newAlias = empty(trim($alias)) ? null : trim($alias);
+                    $newAlias = empty(trim((string)$alias)) ? null : strip_tags(trim((string)$alias));
                     // Salva apenas se houve alteração
                     if ($allocation->externalIp !== $newAlias) {
                         $allocation->externalIp = $newAlias;
@@ -411,7 +430,7 @@ class NodesController
         $nodeId = $request->getParam('node');
         $allocId = $request->getParam('allocation');
 
-        $allocation = Allocation::get('id', $allocId);
+        $allocation = Allocation::get('id', (int)$allocId);
 
         if (!$allocation) {
             return $response->setFlash(['error' => 'Alocação não encontrada.'])
