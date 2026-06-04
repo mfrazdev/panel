@@ -44,7 +44,7 @@
                         </div>
 
                         <div class="z-10 w-full sm:w-auto flex flex-col sm:flex-row gap-3">
-                            <a href="{{ $github_url ?? 'https://github.com/mfrazlab/panel/releases/latest' }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-transparent border border-white/10 hover:bg-white/5 text-textValue px-6 py-2.5 rounded-lg text-[13px] font-bold transition-all duration-300 flex items-center justify-center gap-2">
+                            <a href="{{ $github_url ?? 'https://github.com/mfrazdev/panel/releases/latest' }}" target="_blank" rel="noopener noreferrer" class="w-full sm:w-auto bg-transparent border border-white/10 hover:bg-white/5 text-textValue px-6 py-2.5 rounded-lg text-[13px] font-bold transition-all duration-300 flex items-center justify-center gap-2">
                                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
                                 Release Notes
                             </a>
@@ -86,7 +86,7 @@
                 <div class="p-6 flex flex-col gap-3 flex-1">
 
                     <!-- Link GitHub Panel -->
-                    <a href="https://github.com/mfrazlab/panel" target="_blank" class="flex items-center justify-between p-4 bg-black/20 border border-white/5 hover:border-white/10 rounded-xl transition-all duration-300 group shadow-inner">
+                    <a href="https://github.com/mfrazdev/panel" target="_blank" class="flex items-center justify-between p-4 bg-black/20 border border-white/5 hover:border-white/10 rounded-xl transition-all duration-300 group shadow-inner">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-textValue group-hover:text-primary transition-colors">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path></svg>
@@ -100,7 +100,7 @@
                     </a>
 
                     <!-- Link GitHub Daemon -->
-                    <a href="https://github.com/mfrazlab/plume" target="_blank" class="flex items-center justify-between p-4 bg-black/20 border border-white/5 hover:border-white/10 rounded-xl transition-all duration-300 group shadow-inner">
+                    <a href="https://github.com/mfrazdev/plume" target="_blank" class="flex items-center justify-between p-4 bg-black/20 border border-white/5 hover:border-white/10 rounded-xl transition-all duration-300 group shadow-inner">
                         <div class="flex items-center gap-4">
                             <div class="w-10 h-10 rounded-lg bg-white/5 flex items-center justify-center text-textValue group-hover:text-primary transition-colors">
                                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"></path><polyline points="3.27 6.96 12 12.01 20.73 6.96"></polyline><line x1="12" y1="22.08" x2="12" y2="12"></line></svg>
