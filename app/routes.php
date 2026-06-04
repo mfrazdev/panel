@@ -15,6 +15,7 @@ $app->group(["prefix" => '/api'], function (\Vatts\Router\Router $router) {
 });
 
 $app->group(["prefix" => "/admin", "middleware" => "admin"], function (\Vatts\Router\Router $router) {
+
     $router->get('/', [\App\controllers\Admin\DashboardController::class, 'view']);
     $router->post('/update', [\App\controllers\Admin\DashboardController::class, 'update']);
 

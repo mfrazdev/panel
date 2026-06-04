@@ -59,7 +59,19 @@ const ServerRow: React.FC<ServerRowProps> = ({ server, status = 'offline', stats
     const diskPercent = server.disk > 0 ? Math.min((diskInMB / server.disk) * 100, 100) : 0;
 
     return (
-        <div className={`group relative p-[4px] rounded-2xl bg-gradient-to-br ${currentStatus.gradient} to-transparent hover:via-[var(--color-terciary)]/30 transition-all duration-500 block w-full shadow-2xl`}>
+        <div className="group relative p-[4px] rounded-2xl transition-all duration-500 block w-full shadow-2xl">
+
+            {/* Fake Border Layer usando a lógica da máscara e do background dinâmico do status */}
+            <div
+                className={`absolute inset-0 rounded-2xl bg-gradient-to-br ${currentStatus.gradient} to-transparent group-hover:via-[var(--color-terciary)]/30 pointer-events-none transition-all duration-500`}
+                style={{
+                    padding: "4px",
+                    WebkitMask: "linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0)",
+                    WebkitMaskComposite: "xor",
+                    maskComposite: "exclude"
+                }}
+            />
+
             <Link
                 href={`/server/${server.serverUuid.split('-')[0]}`}
                 className="relative block h-full bg-[var(--color-secondary)] backdrop-blur-xl rounded-[14px] p-3"

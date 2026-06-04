@@ -11,6 +11,163 @@ import Card from "@/web/components/commons/components/Card";
 import { Turnstile } from '@marsidev/react-turnstile';
 import HCaptcha from '@hcaptcha/react-hcaptcha';
 
+// ==========================================
+// COMPONENTE ISOLADO DAS PARTÍCULAS
+// Isso garante que o useEffect só rode quando o canvas existir de verdade no DOM
+// ==========================================
+const ParticleCanvas = () => {
+    const canvasRef = useRef<HTMLCanvasElement>(null);
+
+    useEffect(() => {
+        const canvas = canvasRef.current;
+        if (!canvas) return;
+        const ctx = canvas.getContext('2d');
+        if (!ctx) return;
+
+        let animationFrameId: number;
+        let particles: any[] = [];
+        let isRunning = true;
+
+        let mouse = { x: -1000, y: -1000 };
+
+        const handleMouseMove = (e: MouseEvent) => {
+            mouse.x = e.clientX;
+            mouse.y = e.clientY;
+        };
+
+        const handleMouseOut = () => {
+            mouse.x = -1000;
+            mouse.y = -1000;
+        };
+
+        class Particle {
+            x: number;
+            y: number;
+            vx: number;
+            vy: number;
+            radius: number;
+
+            constructor(x: number, y: number) {
+                this.x = x;
+                this.y = y;
+                this.vx = (Math.random() - 0.5) * 1.5;
+                this.vy = (Math.random() - 0.5) * 1.5;
+                this.radius = Math.random() * 1.5 + 1;
+            }
+
+            draw() {
+                if (!ctx) return;
+                ctx.beginPath();
+                ctx.arc(this.x, this.y, this.radius, 0, Math.PI * 2);
+                ctx.fillStyle = 'rgba(156, 59, 246, 0.6)';
+                ctx.fill();
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+
+                if (this.x < 0 || this.x > canvas!.width) this.vx = -this.vx;
+                if (this.y < 0 || this.y > canvas!.height) this.vy = -this.vy;
+
+                let dx = mouse.x - this.x;
+                let dy = mouse.y - this.y;
+                let distance = Math.sqrt(dx * dx + dy * dy);
+
+                const mouseRadius = 250;
+
+                if (distance < mouseRadius) {
+                    let forceDirectionX = dx / distance;
+                    let forceDirectionY = dy / distance;
+                    let force = (mouseRadius - distance) / mouseRadius;
+
+                    this.x -= forceDirectionX * force * 20;
+                    this.y -= forceDirectionY * force * 20;
+                }
+
+                this.draw();
+            }
+        }
+
+        const initParticles = () => {
+            if (!canvas) return;
+            particles = [];
+
+            // Troquei de 10000 para 4000.
+            // Se quiser mais ainda, baixe para 3000 ou 2000 (só cuidado pra não travar o PC da galera kkk)
+            let numberOfParticles = Math.floor((canvas.width * canvas.height) / 7000);
+
+            for (let i = 0; i < numberOfParticles; i++) {
+                particles.push(new Particle(Math.random() * canvas.width, Math.random() * canvas.height));
+            }
+        };
+
+        const resizeCanvas = () => {
+            if (!canvas) return;
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+            initParticles();
+        };
+
+        const connectParticles = () => {
+            for (let a = 0; a < particles.length; a++) {
+                for (let b = a; b < particles.length; b++) {
+                    let dx = particles[a].x - particles[b].x;
+                    let dy = particles[a].y - particles[b].y;
+                    let distance = dx * dx + dy * dy;
+
+                    if (distance < 15000) {
+                        let opacity = 1 - distance / 15000;
+                        ctx.strokeStyle = `rgba(156, 59, 246, ${opacity * 0.3})`;
+                        ctx.lineWidth = 1;
+                        ctx.beginPath();
+                        ctx.moveTo(particles[a].x, particles[a].y);
+                        ctx.lineTo(particles[b].x, particles[b].y);
+                        ctx.stroke();
+                    }
+                }
+            }
+        };
+
+        const animate = () => {
+            if (!isRunning || !ctx || !canvas) return;
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            for (let i = 0; i < particles.length; i++) {
+                particles[i].update();
+            }
+            connectParticles();
+            animationFrameId = requestAnimationFrame(animate);
+        };
+
+        resizeCanvas();
+        animate();
+
+        const safetyTimeout = setTimeout(() => {
+            if (isRunning) resizeCanvas();
+        }, 200);
+
+        window.addEventListener('resize', resizeCanvas);
+        window.addEventListener('mousemove', handleMouseMove);
+        window.addEventListener('mouseout', handleMouseOut);
+
+        return () => {
+            isRunning = false;
+            clearTimeout(safetyTimeout);
+            window.removeEventListener('resize', resizeCanvas);
+            window.removeEventListener('mousemove', handleMouseMove);
+            window.removeEventListener('mouseout', handleMouseOut);
+            cancelAnimationFrame(animationFrameId);
+        };
+    }, []);
+
+    return (
+        <canvas
+            ref={canvasRef}
+            className="absolute inset-0 z-0 pointer-events-none w-full h-full block"
+        />
+    );
+};
+
 export default function App() {
     const session = useSession();
     const toast = useToast();
@@ -18,6 +175,7 @@ export default function App() {
     // Estados do formulário de credenciais
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
+    const [isLoggingIn, setIsLoggingIn] = useState(false);
 
     // Estado para controlar a exibição do botão de OAuth
     const [billingSystem, setBillingSystem] = useState({ active: false, system: null });
@@ -26,13 +184,16 @@ export default function App() {
     const [captchaConfig, setCaptchaConfig] = useState({ active: false, system: 'none', siteKey: '' });
     const [captchaToken, setCaptchaToken] = useState('');
 
-    // Refs para podermos resetar o Captcha programaticamente caso o login falhe
-    const turnstileRef = useRef(null);
-    const hcaptchaRef = useRef(null);
+    // Refs
+    const turnstileRef = useRef<any>(null);
+    const hcaptchaRef = useRef<any>(null);
 
     const isDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
     const urlImage = isDark ? '/assets/img/logo-white.png' : '/assets/img/logo-dark.png';
 
+    // ==========================================
+    // LÓGICA DE LOGIN (Intacta)
+    // ==========================================
     useEffect(() => {
         const checkBillingStatus = async () => {
             try {
@@ -70,47 +231,42 @@ export default function App() {
         fetchCaptchaConfig();
     }, []);
 
-    const handleSubmit = async (e: any) => {
-        e.preventDefault();
+    const resetCaptcha = () => {
+        setCaptchaToken('');
+        if (captchaConfig.system === 'turnstile' && turnstileRef.current) {
+            turnstileRef.current.reset();
+        } else if (captchaConfig.system === 'hcaptcha' && hcaptchaRef.current) {
+            hcaptchaRef.current.resetCaptcha();
+        }
+    };
 
-        // 1. Verifica se o Captcha tá ativo e se o cara resolveu
+    const performLogin = async (tokenParaValidar: string) => {
+        setIsLoggingIn(true);
+
         if (captchaConfig.active) {
-            if (!captchaToken) {
-                toast.addToast('Por favor, resolva o captcha antes de entrar.', 'error');
-                return;
-            }
-
-            // 2. Manda pro SEU endpoint de verify antes do login
             try {
                 const verifyRes = await fetch('/api/v1/auth/captcha/validate', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ captcha_token: captchaToken })
+                    body: JSON.stringify({ captcha_token: tokenParaValidar })
                 });
 
                 const verifyData = await verifyRes.json();
 
                 if (!verifyData.success) {
                     toast.addToast('Captcha inválido ou expirado.', 'error');
-
-                    // Reseta o captcha pro cara tentar de novo
-                    setCaptchaToken('');
-                    if (captchaConfig.system === 'turnstile' && turnstileRef.current) {
-                        // @ts-ignore
-                        turnstileRef.current.reset();
-                    } else if (captchaConfig.system === 'hcaptcha' && hcaptchaRef.current) {
-                        // @ts-ignore
-                        hcaptchaRef.current.resetCaptcha();
-                    }
-                    return; // Para a execução aqui, nem tenta logar
+                    resetCaptcha();
+                    setIsLoggingIn(false);
+                    return;
                 }
             } catch (error) {
                 toast.addToast('Erro de comunicação ao validar o captcha.', 'error');
+                resetCaptcha();
+                setIsLoggingIn(false);
                 return;
             }
         }
 
-        // 3. Agora sim, com o captcha validado (ou se tava desativado), faz o login limpo!
         const sign = await session.signIn('credentials', {
             email: username,
             password: password,
@@ -122,17 +278,29 @@ export default function App() {
             router.push('/');
         } else {
             toast.addToast('Erro ao realizar login. Verifique suas credenciais.', 'error');
-
-            // Se errou a senha, reseta o captcha pra evitar reaproveitamento do token
-            setCaptchaToken('');
-            if (captchaConfig.system === 'turnstile' && turnstileRef.current) {
-                // @ts-ignore
-                turnstileRef.current.reset();
-            } else if (captchaConfig.system === 'hcaptcha' && hcaptchaRef.current) {
-                // @ts-ignore
-                hcaptchaRef.current.resetCaptcha();
-            }
+            resetCaptcha();
+            setIsLoggingIn(false);
         }
+    };
+
+    const handleSubmit = async (e: any) => {
+        e.preventDefault();
+
+        if (captchaConfig.active && !captchaToken) {
+            if (captchaConfig.system === 'turnstile' && turnstileRef.current) {
+                turnstileRef.current.execute();
+            } else if (captchaConfig.system === 'hcaptcha' && hcaptchaRef.current) {
+                hcaptchaRef.current.execute();
+            }
+            return;
+        }
+
+        await performLogin(captchaToken);
+    };
+
+    const handleCaptchaSuccess = (token: string) => {
+        setCaptchaToken(token);
+        performLogin(token);
     };
 
     const handleOAuthLogin = async () => {
@@ -145,18 +313,16 @@ export default function App() {
 
     return (
         <GuestOnly redirectTo="/">
-            <div className="min-h-screen flex flex-col relative bg-[var(--color-background)]">
-                <div className="flex-1 flex flex-col justify-center items-center px-4 py-8 animate-[fadeIn_0.4s_ease-out]">
+            {/* Fundo Gradiente Principal */}
+            <div className="min-h-screen flex flex-col relative bg-gradient-to-br from-[#000000] via-[#09090b] to-[#120a1f] overflow-hidden">
+
+                {/* Aqui entra o componente isolado que resolve o erro do F5 */}
+                <ParticleCanvas />
+
+                <div className="flex-1 flex flex-col justify-center items-center px-4 py-8 animate-[fadeIn_0.4s_ease-out] z-10 relative">
 
                     <div className="w-full max-w-3xl">
-                        <div className="text-center mb-6">
-                            <h1 className="text-2xl md:text-3xl font-black tracking-tight text-[var(--color-text-value)]">
-                                Autenticação
-                            </h1>
-                            <p className="text-[var(--color-text-sub)] mt-1 text-sm font-medium">
-                                Faça login para acessar o painel de controle
-                            </p>
-                        </div>
+
 
                         <Card>
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-center p-2 md:p-6">
@@ -164,14 +330,14 @@ export default function App() {
                                 <div className="hidden md:flex justify-center items-center p-4 rounded-xl h-full shadow-inner bg-[var(--color-background-sub)]">
                                     <VattsImage
                                         src={urlImage}
-                                        width={240} // Aumentado de 180 para 240
+                                        width={240}
                                         className="hover:scale-105 transition-transform duration-500 drop-shadow-xl"
                                     />
                                 </div>
 
                                 <div className="w-full flex flex-col">
                                     <div className="md:hidden flex justify-center mb-6">
-                                        <VattsImage src={urlImage} width={180} /> {/* Aumentado de 140 para 180 */}
+                                        <VattsImage src={urlImage} width={180} />
                                     </div>
 
                                     <form onSubmit={handleSubmit} className="space-y-4 w-full">
@@ -191,21 +357,20 @@ export default function App() {
                                             placeholder="••••••••"
                                         />
 
-                                        {/* Renderização das Libs de Captcha */}
                                         {captchaConfig.active && (
-                                            <div className="flex justify-center my-2 scale-90 origin-center">
+                                            <div className="hidden">
                                                 {captchaConfig.system === 'turnstile' ? (
                                                     <Turnstile
                                                         ref={turnstileRef}
                                                         siteKey={captchaConfig.siteKey}
-                                                        onSuccess={(token) => setCaptchaToken(token)}
+                                                        onSuccess={handleCaptchaSuccess}
                                                         options={{ theme: 'dark' }}
                                                     />
                                                 ) : (
                                                     <HCaptcha
                                                         ref={hcaptchaRef}
                                                         sitekey={captchaConfig.siteKey}
-                                                        onVerify={(token) => setCaptchaToken(token)}
+                                                        onVerify={handleCaptchaSuccess}
                                                         theme="dark"
                                                     />
                                                 )}
@@ -215,9 +380,10 @@ export default function App() {
                                         <Button
                                             type="submit"
                                             fullWidth
-                                            className="!py-3 mt-1 shadow-md"
+                                            disabled={isLoggingIn}
+                                            className=" mt-1"
                                         >
-                                            ENTRAR NO PAINEL
+                                            {isLoggingIn ? "AUTENTICANDO..." : "ENTRAR NO PAINEL"}
                                         </Button>
 
                                         {billingSystem.active && (
@@ -256,7 +422,9 @@ export default function App() {
                     </div>
                 </div>
 
-                <Footer />
+                <div className="z-10 relative">
+                    <Footer />
+                </div>
             </div>
         </GuestOnly>
     );

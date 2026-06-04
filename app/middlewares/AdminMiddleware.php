@@ -3,6 +3,7 @@
 namespace App\middlewares;
 
 use models\User;
+use Vatts\Utils\BladeConfig;
 use Vatts\Utils\Middleware;
 use Vatts\Router\Request;
 use Vatts\Router\Response;
@@ -43,7 +44,17 @@ class AdminMiddleware extends Middleware
             // [SEGURANÇA CRÍTICA] Bloqueia a execução encadeada retornando a Response
             return $response->redirect('/auth');
         }
+        $usersCount = \models\User::count();
+        $databasesCount = \models\DatabaseHosts::count();
+        $coresCount = \models\Core::count();
+        $serversCount = \models\Server::count();
+        $nodesCount = \models\Node::count();
 
+        BladeConfig::get()->share('usersCount', $usersCount);
+        BladeConfig::get()->share('databasesCount', $databasesCount);
+        BladeConfig::get()->share('coresCount', $coresCount);
+        BladeConfig::get()->share('serversCount', $serversCount);
+        BladeConfig::get()->share('nodesCount', $nodesCount);
         // Tudo certo (Usuário existe, está logado e é admin).
         // Retorna o Request para o Router liberar o acesso ao Controller.
         return $request;

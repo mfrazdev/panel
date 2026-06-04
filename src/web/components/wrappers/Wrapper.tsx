@@ -48,7 +48,7 @@ export default function DashboardWrapper({ children }: { children: ReactNode }) 
                 .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 10px; }
             `}} />
 
-            <div className="relative min-h-screen text-white bg-[var(--color-background)] flex flex-col">
+            <div className="relative min-h-screen  flex flex-col">
                 <Navbar />
 
                 <main className="relative flex flex-1 flex-col">

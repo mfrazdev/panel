@@ -84,7 +84,7 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
         }
     }, [user.data?.user?.email]);
 
-    if (!isMounted) return <aside className="w-[280px] h-[calc(100vh-4rem)] shrink-0 bg-[var(--color-sidebar)] border-r border-white/5" />;
+    if (!isMounted) return <aside className="w-[280px] h-screen shrink-0 bg-[var(--color-sidebar)]" />;
 
     const isSuspended = serverContext.server?.suspended === 1;
     const firstName = user.data?.user?.first_name || user.data?.user?.name?.split(' ')[0] || 'Usuário';
@@ -94,7 +94,7 @@ export default function ServerSidebar({ serverId, activeTab, changeAction }: Sid
             initial={false}
             animate={{ width: isCollapsed ? 84 : 280 }}
             transition={{ type: "spring", stiffness: 300, damping: 30 }}
-            className="sticky top-16 h-[calc(100vh-4rem)] shrink-0 bg-[var(--color-sidebar)] flex flex-col pt-2 z-40 overflow-hidden"
+            className="sticky top-0 h-screen shrink-0 bg-[var(--color-sidebar)] flex flex-col pt-2 z-40 overflow-hidden"
         >
             <div className="flex-1 overflow-y-auto custom-scrollbar overflow-x-hidden flex flex-col gap-1">
                 {menuCategories.map((category, catIndex) => (

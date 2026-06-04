@@ -125,32 +125,32 @@ export default function ConsoleContainer() {
                         {server.name}
                     </h1>
 
-                    <div className="flex flex-wrap items-center gap-3 xl:border-l border-white/10 xl:pl-6">
-                        <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-black/40 shadow-sm shrink-0">
+                    <div className="flex flex-wrap items-center gap-3 xl:pl-6">
+                        <div className="flex items-center gap-2 px-3 py-1.5">
                             <span className="relative flex h-2 w-2">
                                 {currentStatus.isAnimated && (
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full opacity-75" style={{ backgroundColor: currentStatus.color }}></span>
                                 )}
                                 <span className="relative inline-flex rounded-full h-2 w-2" style={{ backgroundColor: currentStatus.color, boxShadow: `0 0 8px ${currentStatus.color}` }}></span>
                             </span>
-                            <span className="text-[11px] uppercase font-black tracking-widest text-white">
+                            <span className="text-[11px] uppercase font-black tracking-widest text-(--color-text-value)">
                                 {currentStatus.label}
                             </span>
                         </div>
 
                         {serverStatus === 'running' && (
-                            <div className="flex items-center gap-2 bg-black/40 px-3 py-1.5 rounded-lg shadow-sm shrink-0">
+                            <div className="flex items-center gap-2  px-3 py-1.5 ">
                                 <svg width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24" className="text-slate-400"><circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline></svg>
-                                <span className="text-[12px] font-mono font-bold text-slate-300">
+                                <span className="text-[12px] font-mono font-bold text-(--color-text-value)">
                                     {currentStatus.uptime}
                                 </span>
                             </div>
                         )}
 
                         <CopyOnClick text={address} notify={true}>
-                            <div className="inline-flex items-center gap-2 bg-black/40 hover:bg-white/5 rounded-lg px-3 py-1.5 transition-all cursor-pointer group shadow-sm shrink-0">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-slate-400 group-hover:text-white transition-colors"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
-                                <span className="text-slate-300 group-hover:text-white text-[12px] font-mono font-bold tracking-wide transition-colors">{address}</span>
+                            <div className="inline-flex items-center gap-2 px-3 py-1.5 transition-all cursor-pointer group">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24" className="text-(--color-text-value) group-hover:text-(--color-text-sub) transition-colors"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path></svg>
+                                <span className="text-(--color-text-value) group-hover:text-(--color-text-sub) text-[12px] font-mono font-bold tracking-wide transition-colors">{address}</span>
                             </div>
                         </CopyOnClick>
                     </div>

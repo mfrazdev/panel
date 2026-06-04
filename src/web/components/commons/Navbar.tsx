@@ -33,106 +33,96 @@ const Navbar: React.FC = () => {
         }
     }, [session.data?.user?.email]);
 
-    // Lógica para pegar first_name e last_name com fallback seguro
     const firstName = session.data?.user?.first_name || session.data?.user?.name?.split(' ')[0] || 'Usuário';
     const lastName = session.data?.user?.last_name || session.data?.user?.name?.split(' ').slice(1).join(' ') || '';
 
-    // Helper para classes dos itens da navegação
+    // Helper limpo pros itens de navegação (Visíveis sempre, sem frescura de hover pra aparecer)
     const navItemClass = (isActive: boolean) => `
-        relative h-full px-6 flex items-center transition-all duration-200 cursor-pointer
+        relative flex items-center justify-center gap-2.5 px-4 py-2.5 rounded-xl transition-all duration-300 cursor-pointer font-bold text-sm
         ${isActive
-        ? 'text-[var(--color-primary)] bg-white/[0.02]'
-        : 'text-[var(--color-text-sub)] hover:text-[var(--color-text-value)] hover:bg-white/[0.02]'
+        ? 'text-[var(--color-primary)] bg-[var(--color-primary)]/10 shadow-[inset_0_0_15px_rgba(156,59,246,0.1)]'
+        : 'text-[var(--color-text-sub)] hover:text-(--color-text-value) hover:bg-white/5'
     }
     `;
 
     return (
-        <nav className="w-full h-16 bg-[var(--color-navbar)]/90 backdrop-blur-md sticky top-0 z-[100]">
+        /* Container fixo e invisível pro clique passar direto no fundo, espaçado do topo pra flutuar */
+        <div className="mt-[16px] left-0 w-full z-[100] px-4 md:px-6 pointer-events-none flex justify-center">
+
+            {/* Wrapper com a BORDA FAKE e Sombra Cabulosa */}
             <motion.div
                 layout
                 transition={{ type: "spring", stiffness: 300, damping: 30 }}
-                className={`h-full flex items-center justify-between px-6 mx-auto ${isSidebarActive ? 'max-w-full w-full' : 'max-w-7xl w-full'}`}
+                className={`pointer-events-auto p-[4px] rounded-[18px] bg-gradient-to-br from-[var(--color-terciary)] via-[var(--color-secondary)] to-transparent shadow-[0_15px_35px_rgba(0,0,0,0.6)] transition-all duration-500 flex ${isSidebarActive ? 'w-full' : 'max-w-6xl w-full'}`}
             >
+                {/* Navbar Interna: Fundo Glassmorphism Preto/Transparente */}
+                <nav className="w-full h-16 bg-(--color-navbar)/70 backdrop-blur-2xl rounded-[16px] flex items-center justify-between px-3 md:px-5 overflow-hidden">
 
-                {/* Logo - Esquerda */}
-                <Link href={"/"} className="flex items-center gap-3 cursor-pointer group h-full">
-                    <VattsImage src={urlImage} width={28} className="group-hover:scale-105 transition-transform duration-300" />
+                    {/* Logo - Esquerda */}
+                    <Link href={"/"} className="flex items-center gap-3 cursor-pointer group h-full px-2">
+                        <div className="p-1.5 rounded-xl bg-white/5 group-hover:bg-white/10 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300">
+                            <VattsImage src={urlImage} width={24} className="group-hover:scale-110 transition-transform duration-500" />
+                        </div>
 
-                    {/* Divisor vertical sutil */}
-                    <div className="hidden sm:block w-[1px] h-5 bg-white/10 mx-1" />
-
-                    <span className="text-[15px] text-[var(--color-text-value)] font-black tracking-tight group-hover:text-[var(--color-primary)] transition-colors truncate max-w-[150px] sm:max-w-none">
-                        {/* @ts-ignore */}
-                        {panelName}
-                    </span>
-                </Link>
-
-                {/* Ícones de Navegação - Direita */}
-                <div className="flex items-center h-full">
-
-                    {/* Item Ativo (Servidores) */}
-                    <Link href={"/"} className={navItemClass(router.pathname === "/")}>
-                        <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-layout-dashboard-icon lucide-layout-dashboard"><rect width="7" height="9" x="3" y="3" rx="1"/><rect width="7" height="5" x="14" y="3" rx="1"/><rect width="7" height="9" x="14" y="12" rx="1"/><rect width="7" height="5" x="3" y="16" rx="1"/></svg>
-                        {router.pathname === "/" && (
-                            <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-primary)]" />
-                        )}
+                        <span className="text-[15px] text-(--color-text-value) font-black tracking-tight group-hover:text-[var(--color-text-sub)] transition-colors truncate hidden sm:block">
+                            {/* @ts-ignore */}
+                            {panelName}
+                        </span>
                     </Link>
 
-                    {/* Admin Link */}
-                    {session.data?.user?.role === 'admin' && (
-                        <a href="/admin" className={navItemClass(false)}>
-                            <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <circle cx="12" cy="12" r="3"></circle>
-                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                            </svg>
-                        </a>
-                    )}
+                    {/* Navegação e Perfil - Direita */}
+                    <div className="flex items-center gap-1.5 h-full py-2">
 
-                    {/* SÓ MOSTRA A CONTA SE NÃO ESTIVER NA SIDEBAR */}
-                    {!isSidebarActive && (
-                        <Link
-                            href={"/profile"}
-                            className={`relative h-full px-5 flex items-center transition-all duration-200 cursor-pointer group ${router.pathname.startsWith('/profile') ? 'bg-white/[0.02]' : 'hover:bg-white/[0.02]'}`}
-                        >
-                            <div className="flex items-center gap-3">
+                        {/* Item Ativo (Painel/Servidores) */}
+                        <Link href={"/"} className={navItemClass(router.pathname === "/")}>
+                            <i className="fa-solid fa-server"></i>
+                        </Link>
+
+                        {/* Admin Link */}
+                        {session.data?.user?.role === 'admin' && (
+                            <a href="/admin" className={navItemClass(false)}>
+                                <i className="fa-solid fa-users-gear"></i>
+                            </a>
+                        )}
+
+                        {/* Divisor Vertical */}
+                        <div className="w-[1px] h-6 bg-(--color-terciary)/50 mx-2 rounded-full" />
+
+                        {/* Conta do Usuário (Fonte normal, sem ser mono) */}
+                        {!isSidebarActive && (
+                            <Link
+                                href={"/profile"}
+                                className={`relative flex items-center gap-3 px-3 py-1.5 rounded-xl transition-all duration-300 cursor-pointer group ${router.pathname.startsWith('/profile') ? 'bg-white/5' : 'hover:bg-white/[0.04]'}`}
+                            >
                                 <img
                                     src={`https://www.gravatar.com/avatar/${gravatarHash}?s=80&d=mp`}
                                     alt="Avatar"
-                                    className={`w-8 h-8 rounded-full object-cover transition-colors duration-200 shadow-sm`}
+                                    className="w-8 h-8 rounded-full object-cover shadow-sm border border-white/10 group-hover:border-primary/50 transition-colors"
                                 />
-                                <div className="hidden md:flex flex-col items-start justify-center">
-                                    <span className={`text-[13px] font-mono font-bold leading-none transition-colors duration-200 ${router.pathname.startsWith('/profile') ? 'text-[var(--color-primary)]' : 'text-[var(--color-text-value)] group-hover:text-[var(--color-primary)]'}`}>
+                                <div className="hidden lg:flex flex-col items-start justify-center">
+                                    <span className={`text-[15px] font-sans leading-none transition-colors duration-300 text-(--color-text-value) hover:text-(--color-text-sub)`}>
                                         {firstName} {lastName}
                                     </span>
-                                    <span className="text-[10px] font-mono font-bold text-[var(--color-text-sub)] mt-1.5 leading-none uppercase tracking-widest">
-                                        Minha Conta
-                                    </span>
                                 </div>
-                            </div>
-                            {router.pathname.startsWith('/profile') && (
-                                <div className="absolute bottom-0 left-0 w-full h-[2px] bg-[var(--color-primary)]" />
-                            )}
-                        </Link>
-                    )}
+                            </Link>
+                        )}
 
-                    {/* Divisor Horizontal */}
-                    <div className="w-[1px] h-6 bg-white/5 mx-1" />
-
-                    {/* Logout */}
-                    <button
-                        onClick={() => session.signOut({callbackUrl: '/auth'})}
-                        className="h-full px-5 flex items-center text-[var(--color-text-sub)] hover:text-[var(--color-danger)] hover:bg-red-500/10 transition-colors duration-200 cursor-pointer"
-                        title="Sair"
-                    >
-                        <svg width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                            <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
-                            <polyline points="16 17 21 12 16 7"></polyline>
-                            <line x1="21" y1="12" x2="9" y2="12"></line>
-                        </svg>
-                    </button>
-                </div>
+                        {/* Logout (Vermelho cabuloso no hover) */}
+                        <button
+                            onClick={() => session.signOut({callbackUrl: '/auth'})}
+                            className="p-2.5 ml-1 rounded-xl text-[var(--color-text-sub)] hover:text-white hover:bg-danger/80 hover:shadow-[0_0_15px_rgba(239,68,68,0.4)] transition-all duration-300 cursor-pointer flex items-center justify-center"
+                            title="Sair"
+                        >
+                            <svg width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
+                                <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path>
+                                <polyline points="16 17 21 12 16 7"></polyline>
+                                <line x1="21" y1="12" x2="9" y2="12"></line>
+                            </svg>
+                        </button>
+                    </div>
+                </nav>
             </motion.div>
-        </nav>
+        </div>
     );
 };
 

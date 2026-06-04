@@ -11,10 +11,10 @@
 
     /* cards e elementos sobrepostos */
     --color-secondary: rgb(24, 24, 27); /* #18181b */
-    --color-terciary: rgb(39, 39, 42);  /* #27272a */
+    --color-terciary: rgb(39, 39, 42); /* #27272a */
 
     /* layout */
-    --color-navbar: rgb(0 0 0);
+    --color-navbar: #111113;
     --color-sidebar: rgb(0 0 0);
 
     /* console / inputs inset */
@@ -30,7 +30,7 @@
     /* texto */
     --color-text-label: rgb(161, 161, 170); /* #a1a1aa */
     --color-text-value: rgb(255, 255, 255); /* #ffffff */
-    --color-text-sub: rgb(113, 113, 122);   /* #71717a */
+    --color-text-sub: rgb(113, 113, 122); /* #71717a */
 
     /* sombra */
     --card-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.5), 0 2px 4px -1px rgba(0, 0, 0, 0.3);

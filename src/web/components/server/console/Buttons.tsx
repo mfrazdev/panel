@@ -22,10 +22,10 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
     const isKillDisabled = status === 'stopped';
 
     return (
-        <div className="flex items-center gap-4 bg-[var(--color-background)]/20 p-2 rounded-3xl shadow-inner border border-white/5 backdrop-blur-md">
+        <div className="flex items-center gap-4">
 
             {/* Start Button (Success) */}
-            <div className={`relative p-[2px] rounded-2xl transition-all duration-500 ease-out ${isStartDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-success)]/40 via-transparent to-transparent hover:from-[var(--color-success)]/60 shadow-lg shadow-[var(--color-success)]/10 hover:-translate-y-0.5 transform'}`}>
+            <div className={`relative p-[4px] rounded-2xl transition-all duration-500 ease-out ${isStartDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-success)]/40 via-transparent to-transparent hover:from-[var(--color-success)]/60 shadow-lg shadow-[var(--color-success)]/10 hover:-translate-y-0.5 transform'}`}>
                 <button
                     title="Iniciar"
                     disabled={isStartDisabled}
@@ -41,7 +41,7 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
             </div>
 
             {/* Stop Button (Danger) */}
-            <div className={`relative p-[2px] rounded-2xl transition-all duration-500 ease-out ${isStopDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-danger)]/40 via-transparent to-transparent hover:from-[var(--color-danger)]/60 shadow-lg shadow-[var(--color-danger)]/10 hover:-translate-y-0.5 transform'}`}>
+            <div className={`relative p-[4px] rounded-2xl transition-all duration-500 ease-out ${isStopDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-danger)]/40 via-transparent to-transparent hover:from-[var(--color-danger)]/60 shadow-lg shadow-[var(--color-danger)]/10 hover:-translate-y-0.5 transform'}`}>
                 <button
                     title="Desligar"
                     disabled={isStopDisabled}
@@ -57,7 +57,7 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
             </div>
 
             {/* Restart Button (Info/Cyan) */}
-            <div className={`relative p-[2px] rounded-2xl transition-all duration-500 ease-out ${isRestartDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-info)]/40 via-transparent to-transparent hover:from-[var(--color-info)]/60 shadow-lg shadow-[var(--color-info)]/10 hover:-translate-y-0.5 transform'}`}>
+            <div className={`relative p-[4px] rounded-2xl transition-all duration-500 ease-out ${isRestartDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-info)]/40 via-transparent to-transparent hover:from-[var(--color-info)]/60 shadow-lg shadow-[var(--color-info)]/10 hover:-translate-y-0.5 transform'}`}>
                 <button
                     title="Reiniciar"
                     disabled={isRestartDisabled}
@@ -76,7 +76,7 @@ const Buttons: React.FC<ServerActionsProps> = ({ status }) => {
             <div className="w-[2px] h-10 bg-[var(--color-terciary)] mx-1 rounded-full opacity-40" />
 
             {/* Kill Button (Warning/Orange) */}
-            <div className={`relative p-[2px] rounded-2xl transition-all duration-500 ease-out ${isKillDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-warning)]/40 via-transparent to-transparent hover:from-[var(--color-warning)]/60 shadow-lg shadow-[var(--color-warning)]/10 hover:-translate-y-0.5 transform'}`}>
+            <div className={`relative p-[4px] rounded-2xl transition-all duration-500 ease-out ${isKillDisabled ? 'bg-transparent shadow-none' : 'bg-gradient-to-br from-[var(--color-warning)]/40 via-transparent to-transparent hover:from-[var(--color-warning)]/60 shadow-lg shadow-[var(--color-warning)]/10 hover:-translate-y-0.5 transform'}`}>
                 <button
                     title="Matar Processo"
                     disabled={isKillDisabled}

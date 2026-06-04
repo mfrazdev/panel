@@ -116,7 +116,7 @@ class CaptchaService
         }
 
         $responseData = json_decode($response, true);
-
+        error_log(json_encode($responseData));
         // Retorna o status de sucesso enviado pela API do serviço
         return isset($responseData['success']) && $responseData['success'] === true;
     }
