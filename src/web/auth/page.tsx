@@ -346,7 +346,7 @@ export default function App() {
                                             type="text"
                                             value={username}
                                             onChange={(e) => setUsername(e.target.value)}
-                                            placeholder="admin@vatts.js"
+                                            placeholder="example@gmail.com"
                                         />
 
                                         <Input
