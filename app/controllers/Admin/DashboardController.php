@@ -11,7 +11,7 @@ use RecursiveDirectoryIterator;
 
 class DashboardController
 {
-    private const GITHUB_REPO = 'mfrazdev/panel'; // Substitua pelo seu repositório
+    private const GITHUB_REPO = 'murillo-frazao-cunha/panel'; // Substitua pelo seu repositório
 
     public function view(Request $request, Response $response): Response
     {
