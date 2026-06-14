@@ -13,21 +13,18 @@ RUN apk add --no-cache \
 # Define o diretório de trabalho padrão do servidor web
 WORKDIR /var/www/html
 
-# Recebe a versão gerada pela Action e usa para baixar a release
-ARG PANEL_VERSION=latest
-ENV PANEL_VERSION=${PANEL_VERSION}
+# Copia os arquivos já compilados da action direto para a imagem
+COPY . /var/www/html/
 
-# Baixa o panel.zip direto das suas releases usando a versão atual da compilação
-RUN curl -L -o panel.zip "https://github.com/murillo-frazao-cunha/panel/releases/download/${PANEL_VERSION}/panel.zip" \
-    && unzip -q panel.zip -d . \
-    && rm panel.zip \
-    && chown -R www-data:www-data /var/www/html \
+# Ajusta as permissões dos arquivos copiados
+RUN chown -R www-data:www-data /var/www/html \
     && mkdir -p storage bootstrap/cache \
     && chmod -R 775 storage bootstrap/cache
 
 # Configuração minimalista do Nginx otimizada para PHP (apontando para a pasta serve)
+# Usamos __PORT__ como um marcador que será substituído na hora que o container rodar
 RUN echo 'server { \
-    listen 80; \
+    listen __PORT__; \
     root /var/www/html/serve; \
     index index.php index.html; \
     location / { \
@@ -57,8 +54,8 @@ stdout_logfile_maxbytes=0 \
 stderr_logfile=/dev/stderr \
 stderr_logfile_maxbytes=0' > /etc/supervisord.conf
 
-# Expõe a porta 80 do painel
-EXPOSE 80
+# Define a porta padrão como 80 caso nenhuma seja passada
+ENV PORT=80
 
-# Inicia o Supervisor que vai gerenciar o Nginx e o PHP
-CMD ["/usr/bin/supervisord", "-c", "/etc/supervisord.conf"]
+# Inicia trocando a porta no Nginx de acordo com a variável PORT e depois chama o Supervisor
+CMD sh -c "sed -i \"s/__PORT__/${PORT}/g\" /etc/nginx/http.d/default.conf && /usr/bin/supervisord -c /etc/supervisord.conf"
