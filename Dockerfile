@@ -23,36 +23,40 @@ RUN chown -R www-data:www-data /var/www/html \
 
 # Configuração minimalista do Nginx otimizada para PHP (apontando para a pasta serve)
 # Usamos __PORT__ como um marcador que será substituído na hora que o container rodar
-RUN echo 'server { \
-    listen __PORT__; \
-    root /var/www/html/serve; \
-    index index.php index.html; \
-    location / { \
-        try_files $uri $uri/ /index.php?$query_string; \
-    } \
-    location ~ \.php$ { \
-        fastcgi_pass 127.0.0.1:9000; \
-        fastcgi_index index.php; \
-        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name; \
-        include fastcgi_params; \
-    } \
-}' > /etc/nginx/http.d/default.conf
+RUN { \
+    echo 'server {'; \
+    echo '    listen __PORT__;'; \
+    echo '    root /var/www/html/serve;'; \
+    echo '    index index.php index.html;'; \
+    echo '    location / {'; \
+    echo '        try_files $uri $uri/ /index.php?$query_string;'; \
+    echo '    }'; \
+    echo '    location ~ \.php$ {'; \
+    echo '        fastcgi_pass 127.0.0.1:9000;'; \
+    echo '        fastcgi_index index.php;'; \
+    echo '        fastcgi_param SCRIPT_FILENAME $realpath_root$fastcgi_script_name;'; \
+    echo '        include fastcgi_params;'; \
+    echo '    }'; \
+    echo '}'; \
+} > /etc/nginx/http.d/default.conf
 
 # Configuração do Supervisord para iniciar o Nginx e o PHP-FPM ao mesmo tempo
-RUN echo '[supervisord] \
-nodaemon=true \
-[program:php-fpm] \
-command=php-fpm -F \
-stdout_logfile=/dev/stdout \
-stdout_logfile_maxbytes=0 \
-stderr_logfile=/dev/stderr \
-stderr_logfile_maxbytes=0 \
-[program:nginx] \
-command=nginx -g "daemon off;" \
-stdout_logfile=/dev/stdout \
-stdout_logfile_maxbytes=0 \
-stderr_logfile=/dev/stderr \
-stderr_logfile_maxbytes=0' > /etc/supervisord.conf
+RUN { \
+    echo '[supervisord]'; \
+    echo 'nodaemon=true'; \
+    echo '[program:php-fpm]'; \
+    echo 'command=php-fpm -F'; \
+    echo 'stdout_logfile=/dev/stdout'; \
+    echo 'stdout_logfile_maxbytes=0'; \
+    echo 'stderr_logfile=/dev/stderr'; \
+    echo 'stderr_logfile_maxbytes=0'; \
+    echo '[program:nginx]'; \
+    echo 'command=nginx -g "daemon off;"'; \
+    echo 'stdout_logfile=/dev/stdout'; \
+    echo 'stdout_logfile_maxbytes=0'; \
+    echo 'stderr_logfile=/dev/stderr'; \
+    echo 'stderr_logfile_maxbytes=0'; \
+} > /etc/supervisord.conf
 
 # Define a porta padrão como 80 caso nenhuma seja passada
 ENV PORT=80
