@@ -43,6 +43,29 @@ class CreateUserCommand extends Command
         }
         return $password;
     }
+    public function askFirstName(): string
+    {
+        $firstName = Console::ask('Primeiro nome do usuário');
+        if(empty($firstName)) {
+            Console::error('O primeiro nome não pode ser vazio. Tente novamente.');
+            return $this->askFirstName(); // Chama recursivamente até obter um nome válido
+        }
+        return $firstName;
+    }
+
+    public function askLastName(): string
+    {
+        $lastName = Console::ask('Último nome do usuário');
+        if(empty($lastName)) {
+            Console::error('O último nome não pode ser vazio. Tente novamente.');
+            return $this->askLastName(); // Chama recursivamente até obter um nome válido
+        }
+        return $lastName;
+    }
+
+
+
+
     public function askIsAdmin(): bool
     {
         return $isAdmin = Console::confirm('Este usuário é um administrador? (y/n)');
@@ -53,6 +76,8 @@ class CreateUserCommand extends Command
         Vatts::loadEnv(__DIR__ . '/../../');
         require_once __DIR__ . '/../Utils/DatabaseBooter.php';
         try {
+            $firstName = $this->askFirstName();
+            $lastName = $this->askLastName();
             $name = $this->askName();
             $email = $this->askEmail();
             $password = $this->askPassword();
@@ -61,6 +86,8 @@ class CreateUserCommand extends Command
             $user = new \models\User();
             $user->name = $name;
             $user->email = $email;
+            $user->first_name = $firstName;
+            $user->last_name = $lastName;
             $user->password = password_hash($password, PASSWORD_BCRYPT);
             $user->role = $isAdmin ? 'admin' : 'user';
             $user->save();
