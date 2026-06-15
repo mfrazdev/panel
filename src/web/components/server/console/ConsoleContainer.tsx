@@ -23,6 +23,16 @@ const formatUptime = (ms: number = 0) => {
     return `${hours}h ${minutes}m ${seconds}s`;
 };
 
+// Nova função para formatar os limites do servidor (RAM e Disco)
+const formatLimit = (mb: number) => {
+    if (mb === 0) return <Infinity size={14} className="inline" />;
+    if (mb > 1000) {
+        const gb = mb / 1024;
+        return `${Number.isInteger(gb) ? gb : gb.toFixed(2)} GB`;
+    }
+    return `${mb} MB`;
+};
+
 export default function ConsoleContainer() {
     const {
         server, usage, isLoadingServer,
@@ -168,13 +178,13 @@ export default function ConsoleContainer() {
                         <StatCard
                             label="Memória RAM"
                             value={isSuspended ? '0.00 MiB' : formatBytes(usage?.memory)}
-                            subValue={server.ram === 0 ? <Infinity size={14} className="inline" /> : `${server.ram} MB`}
+                            subValue={formatLimit(server.ram)}
                             icon={<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M4 21v-7m0-4V3m8 18v-9m0-4V3m8 18v-5m0-4V3M1 14h7m2-6h6m2 8h6" /></svg>}
                         />
                         <StatCard
                             label="Armazenamento"
                             value={isSuspended ? '0.00 MiB' : formatBytes(usage?.disk)}
-                            subValue={server.disk === 0 ? <Infinity size={14} className="inline" /> : `${server.disk} MB`}
+                            subValue={formatLimit(server.disk)}
                             icon={<svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24" strokeWidth="2"><path d="M22 12H2M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z" /></svg>}
                         />
                     </div>
