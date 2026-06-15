@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { GuestOnly, useSession } from "@vatts/auth/react";
+import { GuestOnly, useSession } from "@nytlex/auth/react";
 import { useToast } from "@/web/contexts/ToastContext";
-import { Link, router, VattsImage } from "vatts/react";
+import { Link, router, NytlexImage } from "nytlex/react";
 import Input from "@/web/components/commons/components/Input";
 import Button from "@/web/components/commons/components/Button";
 import Footer from "@/web/components/commons/Footer";
@@ -328,7 +328,7 @@ export default function App() {
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 items-center p-2 md:p-6">
 
                                 <div className="hidden md:flex justify-center items-center p-4 rounded-xl h-full shadow-inner bg-[var(--color-background-sub)]">
-                                    <VattsImage
+                                    <NytlexImage
                                         src={urlImage}
                                         width={240}
                                         className="hover:scale-105 transition-transform duration-500 drop-shadow-xl"
@@ -337,7 +337,7 @@ export default function App() {
 
                                 <div className="w-full flex flex-col">
                                     <div className="md:hidden flex justify-center mb-6">
-                                        <VattsImage src={urlImage} width={180} />
+                                        <NytlexImage src={urlImage} width={180} />
                                     </div>
 
                                     <form onSubmit={handleSubmit} className="space-y-4 w-full">

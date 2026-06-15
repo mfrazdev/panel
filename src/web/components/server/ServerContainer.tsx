@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import ServerSidebar from './ServerSidebar';
 import ConsoleContainer from "./console/ConsoleContainer";
 import { useServerContext } from "@/web/contexts/ServerContext";
-import { router } from "vatts/react";
+import { router } from "nytlex/react";
 import Footer from "@/web/components/commons/Footer";
 import ConfigurationContainer from "@/web/components/server/config/ConfigurationContainer";
 import { useLoading } from "@/web/components/wrappers/Wrapper";

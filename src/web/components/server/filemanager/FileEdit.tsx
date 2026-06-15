@@ -377,7 +377,7 @@ export default function FileEditContainer() {
 
     return (
         <div className="flex-1 flex flex-col p-6 overflow-hidden relative text-[var(--color-text-value)] h-full w-full gap-5">
-            {/* Header Redesenhado - Padrão Novo Vatts */}
+
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 shrink-0">
                 <div className="flex items-center gap-4 text-[13px] font-mono text-[var(--color-text-sub)] bg-[var(--color-terciary)] border border-white/5 px-3 py-2 rounded-xl shadow-sm">
                     <button

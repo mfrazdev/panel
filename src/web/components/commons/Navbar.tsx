@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useSession } from "@vatts/auth/react";
-import { Link, router, VattsImage } from "vatts/react";
+import { useSession } from "@nytlex/auth/react";
+import { Link, router, NytlexImage } from "nytlex/react";
 import { motion } from "framer-motion";
 
 const Navbar: React.FC = () => {
@@ -61,7 +61,7 @@ const Navbar: React.FC = () => {
                     {/* Logo - Esquerda */}
                     <Link href={"/"} className="flex items-center gap-3 cursor-pointer group h-full px-2">
                         <div className="p-1.5 rounded-xl bg-white/5 group-hover:bg-white/10 group-hover:shadow-[0_0_15px_rgba(255,255,255,0.1)] transition-all duration-300">
-                            <VattsImage src={urlImage} width={24} className="group-hover:scale-110 transition-transform duration-500" />
+                            <NytlexImage src={urlImage} width={24} className="group-hover:scale-110 transition-transform duration-500" />
                         </div>
 
                         <span className="text-[15px] text-(--color-text-value) font-black tracking-tight group-hover:text-[var(--color-text-sub)] transition-colors truncate hidden sm:block">

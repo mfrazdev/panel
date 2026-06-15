@@ -230,7 +230,7 @@ export default function SchedulersContainer() {
 
     return (
         <main className="flex-1 flex flex-col py-6 px-4 md:py-8 md:px-10 xl:px-20 overflow-x-hidden animate-[fadeIn_0.4s_ease-out] gap-8">
-            {/* Header no novo padrão Vatts */}
+
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-6">
                 <div>
                     <h1 className="text-3xl font-black tracking-tight text-[var(--color-text-value)] mb-2 flex items-center gap-3">
@@ -251,7 +251,7 @@ export default function SchedulersContainer() {
 
             <div>
                 {schedulers.length === 0 ? (
-                    /* Empty State Tracejado padrão Vatts */
+
                     <div className="flex flex-col items-center justify-center text-center py-20 rounded-2xl border-2 border-dashed border-white/5">
                         <div className="w-16 h-16 rounded-full bg-[var(--color-secondary)] border border-white/5 flex items-center justify-center text-[var(--color-text-sub)] mb-5 shadow-sm">
                             <Clock className="w-7 h-7" />

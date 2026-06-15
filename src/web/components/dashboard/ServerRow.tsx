@@ -1,6 +1,6 @@
 import React from 'react';
 import { ServerData } from "@/web/types";
-import { Link } from "vatts/react";
+import { Link } from "nytlex/react";
 
 interface ServerRowProps {
     server: ServerData & {

@@ -1,8 +1,8 @@
 import React from 'react';
 import ServerContainer from "../../../components/server/ServerContainer";
-import {AuthGuard, useSession} from "@vatts/auth/react";
+import {AuthGuard, useSession} from "@nytlex/auth/react";
 import {ServerProvider} from "@/web/contexts/ServerContext";
-import {Metadata} from "vatts/react";
+import {Metadata} from "nytlex/react";
 
 type WelcomeProps = {
     params: {

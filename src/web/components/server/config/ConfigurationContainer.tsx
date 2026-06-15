@@ -3,7 +3,7 @@ import { useServerContext } from "@/web/contexts/ServerContext";
 import LoadingPage from "@/web/components/commons/LoadingPage";
 import Card from "../../commons/components/Card";
 import Input from "@/web/components/commons/components/Input";
-import { useSession } from "@vatts/auth/react";
+import { useSession } from "@nytlex/auth/react";
 import Button from "@/web/components/commons/components/Button";
 import {useToast} from "@/web/contexts/ToastContext";
 

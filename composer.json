@@ -12,15 +12,6 @@
             "email": "murillofrazaocunha@gmail.com"
         }
     ],
-    "repositories": [
-        {
-            "type": "path",
-            "url": "../",
-            "options": {
-                "symlink": true
-            }
-        }
-    ],
     "require": {
         "mfrazlab/vattsphp": "dev-master",
         "rakit/validation": "^1.4",

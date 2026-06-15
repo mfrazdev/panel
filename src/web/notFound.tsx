@@ -1,7 +1,6 @@
 import React from "react";
 import { TriangleAlert } from "lucide-react";
 import Card from "@/web/components/commons/components/Card";
-import { Link } from "vatts/react";
 import Footer from "@/web/components/commons/Footer";
 import Button from "@/web/components/commons/components/Button";
 

@@ -10,9 +10,9 @@ import {
     EthernetPort,
     ChevronUp
 } from "lucide-react";
-import { useSession } from "@vatts/auth/react";
+import { useSession } from "@nytlex/auth/react";
 import { useServerContext } from "@/web/contexts/ServerContext";
-import {Link} from "vatts/react";
+import {Link} from "nytlex/react";
 
 type Sidebar = {
     serverId: string;

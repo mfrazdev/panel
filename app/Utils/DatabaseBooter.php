@@ -8,9 +8,12 @@ $type = Vatts::getEnv("DB_TYPE", "sqlite");
 $dbName = Vatts::getEnv("DB_DATABASE", "panel.db");
 try {
     if($type === 'sqlite') {
+        $caminhoDb = "$dbName";
+
+
         Vatts::bootDatabase([
             'driver'   => "sqlite",
-            'database' => "../$dbName", // Caminho completo do banco
+            'database' => $caminhoDb,
             'charset'  => Vatts::getEnv("DB_CHARSET", "utf8mb4")
         ]);
 
@@ -23,6 +26,7 @@ try {
             'password' => Vatts::getEnv("DB_PASSWORD", ""),
             'charset'  => Vatts::getEnv("DB_CHARSET", "utf8mb4")
         ]);
+        \Vatts\Database\DB::getPdo(); // <-- Adicionado o ; que tava faltando aqui
     } else {
         throw new Exception("Tipo de banco de dados não suportado: $type");
     }

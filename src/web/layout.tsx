@@ -1,7 +1,7 @@
 import React from 'react';
-import { Metadata } from "vatts/react"
+import { Metadata } from "nytlex/react"
 import './globals.css';
-import { SessionProvider, useSession } from "@vatts/auth/react";
+import { SessionProvider, useSession } from "@nytlex/auth/react";
 import { ToastProvider } from "@/web/contexts/ToastContext";
 import DashboardWrapper from "@/web/components/wrappers/Wrapper";
 

@@ -6,7 +6,7 @@ import LoadingPage from "@/web/components/commons/LoadingPage";
 import Footer from "@/web/components/commons/Footer";
 import Checkbox from "@/web/components/commons/components/Checkbox";
 import Select from "@/web/components/commons/components/Select";
-import { useSession } from "@vatts/auth/react";
+import { useSession } from "@nytlex/auth/react";
 
 interface ServerStats {
     cpu: number;

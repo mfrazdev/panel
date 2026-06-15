@@ -3,36 +3,36 @@
   "version": "0.1.0",
   "description": "Basic application for Vatts.js framework",
   "scripts": {
-    "start": "vatts start",
-    "dev": "vatts dev",
+    "start": "nytlex start",
+    "dev": "nytlex dev",
     "php": "powershell -Command \"& 'C:\\Users\\Murillo Frazão Cunha\\Downloads\\frankenphp-windows-x86_64\\frankenphp.exe' php-server -r serve/ --listen=0.0.0.0:8000\"",
-    "build": "vatts export -o serve/dist"
+    "build": "nytlex export -o serve/dist"
   },
   "dependencies": {
     "@hcaptcha/react-hcaptcha": "^2.0.2",
-    "@marsidev/react-turnstile": "^1.5.2",
+    "@marsidev/react-turnstile": "^1.5.3",
     "@monaco-editor/react": "^4.7.0",
-    "@tailwindcss/postcss": "^4.2.4",
-    "@types/node": "^25.6.0",
-    "@vatts/auth": "2.2.0-canary.0.7.0",
+    "@nytlex/auth": "0.0.1-canary.2",
+    "@tailwindcss/postcss": "^4.3.1",
+    "@types/node": "^25.9.3",
     "ansi-to-react": "^6.2.6",
     "autoprefixer": "^10.5.0",
     "cbor-x": "^1.6.4",
     "classnames": "^2.5.1",
     "copy-to-clipboard": "^4.0.2",
-    "framer-motion": "^12.38.0",
-    "lucide-react": "^1.14.0",
-    "postcss": "^8.5.12",
-    "react": "^19.2.5",
-    "react-dom": "^19.2.5",
+    "framer-motion": "^12.40.0",
+    "lucide-react": "^1.18.0",
+    "nytlex": "0.0.1-canary.3",
+    "postcss": "^8.5.15",
+    "react": "^19.2.7",
+    "react-dom": "^19.2.7",
     "recharts": "^3.8.1",
-    "tailwindcss": "^4.2.4",
-    "ts-node": "^10.9.2",
-    "vatts": "2.2.2"
+    "tailwindcss": "^4.3.1",
+    "ts-node": "^10.9.2"
   },
   "devDependencies": {
     "@types/node": "^25.6.0",
-    "@types/react": "^19.2.14",
+    "@types/react": "^19.2.17",
     "typescript": "^6.0.3"
   }
 }

@@ -3,8 +3,8 @@ import DashboardWrapper from "@/web/components/wrappers/Wrapper";
 import Card from "@/web/components/commons/components/Card";
 import Input from "@/web/components/commons/components/Input";
 import Button from "@/web/components/commons/components/Button";
-import {AuthGuard, useSession} from "@vatts/auth/react";
-import {Link} from "vatts/react";
+import {AuthGuard, useSession} from "@nytlex/auth/react";
+import {Link} from "nytlex/react";
 import {useToast} from "@/web/contexts/ToastContext"; // Ajuste o import do Link conforme o seu roteador (Next.js ou React Router)
 
 export default function ProfilePage() {

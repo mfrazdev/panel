@@ -2,7 +2,7 @@ import React, { useState, useEffect, ReactNode, createContext, useContext } from
 import { motion, AnimatePresence } from 'framer-motion';
 import Navbar from '../commons/Navbar';
 import LoadingPage from "@/web/components/commons/LoadingPage";
-import { useSession } from "@vatts/auth/react";
+import { useSession } from "@nytlex/auth/react";
 import Footer from "@/web/components/commons/Footer";
 
 interface LoadingContextType {

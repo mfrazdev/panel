@@ -1,7 +1,7 @@
 import React from 'react';
 import Dashboard from "./components/Dashboard";
-import {AuthGuard} from "@vatts/auth/react";
-import {Metadata} from "vatts/react";
+import {AuthGuard} from "@nytlex/auth/react";
+import {Metadata} from "nytlex/react";
 
 export default function Welcome() {
 

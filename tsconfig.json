@@ -12,7 +12,7 @@
     "rootDir": "./src",
     "outDir": "./dist",
     "moduleResolution": "nodenext",
-    "types": ["vatts/global", "node"],
+    "types": ["nytlex/global", "node"],
     "ignoreDeprecations": "6.0",
     "baseUrl": ".",
     "paths": {

@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { useToast } from "@/web/contexts/ToastContext";
-import { Link, router, VattsImage } from "vatts/react";
+import { Link, router, Image } from "nytlex/react";
 import Input from "@/web/components/commons/components/Input";
 import Button from "@/web/components/commons/components/Button";
 import Footer from "@/web/components/commons/Footer";
 import Card from "@/web/components/commons/components/Card";
-import { useSession } from "@vatts/auth/react";
+import { useSession } from "@nytlex/auth/react";
 
 export default function Recovery() {
     const [email, setEmail] = useState('');
@@ -169,7 +169,7 @@ export default function Recovery() {
 
                             {/* Lado Esquerdo - Logo (Escondido no mobile) */}
                             <div className="hidden md:flex justify-center items-center p-8 rounded-xl h-full shadow-inner">
-                                <VattsImage
+                                <Image
                                     src={urlImage}
                                     width={240}
                                     className="hover:scale-105 transition-transform duration-500 drop-shadow-xl"
@@ -180,7 +180,7 @@ export default function Recovery() {
                             <div className="w-full flex flex-col p-2 md:py-6 md:pr-6">
                                 {/* Logo aparece apenas no Mobile */}
                                 <div className="md:hidden flex justify-center mb-8">
-                                    <VattsImage src={urlImage} width={180} />
+                                    <Image src={urlImage} width={180} />
                                 </div>
 
                                 {!code ? (
