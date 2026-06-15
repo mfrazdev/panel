@@ -10,7 +10,13 @@ import CopyOnClick from "@/web/components/commons/CopyOnClick";
 
 import { Infinity } from "lucide-react";
 
-const formatBytes = (bytes: number = 0) => (bytes / 1024 / 1024).toFixed(2) + ' MiB';
+const formatBytes = (bytes: number = 0) => {
+    const mib = bytes / 1024 / 1024;
+    if (mib > 1000) {
+        return (mib / 1024).toFixed(2) + ' GiB';
+    }
+    return mib.toFixed(2) + ' MiB';
+};
 const formatNetwork = (bytes: number = 0) => {
     if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(2) + ' KB/s';
     return (bytes / 1024 / 1024).toFixed(2) + ' MB/s';
