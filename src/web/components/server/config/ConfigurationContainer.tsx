@@ -20,13 +20,6 @@ export default function ConfigurationContainer() {
     if (!server) return null;
 
 
-    async function handleReinstall() {
-        if(usage?.state !== 'stopped') {
-            toast.addToast("O servidor precisa estar desligado.", "error")
-        } else {
-            sendServerAction('install')
-        }
-    }
 
     async function handleSave() {
         try {
@@ -116,18 +109,6 @@ export default function ConfigurationContainer() {
                         />
                         <Button onClick={handleSave} variant={"info"}>
                             SALVAR
-                        </Button>
-                    </div>
-                </Card>
-
-
-                <Card title={"REINSTALAR SERVIDOR"}>
-                    <div className="flex flex-col gap-4">
-                        <p className="text-[var(--color-text-label)]">
-                            Para reinstalar o servidor é necessário desliga-lo, e irá executar novamente o script de instalação que o configurou inicialmente. Alguns arquivos podem ser excluídos ou modificados durante este processo. Faça um backup dos seus dados antes de continuar.
-                        </p>
-                        <Button disabled={usage?.state !== 'stopped'} onClick={handleReinstall} variant={"danger"}>
-                            REINSTALAR
                         </Button>
                     </div>
                 </Card>
