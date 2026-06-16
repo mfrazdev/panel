@@ -184,11 +184,11 @@ const DashboardContainer: React.FC = () => {
             });
         }
 
-        // Filtro de Categoria/Grupo
+        // Filtro de Categoria/Grupo mantendo a separação visual por categoria original
         return filtered
             .filter(s => activeFilter === 'all' || (s.group || 'Geral') === activeFilter)
             .reduce((acc, server) => {
-                const groupName = activeFilter === 'all' ? 'Todos os Servidores' : (server.group || 'Geral');
+                const groupName = server.group || 'Geral';
                 if (!acc[groupName]) acc[groupName] = [];
                 acc[groupName].push(server);
                 return acc;
