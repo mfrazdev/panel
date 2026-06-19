@@ -14,7 +14,7 @@ interface ServerStats {
     disk: number;
 }
 
-const ITEMS_PER_PAGE = 10;
+const ITEMS_PER_PAGE = 15;
 
 const statusOptions = [
     { label: 'Status: Todos', value: 'all' },
@@ -33,53 +33,51 @@ const sortOptions = [
 const DashboardContainer: React.FC = () => {
     const session = useSession();
 
-    const [showOthers, setShowOthers] = useState(() => {
+    // --- PERSISTÊNCIA DE ESTADOS (LocalStorage) ---
+    const saveState = (key: string, value: any) => {
+        if (typeof window !== 'undefined') localStorage.setItem(key, JSON.stringify(value));
+    };
+
+    const loadState = (key: string, defaultValue: any) => {
         if (typeof window !== 'undefined') {
-            const saved = localStorage.getItem('hight_show_others');
-            return saved ? JSON.parse(saved) : false;
+            const saved = localStorage.getItem(key);
+            return saved ? JSON.parse(saved) : defaultValue;
         }
-        return false;
-    });
+        return defaultValue;
+    };
+
+    // Estados de Visão e Filtros Usuário
+    const [showOthers, setShowOthers] = useState(() => loadState('hight_show_others', false));
+    const [activeFilter, setActiveFilter] = useState(() => loadState('hight_active_filter', 'all'));
+    const [userSearchQuery, setUserSearchQuery] = useState('');
+    const [userStatusFilter, setUserStatusFilter] = useState('all');
+
+    // Estados de Filtros Admin (Agora Persistentes)
+    const [searchQuery, setSearchQuery] = useState(() => loadState('admin_search_query', ''));
+    const [adminStatusFilter, setAdminStatusFilter] = useState(() => loadState('admin_status_filter', 'all'));
+    const [adminSortBy, setAdminSortBy] = useState(() => loadState('admin_sort_by', 'newest'));
+    const [adminGroupFilter, setAdminGroupFilter] = useState(() => loadState('admin_group_filter', 'all'));
+
     const [servers, setServers] = useState<ServerData[]>([]);
     const [isLoading, setIsLoading] = useState(true);
     const [serverStatuses, setServerStatuses] = useState<Record<number, string>>({});
     const [serverStats, setServerStats] = useState<Record<number, ServerStats>>({});
     const [currentPage, setCurrentPage] = useState(1);
 
-    const [activeFilter, setActiveFilter] = useState(() => {
-        if (typeof window !== 'undefined') {
-            return localStorage.getItem('hight_active_filter') || 'all';
-        }
-        return 'all';
-    });
+    // Sincronização de LocalStorage
+    useEffect(() => { saveState('hight_show_others', showOthers); }, [showOthers]);
+    useEffect(() => { saveState('hight_active_filter', activeFilter); }, [activeFilter]);
+    useEffect(() => { saveState('admin_search_query', searchQuery); }, [searchQuery]);
+    useEffect(() => { saveState('admin_status_filter', adminStatusFilter); }, [adminStatusFilter]);
+    useEffect(() => { saveState('admin_sort_by', adminSortBy); }, [adminSortBy]);
+    useEffect(() => { saveState('admin_group_filter', adminGroupFilter); }, [adminGroupFilter]);
 
-    // Filtros para os próprios servidores do usuário
-    const [userSearchQuery, setUserSearchQuery] = useState('');
-    const [userStatusFilter, setUserStatusFilter] = useState('all');
-
-    const [searchQuery, setSearchQuery] = useState('');
-    const [adminStatusFilter, setAdminStatusFilter] = useState('all');
-    const [adminSortBy, setAdminSortBy] = useState('newest');
-
-    useEffect(() => {
-        localStorage.setItem('hight_show_others', JSON.stringify(showOthers));
-        setSearchQuery('');
-        setUserSearchQuery('');
-        setAdminStatusFilter('all');
-        setUserStatusFilter('all');
-        setAdminSortBy('newest');
-        setCurrentPage(1);
-    }, [showOthers]);
-
-    useEffect(() => {
-        localStorage.setItem('hight_active_filter', activeFilter);
-        setCurrentPage(1);
-    }, [activeFilter]);
-
+    // Reset de página ao filtrar
     useEffect(() => {
         setCurrentPage(1);
-    }, [searchQuery, adminStatusFilter, adminSortBy, userSearchQuery, userStatusFilter]);
+    }, [searchQuery, adminStatusFilter, adminSortBy, adminGroupFilter, userSearchQuery, userStatusFilter, activeFilter]);
 
+    // Busca de Servidores
     useEffect(() => {
         const fetchServers = async () => {
             setIsLoading(true);
@@ -90,19 +88,17 @@ const DashboardContainer: React.FC = () => {
 
                 const response = await fetch(endpoint);
                 const data = await response.json();
-
-                const servers = data.servers;
-                setServers(Array.isArray(servers) ? servers : []);
+                setServers(Array.isArray(data.servers) ? data.servers : []);
             } catch (error) {
                 console.error("Erro ao buscar servidores:", error);
             } finally {
                 setIsLoading(false);
             }
         };
-
         fetchServers();
     }, [showOthers, session.data?.user.role]);
 
+    // Atualização de status em tempo real
     useEffect(() => {
         if (servers.length === 0) return;
 
@@ -116,30 +112,21 @@ const DashboardContainer: React.FC = () => {
                     newStats[server.id] = { cpu: 0, ram: 0, disk: 0 };
                     return;
                 }
-
                 try {
                     const response = await fetch(`/api/v1/users/server/${server.id}/status`);
-                    if (!response.ok) throw new Error('Erro na requisição');
-
+                    if (!response.ok) throw new Error('Erro');
                     const data = await response.json();
                     const { status, usage } = data.status;
-
                     newStatuses[server.id] = status;
-                    newStats[server.id] = {
-                        cpu: usage.cpu || 0,
-                        ram: usage.memory || 0,
-                        disk: usage.disk || 0
-                    };
-                } catch (error) {
+                    newStats[server.id] = { cpu: usage.cpu || 0, ram: usage.memory || 0, disk: usage.disk || 0 };
+                } catch {
                     newStatuses[server.id] = 'conectando';
                     newStats[server.id] = { cpu: 0, ram: 0, disk: 0 };
                 }
             }));
-
             setServerStatuses(prev => ({ ...prev, ...newStatuses }));
             setServerStats(prev => ({ ...prev, ...newStats }));
         };
-
         updateServerData();
     }, [servers]);
 
@@ -148,7 +135,7 @@ const DashboardContainer: React.FC = () => {
         return Array.from(uniqueGroups);
     }, [servers]);
 
-    // Métricas simplificadas para os servidores do próprio usuário
+    // Métricas Usuário
     const userMetrics = useMemo(() => {
         if (showOthers) return { total: 0, online: 0, ram: '0 MB' };
         const total = servers.length;
@@ -158,22 +145,16 @@ const DashboardContainer: React.FC = () => {
         return { total, online, ram };
     }, [servers, serverStatuses, showOthers]);
 
-    // Filtro e agrupamento completo dos servidores normais
+    // Filtro Usuário
     const groupedNormalServers = useMemo(() => {
         if (showOthers) return {};
-
         let filtered = [...servers];
 
-        // Filtro de Busca Textual
         if (userSearchQuery.trim() !== '') {
             const q = userSearchQuery.toLowerCase();
-            filtered = filtered.filter(s =>
-                s.name.toLowerCase().includes(q) ||
-                s.id.toString().includes(q)
-            );
+            filtered = filtered.filter(s => s.name.toLowerCase().includes(q) || s.id.toString().includes(q));
         }
 
-        // Filtro de Status
         if (userStatusFilter !== 'all') {
             filtered = filtered.filter(s => {
                 if (userStatusFilter === 'suspended') return s.suspended === 1;
@@ -184,7 +165,6 @@ const DashboardContainer: React.FC = () => {
             });
         }
 
-        // Filtro de Categoria/Grupo mantendo a separação visual por categoria original
         return filtered
             .filter(s => activeFilter === 'all' || (s.group || 'Geral') === activeFilter)
             .reduce((acc, server) => {
@@ -195,32 +175,37 @@ const DashboardContainer: React.FC = () => {
             }, {} as Record<string, ServerData[]>);
     }, [servers, activeFilter, showOthers, userSearchQuery, userStatusFilter, serverStatuses]);
 
+    // Métricas Admin
     const adminMetrics = useMemo(() => {
         const total = servers.length;
         const suspended = servers.filter(s => s.suspended === 1).length;
         const online = servers.filter(s => serverStatuses[s.id] === 'running').length;
         const totalRamMB = servers.reduce((acc, s) => acc + (s.ram || 0), 0);
         const totalRam = totalRamMB >= 1024 ? `${(totalRamMB / 1024).toFixed(1)} GB` : `${totalRamMB} MB`;
-
         return { total, suspended, online, totalRam };
     }, [servers, serverStatuses]);
 
+    // --- FILTRAGEM SURREAL ADMIN ---
     const adminFilteredServers = useMemo(() => {
         if (!showOthers) return [];
         let filtered = [...servers];
 
+        // Busca Ultra: Nome, ID, User, Email, Grupo
         if (searchQuery.trim() !== '') {
             const q = searchQuery.toLowerCase();
             filtered = filtered.filter((s: any) => {
                 const userFirst = s.user?.first_name?.toLowerCase() || '';
                 const userEmail = s.user?.email?.toLowerCase() || '';
+                const groupName = (s.group || 'Geral').toLowerCase();
                 return s.name.toLowerCase().includes(q) ||
                     s.id.toString().includes(q) ||
                     userFirst.includes(q) ||
-                    userEmail.includes(q);
+                    userEmail.includes(q) ||
+                    groupName.includes(q);
             });
         }
 
+        // Filtro Status Admin
         if (adminStatusFilter !== 'all') {
             filtered = filtered.filter(s => {
                 if (adminStatusFilter === 'suspended') return s.suspended === 1;
@@ -231,6 +216,12 @@ const DashboardContainer: React.FC = () => {
             });
         }
 
+        // Filtro de Grupo Admin
+        if (adminGroupFilter !== 'all') {
+            filtered = filtered.filter(s => (s.group || 'Geral') === adminGroupFilter);
+        }
+
+        // Ordenação
         filtered.sort((a, b) => {
             if (adminSortBy === 'newest') return b.id - a.id;
             if (adminSortBy === 'oldest') return a.id - b.id;
@@ -240,7 +231,7 @@ const DashboardContainer: React.FC = () => {
         });
 
         return filtered;
-    }, [servers, showOthers, searchQuery, adminStatusFilter, adminSortBy, serverStatuses]);
+    }, [servers, showOthers, searchQuery, adminStatusFilter, adminSortBy, adminGroupFilter, serverStatuses]);
 
     const totalPages = Math.ceil((showOthers ? adminFilteredServers.length : 0) / ITEMS_PER_PAGE);
     const paginatedAdminServers = adminFilteredServers.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE);
@@ -249,7 +240,7 @@ const DashboardContainer: React.FC = () => {
         <div className="w-full max-w-7xl mx-auto mt-12 px-14 overflow-x-hidden animate-[fadeIn_0.4s_ease-out] min-h-screen text-[var(--color-text-label)]">
             <div className="flex flex-col mb-10 gap-6 w-full">
 
-                {/* Header Superior - Alternador de Contexto */}
+                {/* Header Superior */}
                 <div className="flex justify-between items-center w-full pb-4 border-b border-[var(--color-terciary)]/30">
                     <div className="flex flex-col">
                         <h1 className="text-xl font-black text-[var(--color-text-value)] tracking-tight">Dashboard</h1>
@@ -268,14 +259,8 @@ const DashboardContainer: React.FC = () => {
                     )}
                 </div>
 
-                {/* VISÃO: MEUS SERVIDORES (CUSTOMIZADA & COMPLETA) */}
                 {!showOthers && (
-                    <motion.div
-                        initial={{ opacity: 0, y: -10 }}
-                        animate={{ opacity: 1, y: 0 }}
-                        className="flex flex-col gap-6 w-full"
-                    >
-                        {/* Mini Cards de Estatísticas Próprias (Estilo Fake Border) */}
+                    <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} className="flex flex-col gap-6 w-full">
                         <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 w-full">
                             <div className="p-[3px] rounded-2xl bg-gradient-to-br from-[var(--color-terciary)] to-transparent shadow-md flex flex-col">
                                 <div className="bg-[var(--color-secondary)] rounded-[14px] p-4 flex items-center gap-4">
@@ -312,9 +297,7 @@ const DashboardContainer: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Nova Barra de Filtros Avançados e Busca */}
                         <div className="flex flex-col lg:flex-row gap-4 w-full items-center bg-[var(--color-secondary)]/20 p-3 rounded-2xl border border-[var(--color-terciary)]/10">
-                            {/* Input de Busca */}
                             <div className="relative flex-1 w-full p-[2px] rounded-xl bg-gradient-to-br from-[var(--color-terciary)] to-transparent focus-within:from-[var(--color-primary)] transition-all duration-300">
                                 <div className="relative bg-[var(--color-console)] rounded-[11px]">
                                     <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-sub)] w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
@@ -327,8 +310,6 @@ const DashboardContainer: React.FC = () => {
                                     />
                                 </div>
                             </div>
-
-                            {/* Dropdowns e Filtro Rápido */}
                             <div className="flex flex-col sm:flex-row gap-3 w-full lg:w-auto shrink-0">
                                 <div className="w-full sm:w-44 cursor-pointer">
                                     <Select
@@ -345,7 +326,6 @@ const DashboardContainer: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Seleção de Categoria Dinâmica em Linha */}
                         <div className="flex flex-col gap-2.5 w-full mt-1">
                             <span className="text-[10px] font-black text-[var(--color-text-sub)] uppercase tracking-widest pl-1">Filtrar por Categoria</span>
                             <div className="p-[2px] rounded-xl bg-gradient-to-r from-[var(--color-terciary)]/40 to-transparent">
@@ -353,9 +333,7 @@ const DashboardContainer: React.FC = () => {
                                     <button
                                         onClick={() => setActiveFilter('all')}
                                         className={`px-5 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                                            activeFilter === 'all'
-                                                ? 'bg-[var(--color-terciary)] text-[var(--color-text-value)] shadow-sm'
-                                                : 'bg-transparent text-[var(--color-text-label)] hover:text-[var(--color-text-value)] hover:bg-[var(--color-secondary)]/50'
+                                            activeFilter === 'all' ? 'bg-[var(--color-terciary)] text-[var(--color-text-value)] shadow-sm' : 'bg-transparent text-[var(--color-text-label)] hover:text-[var(--color-text-value)] hover:bg-[var(--color-secondary)]/50'
                                         }`}
                                     >
                                         Todos os Grupos
@@ -365,9 +343,7 @@ const DashboardContainer: React.FC = () => {
                                             key={group}
                                             onClick={() => setActiveFilter(group)}
                                             className={`px-5 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
-                                                activeFilter === group
-                                                    ? 'bg-[var(--color-terciary)] text-[var(--color-text-value)] shadow-sm'
-                                                    : 'bg-transparent text-[var(--color-text-label)] hover:text-[var(--color-text-value)] hover:bg-[var(--color-secondary)]/50'
+                                                activeFilter === group ? 'bg-[var(--color-terciary)] text-[var(--color-text-value)] shadow-sm' : 'bg-transparent text-[var(--color-text-label)] hover:text-[var(--color-text-value)] hover:bg-[var(--color-secondary)]/50'
                                             }`}
                                         >
                                             {group}
@@ -379,15 +355,9 @@ const DashboardContainer: React.FC = () => {
                     </motion.div>
                 )}
 
-                {/* VISÃO: OUTROS SERVIDORES (ADMIN GLOBAL) */}
                 {showOthers && (
-                    <motion.div
-                        initial={{ opacity: 0, height: 0 }}
-                        animate={{ opacity: 1, height: 'auto' }}
-                        className="flex flex-col gap-6 w-full pt-4"
-                    >
+                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: 'auto' }} className="flex flex-col gap-6 w-full pt-4">
                         <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 w-full">
-                            {/* Card Global */}
                             <div className="group relative p-[4px] rounded-2xl bg-gradient-to-br from-[var(--color-terciary)] via-[var(--color-secondary)] to-transparent hover:from-[var(--color-primary)] transition-all duration-500 shadow-xl h-full flex flex-col">
                                 <div className="relative h-full bg-[var(--color-secondary)] backdrop-blur-xl rounded-[15px] p-5 flex items-center gap-4 transition-colors duration-500 ease-out">
                                     <div className="w-12 h-12 rounded-xl bg-[var(--color-terciary)] text-[var(--color-text-label)] group-hover:text-[var(--color-text-value)] flex items-center justify-center shrink-0 shadow-md transition-colors duration-300">
@@ -399,8 +369,6 @@ const DashboardContainer: React.FC = () => {
                                     </div>
                                 </div>
                             </div>
-
-                            {/* Card Online */}
                             <div className="group relative p-[4px] rounded-2xl bg-gradient-to-br from-[var(--color-success)]/40 via-[var(--color-secondary)] to-transparent hover:from-[var(--color-success)]/80 transition-all duration-500 shadow-xl shadow-[var(--color-success)]/5 h-full flex flex-col">
                                 <div className="relative h-full bg-[var(--color-secondary)] backdrop-blur-xl rounded-[15px] p-5 flex items-center gap-4 overflow-hidden transition-colors duration-500 ease-out">
                                     <div className="w-12 h-12 rounded-xl bg-[var(--color-success)]/10 text-[var(--color-success)] flex items-center justify-center shrink-0 shadow-md">
@@ -413,8 +381,6 @@ const DashboardContainer: React.FC = () => {
                                     <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-success)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[15px] pointer-events-none"></div>
                                 </div>
                             </div>
-
-                            {/* Card Suspensos */}
                             <div className="group relative p-[4px] rounded-2xl bg-gradient-to-br from-[var(--color-warning)]/40 via-[var(--color-secondary)] to-transparent hover:from-[var(--color-warning)]/80 transition-all duration-500 shadow-xl shadow-[var(--color-warning)]/5 h-full flex flex-col">
                                 <div className="relative h-full bg-[var(--color-secondary)] backdrop-blur-xl rounded-[15px] p-5 flex items-center gap-4 overflow-hidden transition-colors duration-500 ease-out">
                                     <div className="w-12 h-12 rounded-xl bg-[var(--color-warning)]/10 text-[var(--color-warning)] flex items-center justify-center shrink-0 shadow-md">
@@ -427,8 +393,6 @@ const DashboardContainer: React.FC = () => {
                                     <div className="absolute inset-0 bg-gradient-to-br from-[var(--color-warning)]/5 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 rounded-[15px] pointer-events-none"></div>
                                 </div>
                             </div>
-
-                            {/* Card RAM */}
                             <div className="group relative p-[4px] rounded-2xl bg-gradient-to-br from-[var(--color-info)]/40 via-[var(--color-secondary)] to-transparent hover:from-[var(--color-info)]/80 transition-all duration-500 shadow-xl shadow-[var(--color-info)]/5 h-full flex flex-col">
                                 <div className="relative h-full bg-[var(--color-secondary)] backdrop-blur-xl rounded-[15px] p-5 flex items-center gap-4 overflow-hidden transition-colors duration-500 ease-out">
                                     <div className="w-12 h-12 rounded-xl bg-[var(--color-info)]/10 text-[var(--color-info)] flex items-center justify-center shrink-0 shadow-md">
@@ -443,35 +407,57 @@ const DashboardContainer: React.FC = () => {
                             </div>
                         </div>
 
-                        {/* Input de Pesquisa e Filtros Admin */}
-                        <div className="flex flex-col lg:flex-row gap-4 w-full items-center mt-2">
-                            <div className="relative flex-1 w-full p-[4px] rounded-2xl bg-gradient-to-br from-[var(--color-terciary)] via-[var(--color-secondary)] to-transparent focus-within:from-[var(--color-primary)] focus-within:via-[var(--color-primary)]/50 transition-all duration-500 ease-out shadow-sm focus-within:shadow-[var(--color-primary)]/10">
-                                <div className="relative bg-[var(--color-console)] backdrop-blur-xl rounded-[14px]">
-                                    <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-sub)] w-4 h-4 transition-colors duration-300" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
-                                    <input
-                                        type="text"
-                                        placeholder="Buscar por Nome, ID, Dono ou Email..."
-                                        value={searchQuery}
-                                        onChange={(e) => setSearchQuery(e.target.value)}
-                                        className="w-full bg-transparent py-4 pl-11 pr-4 text-[13px] font-medium text-[var(--color-text-value)] placeholder:text-[var(--color-text-sub)]/50 focus:outline-none transition-all"
-                                    />
+                        {/* Admin Ultra Filter Bar */}
+                        <div className="flex flex-col gap-4 w-full mt-2">
+                            <div className="flex flex-col lg:flex-row gap-4 w-full items-center">
+                                <div className="relative flex-1 w-full p-[4px] rounded-2xl bg-gradient-to-br from-[var(--color-terciary)] via-[var(--color-secondary)] to-transparent focus-within:from-[var(--color-primary)] focus-within:via-[var(--color-primary)]/50 transition-all duration-500 ease-out shadow-sm focus-within:shadow-[var(--color-primary)]/10">
+                                    <div className="relative bg-[var(--color-console)] backdrop-blur-xl rounded-[14px]">
+                                        <svg className="absolute left-4 top-1/2 -translate-y-1/2 text-[var(--color-text-sub)] w-4 h-4 transition-colors duration-300" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>
+                                        <input
+                                            type="text"
+                                            placeholder="Busca Ultra: Nome, ID, Dono, Email ou Grupo..."
+                                            value={searchQuery}
+                                            onChange={(e) => setSearchQuery(e.target.value)}
+                                            className="w-full bg-transparent py-4 pl-11 pr-4 text-[13px] font-medium text-[var(--color-text-value)] placeholder:text-[var(--color-text-sub)]/50 focus:outline-none transition-all"
+                                        />
+                                    </div>
+                                </div>
+
+                                <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
+                                    <div className="flex-1 sm:w-48 z-20 cursor-pointer">
+                                        <Select options={statusOptions} value={adminStatusFilter} onChange={setAdminStatusFilter} />
+                                    </div>
+                                    <div className="flex-1 sm:w-48 z-10 cursor-pointer">
+                                        <Select options={sortOptions} value={adminSortBy} onChange={setAdminSortBy} />
+                                    </div>
                                 </div>
                             </div>
 
-                            <div className="flex flex-col sm:flex-row gap-4 w-full lg:w-auto">
-                                <div className="flex-1 sm:w-48 z-20 cursor-pointer">
-                                    <Select
-                                        options={statusOptions}
-                                        value={adminStatusFilter}
-                                        onChange={setAdminStatusFilter}
-                                    />
-                                </div>
-                                <div className="flex-1 sm:w-48 z-10 cursor-pointer">
-                                    <Select
-                                        options={sortOptions}
-                                        value={adminSortBy}
-                                        onChange={setAdminSortBy}
-                                    />
+                            {/* Group Filter for Admin */}
+                            <div className="flex flex-col gap-2.5 w-full">
+                                <span className="text-[10px] font-black text-[var(--color-text-sub)] uppercase tracking-widest pl-1">Filtrar Grupo Global</span>
+                                <div className="p-[2px] rounded-xl bg-gradient-to-r from-[var(--color-terciary)]/40 to-transparent">
+                                    <div className="flex gap-1 bg-[var(--color-secondary)]/60 p-1.5 rounded-[10px] overflow-x-auto custom-scrollbar">
+                                        <button
+                                            onClick={() => setAdminGroupFilter('all')}
+                                            className={`px-5 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                                                adminGroupFilter === 'all' ? 'bg-[var(--color-terciary)] text-[var(--color-text-value)] shadow-sm' : 'bg-transparent text-[var(--color-text-label)] hover:text-[var(--color-text-value)] hover:bg-[var(--color-secondary)]/50'
+                                            }`}
+                                        >
+                                            Todos os Grupos
+                                        </button>
+                                        {groups.map(group => (
+                                            <button
+                                                key={group}
+                                                onClick={() => setAdminGroupFilter(group)}
+                                                className={`px-5 py-2 rounded-lg text-[13px] font-bold transition-all duration-200 cursor-pointer whitespace-nowrap ${
+                                                    adminGroupFilter === group ? 'bg-[var(--color-terciary)] text-[var(--color-text-value)] shadow-sm' : 'bg-transparent text-[var(--color-text-label)] hover:text-[var(--color-text-value)] hover:bg-[var(--color-secondary)]/50'
+                                                }`}
+                                            >
+                                                {group}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </div>
                             </div>
                         </div>
@@ -479,7 +465,6 @@ const DashboardContainer: React.FC = () => {
                 )}
             </div>
 
-            {/* Listagem de Servidores Renderizada Dinamicamente */}
             <div className="flex flex-col min-h-[400px]">
                 <AnimatePresence mode="wait">
                     {isLoading ? (
@@ -543,7 +528,6 @@ const DashboardContainer: React.FC = () => {
                                             <h3 className="text-[14px] font-black text-[var(--color-text-value)] tracking-widest uppercase">{group}</h3>
                                             <div className="h-[1.5px] flex-1 bg-gradient-to-r from-[var(--color-terciary)] to-transparent opacity-40"></div>
                                         </div>
-
                                         <div className="grid gap-5">
                                             {groupServers.map(server => (
                                                 <ServerRow
@@ -574,9 +558,9 @@ const DashboardContainer: React.FC = () => {
                             <div>
                                 <p className="text-[18px] font-black text-[var(--color-text-value)] tracking-tight">Nenhum servidor encontrado</p>
                                 <p className="text-[14px] font-medium text-[var(--color-text-sub)] mt-2 leading-relaxed">
-                                    {userSearchQuery || userStatusFilter !== 'all'
-                                        ? 'Tente buscar com outros filtros ou termos.'
-                                        : 'Altere os filtros ou crie uma nova instância.'}
+                                    {showOthers
+                                        ? 'Nenhum servidor corresponde aos filtros de administrador.'
+                                        : 'Tente buscar com outros filtros ou termos.'}
                                 </p>
                             </div>
                         </motion.div>
