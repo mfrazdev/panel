@@ -172,6 +172,9 @@ class ServerService
 
         $this->syncFixedAllocations($server, [], $fixedIds);
 
+
+        $server->sendAction('install', null);
+
         return $server;
     }
 

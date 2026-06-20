@@ -1,6 +1,8 @@
-import React, {createContext, useContext, useEffect, useState, useMemo} from "react";
-import {useServerContext} from "@/web/contexts/ServerContext";
-import {useSession} from "@nytlex/auth/react";
+import React, { createContext, useContext, useEffect, useState, useMemo } from "react";
+import { useServerContext } from "@/web/contexts/ServerContext";
+import { useSession } from "@nytlex/auth/react";
+import { useToast } from "@/web/contexts/ToastContext";
+
 export const isEditable = (name: string) => {
     if (!name) return false;
     const hasEditableExtension = /\.(txt|json|yml|yaml|properties|js|ts|jsx|tsx|sh|bat|cmd|ps1|xml|ini|csv|html|htm|css|scss|sass|less|md|py|rb|php|go|rs|java|c|cpp|h|cs|sql|toml|conf|config|cfg|log|vue|svelte|env)$/i.test(name);
@@ -54,7 +56,7 @@ interface FileManagerContextType {
 const FileManagerContext = createContext<FileManagerContextType | undefined>(undefined);
 
 export function FileManagerProvider({ children }: { children: React.ReactNode }) {
-
+    const toast = useToast();
     const server = useServerContext();
     const user = useSession();
     const API_BASE_URL = server?.nodeUrl
@@ -177,7 +179,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
                 currentAccumulatedPath += `/${segments[i]}`;
                 breadcrumbs.push({
                     name: segments[i],
-                    path: currentAccumulatedPath, // Isso garante que o path gerado pra subpastas seja tipo "/home/container/www/conf"
+                    path: currentAccumulatedPath,
                 });
             }
         } else {
@@ -188,7 +190,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
                     name: segment,
                     path: currentAccumulatedPath,
                 });
-            })
+            });
         }
 
         return breadcrumbs;
@@ -199,10 +201,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
     // ==========================================
 
     const formatApiPath = (frontendPath: string) => {
-        // Remove agressivamente o prefixo /home/container, garantindo que não vá para a API
         let stripped = frontendPath.replace(/^\/?home\/container/, "");
-        
-        // Remove a barra inicial se existir (deixa como raiz vazia caso seja apenas /)
         return stripped.startsWith("/") ? stripped.slice(1) : stripped;
     };
 
@@ -241,10 +240,17 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
                 body: errorData
             });
 
-            throw new Error(`Erro ${response.status}: ${typeof errorData === 'object' ? JSON.stringify(errorData) : errorData}`);
+            // Mostra o erro pro usuário extraído da resposta do C#
+            const errorMessage = (typeof errorData === 'object' && errorData?.error)
+                ? errorData.error
+                : (typeof errorData === 'string' ? errorData : "Ocorreu um erro na solicitação.");
+
+            toast.addToast(errorMessage, 'error');
+
+            throw new Error(`Erro ${response.status}: ${errorMessage}`);
         }
 
-        return JSON.parse(textData)
+        return JSON.parse(textData);
     };
 
     const listFiles = async (path: string = currentPath) => {
@@ -292,21 +298,16 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
     };
 
     const downloadFile = (filePath: string) => {
-        // Como agora será um GET, mandamos as informações na URL (Query String)
         const params = new URLSearchParams({
             userUuid: userUuid.toString(),
             serverId: serverId,
             path: formatApiPath(filePath)
-            // O disk não é necessário para download, já que não escrevemos nada no disco.
         });
 
         const downloadUrl = `${API_BASE_URL}/download?${params.toString()}`;
 
-        // Cria um link e clica nele dinamicamente.
-        // Isso inicia o download nativo do navegador na hora, sem carregar na memória (Blob).
         const link = document.createElement('a');
         link.href = downloadUrl;
-        // Opcional, mas ajuda a dizer pro navegador "baixe, não abra na aba"
         link.setAttribute('download', '');
         document.body.appendChild(link);
         link.click();
@@ -325,7 +326,6 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
             formData.append("path", fullUploadPath);
             formData.append("file", file);
 
-            // Inicia o rastreamento desse arquivo
             const taskId = fullUploadPath;
             setUploadState(prev => ({
                 ...prev,
@@ -338,7 +338,6 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
                 }
             }));
 
-            // Usando XHR porque a API fetch nativa não suporta rastrear o progresso do upload ainda
             const xhr = new XMLHttpRequest();
             xhr.open("POST", `${API_BASE_URL}/upload`);
 
@@ -379,7 +378,16 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
                         ...prev,
                         [taskId]: { ...prev[taskId], status: 'error' }
                     }));
-                    reject(new Error(`Falha no upload: ${xhr.statusText || xhr.status}`));
+
+                    // Tratamento de erro do upload
+                    let errorMessage = `Falha no upload: ${xhr.statusText || xhr.status}`;
+                    try {
+                        const errorObj = JSON.parse(xhr.responseText);
+                        if (errorObj.error) errorMessage = errorObj.error;
+                    } catch (e) {}
+
+                    toast.addToast(errorMessage, 'error');
+                    reject(new Error(errorMessage));
                 }
             };
 
@@ -388,6 +396,7 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
                     ...prev,
                     [taskId]: { ...prev[taskId], status: 'error' }
                 }));
+                toast.addToast("Erro de rede ao fazer upload", 'error');
                 reject(new Error("Erro de rede ao fazer upload"));
             };
 
@@ -409,12 +418,10 @@ export function FileManagerProvider({ children }: { children: React.ReactNode })
             closeEdit,
             getBreadcrumbs,
 
-            // Novos exports de estado
             uploadState,
             totalUploadProgress,
             clearUploads,
 
-            // Exports da API
             listFiles,
             readFile,
             writeFile,
